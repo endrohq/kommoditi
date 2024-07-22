@@ -1,5 +1,5 @@
 {
-  "name": "hello-future-app",
+  "name": "hello-future-monorepo",
   "private": true,
   "scripts": {
     "build": "turbo build",
@@ -7,15 +7,9 @@
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
-  "devDependencies": {
-    "prettier": "^3.2.5",
-    "turbo": "^2.0.9",
-    "typescript": "^5.4.5"
-  },
   "engines": {
     "node": ">=18"
   },
-  "packageManager": "yarn@3.2.0",
   "workspaces": [
     "apps/*",
     "packages/*"

@@ -6,7 +6,7 @@ import { formatEther } from "viem";
 import { useBalance } from "wagmi";
 
 type Account = {
-	address: string;
+	address: `0x${string}`;
 	balance?: string;
 };
 
@@ -55,7 +55,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 		<AuthContext.Provider
 			value={{
 				account: user?.wallet?.address
-					? { address: user.wallet.address, balance }
+					? { address: user.wallet.address as `0x${string}`, balance }
 					: undefined,
 				isAuthenticated: authenticated,
 				hasBalance: balance !== "0",
