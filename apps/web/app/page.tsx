@@ -6,6 +6,5 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
-	// Parse the above CSS classes into a React component with tailwind
 	return <HomePageLayout />;
 }

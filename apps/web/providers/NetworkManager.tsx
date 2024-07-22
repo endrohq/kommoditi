@@ -30,7 +30,7 @@ export default function NetworkManager({ children }: AuthProviderProps) {
 
 	return (
 		<NetworkManagerContext.Provider value={{}}>
-			{isNaN(Number(data)) && (
+			{isNaN(Number(data)) && ready && (
 				<NetworkOffline
 					activeChain={chains?.find((a) => chainId === Number(a?.id))}
 				/>

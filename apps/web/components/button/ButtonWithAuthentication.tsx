@@ -21,14 +21,14 @@ export function ButtonWithAuthentication({
 	if (isAuthenticated) {
 		const Component = href ? Link : "div";
 		return (
-			<Component href={href || ""} onClick={onClick}>
+			<Component href={href || ""} onClick={() => onClick?.()}>
 				<Button {...props}>{children}</Button>
 			</Component>
 		);
 	}
 
 	return (
-		<Button onClick={login} {...props}>
+		<Button onClick={() => login()} {...props}>
 			{children}
 		</Button>
 	);

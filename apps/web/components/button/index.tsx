@@ -1,6 +1,6 @@
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { type VariantProps, cva } from "class-variance-authority";
-import clsx from "clsx"; // Using Lucide icons for consistency
+import clsx from "clsx";
 import React from "react";
 
 const buttonVariants = cva(

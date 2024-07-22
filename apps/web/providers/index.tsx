@@ -14,7 +14,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
 		<PrivyProvider
 			appId={process.env.NEXT_PUBLIC_PRIVY_KEY as string}
 			config={{
-				// Create embedded wallets for users who don't have a wallet
 				embeddedWallets: {
 					createOnLogin: "users-without-wallets",
 				},
