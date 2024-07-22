@@ -1,21 +1,13 @@
 "use client";
 
+import { chainOptions, optionConfig } from "@/lib/constants";
 import AuthProvider from "@/providers/AuthProvider";
+import NetworkManager from "@/providers/NetworkManager";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { http, WagmiProvider, createConfig } from "wagmi";
-import { hardhat, hederaTestnet } from "wagmi/chains";
+import { WagmiProvider } from "wagmi";
 
 const queryClient = new QueryClient();
-
-export const chainOptions = [hardhat, hederaTestnet];
-export const config = createConfig({
-	chains: [hederaTestnet, hardhat],
-	transports: {
-		[hederaTestnet.id]: http(),
-		[hardhat.id]: http(),
-	},
-});
 
 export function Providers({ children }: { children: React.ReactNode }) {
 	return (
@@ -27,13 +19,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
 					createOnLogin: "users-without-wallets",
 				},
 				loginMethods: ["wallet", "email"],
-				supportedChains: chainOptions,
-				defaultChain: process.env.IS_LOCAL ? hardhat : hederaTestnet,
+				supportedChains: optionConfig,
 			}}
 		>
 			<QueryClientProvider client={queryClient}>
-				<WagmiProvider config={config}>
-					<AuthProvider>{children}</AuthProvider>
+				<WagmiProvider config={chainOptions}>
+					<NetworkManager>
+						<AuthProvider>{children}</AuthProvider>
+					</NetworkManager>
 				</WagmiProvider>
 			</QueryClientProvider>
 		</PrivyProvider>

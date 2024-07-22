@@ -44,7 +44,7 @@ export function ContainerHeader() {
 					isSideNavExpanded,
 					onClickSideNavExpand,
 				}: ContainerHeaderProps) => (
-					<Header aria-label="Carbon Tutorial">
+					<Header className="relative" aria-label="Carbon Tutorial">
 						<HeaderMenuButton
 							aria-label="Open menu"
 							onClick={onClickSideNavExpand}

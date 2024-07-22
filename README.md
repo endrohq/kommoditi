@@ -2,80 +2,62 @@
 
 This is an official starter Turborepo.
 
-## Using this example
+### Requirements
 
-Run the following command:
-
-```sh
-npx create-turbo@latest
-```
-
-## What's inside?
-
-This Turborepo includes the following packages/apps:
+- Node.js 20+
+- Privy.io Auth Key 
 
 ### Apps and Packages
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+- `web`: The main web app (NextJS)
+- `contracts`: Solidity Contracts (Hardhat)
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
+### Build & Run
 
-### Utilities
+Important note: You need to a privy.io auth key to run the web app. Please refer to the [Privy.io documentation](https://docs.privy.io/) to get your auth key.
 
-This Turborepo has some additional tools already setup for you:
+There are 2 paths to build and run the apps:
 
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
+#### Run the web app with Hedera testnet
 
-### Build
+When using the testnet, you'll have 2 options:
+1. Use metamask with an existing account that holds testnet HBARs
+2. Use email sign-in after installment, copy your EVM address found on your profile page, and paste it on the [Hedera faucet](https://portal.hedera.com/faucet) to get testnet HBARs
 
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
+3. Execute the following commands: 
+```bash
+cd hello-future-app/apps/web
+mv .env.example .env (& remove NEXT_PUBLIC_IS_LOCAL=true)
+npm install
+npm run dev
 ```
 
-### Develop
 
-To develop all apps and packages, run the following command:
+#### Run the web app with local contracts
 
-```
-cd my-turborepo
-pnpm dev
-```
+1. Setup local network 
+In order to run the contracts locally, you need to have a local hardhat network running. The following set of commands will start a local network and deploy the contracts. If there are any issues, please refer to the [Hardhat documentation](https://hardhat.org/getting-started/).
 
-### Remote Caching
-
-Turborepo can use a technique known as [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup), then enter the following commands:
-
-```
-cd my-turborepo
-npx turbo login
+```bash
+cd hello-future-app/apps/contracts
+npm install
+npm run node
+npm run deploy:local
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+2. With a local network running, you can now run the web app:
+Execute the following commands in the root folder
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
+```bash
+cd hello-future-app/apps/web
+mv .env.example .env
+npm install
+npm run dev
 ```
-npx turbo link
+
+Compile the contracts:
+
+```bash
+cd hello-future-app/apps/web
+npm install
 ```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turbo.build/repo/docs/core-concepts/monorepos/running-tasks)
-- [Caching](https://turbo.build/repo/docs/core-concepts/caching)
-- [Remote Caching](https://turbo.build/repo/docs/core-concepts/remote-caching)
-- [Filtering](https://turbo.build/repo/docs/core-concepts/monorepos/filtering)
-- [Configuration Options](https://turbo.build/repo/docs/reference/configuration)
-- [CLI Usage](https://turbo.build/repo/docs/reference/command-line-reference)
