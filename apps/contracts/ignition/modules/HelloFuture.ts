@@ -1,10 +1,19 @@
-import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+import {buildModule} from "@nomicfoundation/hardhat-ignition/modules";
 
 const HelloFutureModule = buildModule("HelloFutureModule", (m) => {
+  const ProducerRegistry = m.contract("ProducerRegistry");
 
-  const basic = m.contract("Basic");
+  let CommodityExchange;
 
-  return { basic };
+  // Use the real Hedera Token Service address for testnet/mainnet
+  const hederaTokenServiceAddress = "0x0000000000000000000000000000000000000167";
+  const tokenService = m.contractAt("IHederaTokenService", hederaTokenServiceAddress);
+  CommodityExchange = m.contract("CommodityExchangeV0", [tokenService]);
+
+  return {
+    CommodityExchange,
+    ProducerRegistry
+  }
 });
 
 export default HelloFutureModule;

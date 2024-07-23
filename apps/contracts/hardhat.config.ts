@@ -7,7 +7,7 @@ dotenv.config();
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.24",
+  solidity: "0.8.26",
   networks: {
     hederaTestnet: {
       url: "https://testnet.hedera.com:443",
