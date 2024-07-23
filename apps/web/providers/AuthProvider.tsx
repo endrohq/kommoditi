@@ -1,14 +1,9 @@
 "use client";
 
+import { useAccountDetails } from "@/hooks/useAccountDetails";
+import { Account, EthAddress } from "@/typings";
 import { usePrivy } from "@privy-io/react-auth";
 import React, { ReactNode, createContext, useContext } from "react";
-import { formatEther } from "viem";
-import { useBalance } from "wagmi";
-
-type Account = {
-	address: `0x${string}`;
-	balance?: string;
-};
 
 export interface AuthContextProps {
 	account?: Account;
@@ -42,26 +37,20 @@ type AuthProviderProps = {
 
 export default function AuthProvider({ children }: AuthProviderProps) {
 	const { authenticated, user, login, ready, logout } = usePrivy();
-	const { data } = useBalance({
-		address: user?.wallet?.address as `0x${string}`,
-		query: {
-			enabled: authenticated && ready,
-		},
-	});
 
-	const balance = data?.value ? formatEther(data?.value) : "0";
+	const { account, isLoading } = useAccountDetails({
+		address: user?.wallet?.address as EthAddress,
+	});
 
 	return (
 		<AuthContext.Provider
 			value={{
-				account: user?.wallet?.address
-					? { address: user.wallet.address as `0x${string}`, balance }
-					: undefined,
+				account,
 				isAuthenticated: authenticated,
-				hasBalance: balance !== "0",
+				hasBalance: account?.balance !== "0",
 				login,
 				logout,
-				isLoading: !ready,
+				isLoading: !ready || isLoading,
 			}}
 		>
 			{children}
