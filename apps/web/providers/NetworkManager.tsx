@@ -3,7 +3,7 @@
 import { NetworkOffline } from "@/components/NetworkOffline";
 import { usePrivy } from "@privy-io/react-auth";
 import React, { ReactNode, createContext, useEffect } from "react";
-import { useBlockNumber, useChainId, useSwitchChain } from "wagmi";
+import { useAccount, useBlockNumber, useChainId, useSwitchChain } from "wagmi";
 
 export const NetworkManagerContext = createContext({});
 
@@ -13,7 +13,7 @@ type AuthProviderProps = {
 
 export default function NetworkManager({ children }: AuthProviderProps) {
 	const { ready } = usePrivy();
-	const chainId = useChainId();
+	const { chainId } = useAccount();
 	const { chains, switchChain } = useSwitchChain();
 	const { data, isError, error } = useBlockNumber();
 
