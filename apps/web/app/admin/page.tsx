@@ -1,13 +1,12 @@
 "use client";
 
-import { CommodityListing } from "@/app/admin/CommodityListing";
+import { CommodityItem } from "@/app/admin/CommodityItem";
 import { CreateCommodityModal } from "@/app/admin/CreateCommodityModal";
 import { Button } from "@/components/button";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
-import { contracts } from "@/lib/constants";
+import { useCommodities } from "@/hooks/useCommodities";
 import {
 	Content,
-	Form,
 	Table,
 	TableBody,
 	TableCell,
@@ -15,23 +14,13 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-	TextInput,
 } from "@carbon/react";
 import React, { useState } from "react";
-import { useReadContract } from "wagmi";
-
-const tokenAuthority = contracts.tokenAuthority;
 
 export default function Page() {
 	const [showModal, setShowModal] = useState(false);
 
-	const { data, refetch, isLoading } = useReadContract({
-		address: tokenAuthority.address,
-		abi: tokenAuthority.abi,
-		functionName: "getCommodities",
-	});
-
-	const tokens = data as any[];
+	const { isLoading, commodities, refetch } = useCommodities();
 
 	return (
 		<>
@@ -45,10 +34,11 @@ export default function Page() {
 						<TableHead>
 							<TableRow>
 								<TableHeader>Token</TableHeader>
-								{!isLoading && tokens?.length > 0 && (
+								{!isLoading && commodities?.length > 0 && (
 									<>
 										<TableHeader>Address</TableHeader>
-										<TableHeader>Is Exchangable</TableHeader>
+										<TableHeader>Trading Status</TableHeader>
+										<TableHeader></TableHeader>
 									</>
 								)}
 							</TableRow>
@@ -60,9 +50,14 @@ export default function Page() {
 										<LoadingOutlined />
 									</TableCell>
 								</TableRow>
-							) : tokens?.length > 0 ? (
-								tokens?.map((row) => (
-									<CommodityListing commodity={row} key={row} />
+							) : commodities?.length > 0 ? (
+								commodities?.map((row) => (
+									<CommodityItem
+										isListed={row.isListed}
+										commodity={row}
+										key={row.tokenAddress}
+										onListingChange={refetch}
+									/>
 								))
 							) : (
 								<TableRow>

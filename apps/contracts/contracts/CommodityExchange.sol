@@ -5,11 +5,17 @@ import "./IHederaTokenService.sol";
 import "./TokenAuthority.sol";
 
 contract CommodityExchange {
+
+    struct ApprovedCommodity {
+        address tokenAddress;
+        bool approved;
+    }
+
     address public admin;
     TokenAuthority public tokenAuthority;
 
     struct Commodity {
-        string commodityType;
+        address tokenAddress;
         address producer;
         int64 quantity;
         uint256 price;
@@ -19,12 +25,14 @@ contract CommodityExchange {
 
     mapping(uint256 => Commodity) public commodities;
     uint256 public commodityCount;
+    ApprovedCommodity[] public approvedCommodities;
 
-    mapping(string => bool) public approvedCommodities;
+    // Create a map for approved commodities
 
-    event CommodityListed(uint256 indexed commodityId, string indexed commodityType, address indexed producer, int64 quantity, uint256 price, uint256 deliveryWindow);
-    event CommodityApproved(string indexed commodityType);
-    event CommodityRemoved(string indexed commodityType);
+
+    event CommodityListed(uint256 indexed commodityId, address indexed tokenAddress, address indexed producer, int64 quantity, uint256 price, uint256 deliveryWindow);
+    event CommodityApproved(address indexed tokenAddress);
+    event CommodityRemoved(address indexed tokenAddress);
 
     constructor(address _tokenAuthority) {
         tokenAuthority = TokenAuthority(_tokenAuthority);
@@ -41,33 +49,77 @@ contract CommodityExchange {
         _;
     }
 
-    function approveCommodity(string memory commodityType) external onlyAdmin {
-        approvedCommodities[commodityType] = true;
-        emit CommodityApproved(commodityType);
+    function isApprovedCommodity(address tokenAddress) public view returns (bool) {
+        for (uint256 i = 0; i < approvedCommodities.length; i++) {
+            if (approvedCommodities[i].tokenAddress == tokenAddress) {
+                return approvedCommodities[i].approved;
+            }
+        }
+        return false;
     }
 
-    function removeCommodity(string memory commodityType) external onlyAdmin {
-        approvedCommodities[commodityType] = false;
-        emit CommodityRemoved(commodityType);
+    function approveCommodity(address tokenAddress) external onlyAdmin {
+        // Check if Commodity is already approved
+        require(!isApprovedCommodity(tokenAddress), "Commodity already approved");
+
+        // Add commodity to approved list
+        approvedCommodities.push(ApprovedCommodity({
+            tokenAddress: tokenAddress,
+            approved: true
+        }));
+
+        emit CommodityApproved(tokenAddress);
     }
 
-    function listCommodity(string memory commodityType, int64 quantity, uint256 price, uint256 deliveryWindow) external {
+    function findApprovedCommodity(address tokenAddress) internal view returns (ApprovedCommodity memory) {
+        for (uint256 i = 0; i < approvedCommodities.length; i++) {
+            if (approvedCommodities[i].tokenAddress == tokenAddress) {
+                return approvedCommodities[i];
+            }
+        }
+        revert("Commodity not approved");
+    }
+
+    function findApprovedCommodityIndex(address tokenAddress) internal view returns (uint256) {
+        for (uint256 i = 0; i < approvedCommodities.length; i++) {
+            if (approvedCommodities[i].tokenAddress == tokenAddress) {
+                return i;
+            }
+        }
+        revert("Commodity not approved");
+    }
+
+    function removeCommodity(address tokenAddress) external onlyAdmin {
+        uint256 index = findApprovedCommodityIndex(tokenAddress);
+        require(approvedCommodities[index].approved, "Commodity not approved");
+
+        approvedCommodities[index].approved = false;
+
+        emit CommodityRemoved(tokenAddress);
+    }
+
+    function getApprovedCommodities() public view returns (ApprovedCommodity[] memory) {
+        return approvedCommodities;
+    }
+
+
+    function listCommodity(address tokenAddress, int64 quantity, uint256 price, uint256 deliveryWindow) external {
         require(quantity > 0, "Quantity must be greater than zero");
         require(price > 0, "Price must be greater than zero");
         require(deliveryWindow > block.timestamp, "Delivery window must be in the future");
 
-        // check if commodityType is approved
-        require(approvedCommodities[commodityType], "Commodity type not approved for listing");
+        uint256 index = findApprovedCommodityIndex(tokenAddress);
+        require(approvedCommodities[index].approved, "Commodity not approved");
 
         // Request token minting
-        int64 responseCode = tokenAuthority.requestMinting(commodityType, quantity, deliveryWindow, msg.sender);
+        int64 responseCode = tokenAuthority.requestMinting(tokenAddress, quantity, deliveryWindow, msg.sender);
         require(responseCode == 0, "Token minting failed");
 
         uint256 commodityId = commodityCount;
         commodityCount++;
 
         commodities[commodityId] = Commodity({
-            commodityType: commodityType,
+            tokenAddress: tokenAddress,
             producer: msg.sender,
             quantity: quantity,
             price: price,
@@ -75,7 +127,7 @@ contract CommodityExchange {
             isActive: true
         });
 
-        emit CommodityListed(commodityId, commodityType, msg.sender, quantity, price, deliveryWindow);
+        emit CommodityListed(commodityId, tokenAddress, msg.sender, quantity, price, deliveryWindow);
     }
 
     function getCommodity(uint256 commodityId) public view returns (Commodity memory) {

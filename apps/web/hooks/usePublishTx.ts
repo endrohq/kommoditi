@@ -1,6 +1,5 @@
 import { EthAddress } from "@/typings";
 import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 import { Abi } from "viem";
 import { useWatchContractEvent, useWriteContract } from "wagmi";
 
@@ -12,13 +11,13 @@ interface useWriteTransactionArgs {
 }
 
 interface useWriteTransactionReturnProps {
-	submitTransaction(args: unknown[]): void;
+	writeToContract(args: unknown[]): void;
 	isSubmitting: boolean;
 	error: Error | null;
 	isSuccess: boolean;
 }
 
-export function useWriteTransaction({
+export function usePublishTx({
 	address,
 	abi,
 	functionName,
@@ -42,6 +41,7 @@ export function useWriteTransaction({
 		eventName,
 		onLogs(logs) {
 			logs.forEach((log) => {
+				console.log(hash, log.transactionHash);
 				if (log.transactionHash === hash) {
 					setIsSuccess(true);
 					setIsSubmitting(false);
@@ -50,7 +50,7 @@ export function useWriteTransaction({
 		},
 	});
 
-	function submitTransaction(args: unknown[]) {
+	function writeToContract(args: unknown[]) {
 		if (isSubmitting) return;
 		setIsSubmitting(true);
 		try {
@@ -68,7 +68,7 @@ export function useWriteTransaction({
 	}
 
 	return {
-		submitTransaction,
+		writeToContract,
 		isSubmitting,
 		error,
 		isSuccess,

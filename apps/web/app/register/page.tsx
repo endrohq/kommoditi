@@ -4,7 +4,7 @@ import { Button } from "@/components/button";
 import { Column, Content, Form, Grid, TextInput } from "@carbon/react";
 
 import { SearchAddress } from "@/components/input/SearchAddress";
-import { useWriteTransaction } from "@/hooks/useWriteTransaction";
+import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
 import { LocationItem } from "@/typings";
 import { useRouter } from "next/navigation";
@@ -19,11 +19,11 @@ export default function Page() {
 	const [location, setLocation] = useState<LocationItem>();
 
 	const {
-		submitTransaction: registerProducer,
+		writeToContract: registerProducer,
 		isSubmitting,
 		isSuccess,
 		error,
-	} = useWriteTransaction({
+	} = usePublishTx({
 		address: producerRegistry.address,
 		abi: producerRegistry.abi,
 		functionName: "registerProducer",

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/button";
 import { Modal } from "@/components/modal";
-import { useWriteTransaction } from "@/hooks/useWriteTransaction";
+import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
 import { Commodity } from "@/typings";
 import { Content, Form, TextInput } from "@carbon/react";
@@ -23,10 +23,10 @@ export function CreateCommodityModal({
 }: CreateCommodityModalProps) {
 	const [commodity, setCommodity] = useState<Partial<Commodity>>({});
 	const {
-		submitTransaction: registerCommodity,
+		writeToContract: registerCommodity,
 		isSubmitting,
 		isSuccess,
-	} = useWriteTransaction({
+	} = usePublishTx({
 		address: tokenAuthority.address,
 		abi: tokenAuthority.abi,
 		functionName: "createCommodity",
@@ -48,7 +48,7 @@ export function CreateCommodityModal({
 
 	function handleSubmit() {
 		try {
-			registerCommodity([commodity.type, commodity.name, commodity.symbol]);
+			registerCommodity([commodity.name, commodity.symbol]);
 		} catch (e) {
 			console.error(e);
 		}
@@ -80,22 +80,10 @@ export function CreateCommodityModal({
 					}
 					required
 				/>
-				<TextInput
-					id="commodity-type"
-					labelText="Type"
-					value={commodity.type}
-					onChange={(e) => setCommodity({ ...commodity, type: e.target.value })}
-					required
-				/>
 				<div className="flex justify-end">
 					<Button
 						loading={isSubmitting}
-						disabled={
-							!commodity?.name ||
-							!commodity?.symbol ||
-							!commodity?.type ||
-							isSubmitting
-						}
+						disabled={!commodity?.symbol || !commodity?.symbol || isSubmitting}
 						type="submit"
 					>
 						Create

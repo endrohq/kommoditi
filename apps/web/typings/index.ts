@@ -22,5 +22,11 @@ export type Account = {
 export type Commodity = {
 	name: string;
 	symbol: string;
-	type: string;
+	tokenAddress: string;
+	isListed: boolean;
+};
+
+export type CommodityListing = {
+	approved: boolean;
+	tokenAddress: string;
 };

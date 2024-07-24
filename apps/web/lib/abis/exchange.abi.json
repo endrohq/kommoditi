@@ -15,9 +15,9 @@
 		"inputs": [
 			{
 				"indexed": true,
-				"internalType": "string",
-				"name": "commodityType",
-				"type": "string"
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
 			}
 		],
 		"name": "CommodityApproved",
@@ -34,9 +34,9 @@
 			},
 			{
 				"indexed": true,
-				"internalType": "string",
-				"name": "commodityType",
-				"type": "string"
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
 			},
 			{
 				"indexed": true,
@@ -71,9 +71,9 @@
 		"inputs": [
 			{
 				"indexed": true,
-				"internalType": "string",
-				"name": "commodityType",
-				"type": "string"
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
 			}
 		],
 		"name": "CommodityRemoved",
@@ -95,9 +95,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "commodityType",
-				"type": "string"
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
 			}
 		],
 		"name": "approveCommodity",
@@ -108,16 +108,21 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
+				"internalType": "uint256",
 				"name": "",
-				"type": "string"
+				"type": "uint256"
 			}
 		],
 		"name": "approvedCommodities",
 		"outputs": [
 			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			},
+			{
 				"internalType": "bool",
-				"name": "",
+				"name": "approved",
 				"type": "bool"
 			}
 		],
@@ -135,9 +140,9 @@
 		"name": "commodities",
 		"outputs": [
 			{
-				"internalType": "string",
-				"name": "commodityType",
-				"type": "string"
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
 			},
 			{
 				"internalType": "address",
@@ -182,6 +187,31 @@
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "getApprovedCommodities",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "address",
+						"name": "tokenAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "bool",
+						"name": "approved",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct CommodityExchange.ApprovedCommodity[]",
+				"name": "",
+				"type": "tuple[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "uint256",
@@ -194,9 +224,9 @@
 			{
 				"components": [
 					{
-						"internalType": "string",
-						"name": "commodityType",
-						"type": "string"
+						"internalType": "address",
+						"name": "tokenAddress",
+						"type": "address"
 					},
 					{
 						"internalType": "address",
@@ -239,9 +269,9 @@
 			{
 				"components": [
 					{
-						"internalType": "string",
-						"name": "commodityType",
-						"type": "string"
+						"internalType": "address",
+						"name": "tokenAddress",
+						"type": "address"
 					},
 					{
 						"internalType": "address",
@@ -280,9 +310,28 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "commodityType",
-				"type": "string"
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			}
+		],
+		"name": "isApprovedCommodity",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
 			},
 			{
 				"internalType": "int64",
@@ -308,9 +357,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "commodityType",
-				"type": "string"
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
 			}
 		],
 		"name": "removeCommodity",

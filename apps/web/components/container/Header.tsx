@@ -22,8 +22,9 @@ import { EthAvatar } from "@/components/EthAvatar";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { useAuth } from "@/providers/AuthProvider";
 import {
-	HOME_ROUTE,
 	ROUTE_ADMIN_PAGE,
+	ROUTE_HOME,
+	ROUTE_MINT_PAGE,
 	ROUTE_REGISTER_PAGE,
 	getProfileRoute,
 } from "@/utils/route.utils";
@@ -56,12 +57,15 @@ export function ContainerHeader() {
 							onClick={onClickSideNavExpand}
 							isActive={isSideNavExpanded}
 						/>
-						<Link className="cds--header__name" href={HOME_ROUTE} passHref>
+						<Link className="cds--header__name" href={ROUTE_HOME} passHref>
 							Hello Future
 						</Link>
 						<HeaderNavigation aria-label="Hello Future Navigation">
 							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
 								<Link href={ROUTE_REGISTER_PAGE}>Register</Link>
+							</HeaderMenuItem>
+							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
+								<Link href={ROUTE_MINT_PAGE}>Mint</Link>
 							</HeaderMenuItem>
 							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
 								<Link href={ROUTE_ADMIN_PAGE}>Admin</Link>
@@ -79,6 +83,9 @@ export function ContainerHeader() {
 									</HeaderMenuItem>
 									<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
 										<Link href={ROUTE_ADMIN_PAGE}>Admin</Link>
+									</HeaderMenuItem>
+									<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
+										<Link href={ROUTE_MINT_PAGE}>Mint</Link>
 									</HeaderMenuItem>
 								</HeaderSideNavItems>
 							</SideNavItems>
