@@ -35,7 +35,7 @@ export default function Page() {
 
 	return (
 		<>
-			<Content className="px-52">
+			<Content className="lg:px-52">
 				<div className="flex items-center mb-6 justify-between">
 					<h1 className="font-bold  text-2xl">Commodities</h1>
 					<Button onClick={() => setShowModal(true)}>Create Commodity</Button>

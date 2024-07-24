@@ -74,9 +74,12 @@ export function ContainerHeader() {
 						>
 							<SideNavItems>
 								<HeaderSideNavItems>
-									<Link href={HOME_ROUTE} passHref>
-										<HeaderMenuItem>Home</HeaderMenuItem>
-									</Link>
+									<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
+										<Link href={ROUTE_REGISTER_PAGE}>Register</Link>
+									</HeaderMenuItem>
+									<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
+										<Link href={ROUTE_ADMIN_PAGE}>Admin</Link>
+									</HeaderMenuItem>
 								</HeaderSideNavItems>
 							</SideNavItems>
 						</SideNav>
