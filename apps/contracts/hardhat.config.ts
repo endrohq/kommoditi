@@ -10,7 +10,7 @@ const config: HardhatUserConfig = {
   solidity: "0.8.26",
   networks: {
     hederaTestnet: {
-      url: "https://testnet.hedera.com:443",
+      url: "https://testnet.hashio.io/api",
       chainId: 296,
       accounts: [PRIVATE_KEY],
     }

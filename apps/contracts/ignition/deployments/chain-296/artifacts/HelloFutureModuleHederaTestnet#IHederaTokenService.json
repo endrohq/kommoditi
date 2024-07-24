@@ -1,0 +1,247 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IHederaTokenService",
+  "sourceName": "contracts/IHederaTokenService.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "name": "associateToken",
+      "outputs": [
+        {
+          "internalType": "int64",
+          "name": "responseCode",
+          "type": "int64"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "internalType": "address",
+              "name": "treasury",
+              "type": "address"
+            },
+            {
+              "internalType": "string",
+              "name": "memo",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "supplyType",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint32",
+              "name": "maxSupply",
+              "type": "uint32"
+            },
+            {
+              "internalType": "bool",
+              "name": "freezeDefault",
+              "type": "bool"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint32",
+                  "name": "second",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "autoRenewPeriod",
+                  "type": "uint32"
+                }
+              ],
+              "internalType": "struct IHederaTokenService.Expiry",
+              "name": "expiry",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct IHederaTokenService.HederaToken",
+          "name": "token",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint64",
+          "name": "initialTotalSupply",
+          "type": "uint64"
+        },
+        {
+          "internalType": "uint32",
+          "name": "decimals",
+          "type": "uint32"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "keyType",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bytes",
+              "name": "key",
+              "type": "bytes"
+            }
+          ],
+          "internalType": "struct IHederaTokenService.TokenKey[]",
+          "name": "keys",
+          "type": "tuple[]"
+        }
+      ],
+      "name": "createFungibleToken",
+      "outputs": [
+        {
+          "internalType": "int64",
+          "name": "responseCode",
+          "type": "int64"
+        },
+        {
+          "internalType": "address",
+          "name": "tokenAddress",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "int64",
+          "name": "amount",
+          "type": "int64"
+        },
+        {
+          "internalType": "bytes[]",
+          "name": "metadata",
+          "type": "bytes[]"
+        }
+      ],
+      "name": "mintToken",
+      "outputs": [
+        {
+          "internalType": "int64",
+          "name": "responseCode",
+          "type": "int64"
+        },
+        {
+          "internalType": "uint64",
+          "name": "newTotalSupply",
+          "type": "uint64"
+        },
+        {
+          "internalType": "int64[]",
+          "name": "serialNumbers",
+          "type": "int64[]"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "int64",
+          "name": "serialNumber",
+          "type": "int64"
+        }
+      ],
+      "name": "transferNFT",
+      "outputs": [
+        {
+          "internalType": "int64",
+          "name": "responseCode",
+          "type": "int64"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "sender",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "int64",
+          "name": "amount",
+          "type": "int64"
+        }
+      ],
+      "name": "transferToken",
+      "outputs": [
+        {
+          "internalType": "int64",
+          "name": "responseCode",
+          "type": "int64"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

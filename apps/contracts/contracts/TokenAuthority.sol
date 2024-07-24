@@ -98,8 +98,4 @@ contract TokenAuthority {
         return tokens;
     }
 
-    function getHederaTokenByAddress(address tokenAddress) external view returns (IHederaTokenService.HederaToken memory) {
-        return tokenService.tokens(tokenAddress);
-    }
-
 }
