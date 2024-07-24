@@ -4,61 +4,50 @@ import { Button } from "@/components/button";
 import { Column, Content, Form, Grid, TextInput } from "@carbon/react";
 
 import { SearchAddress } from "@/components/input/SearchAddress";
+import { useWriteTransaction } from "@/hooks/useWriteTransaction";
 import { contracts } from "@/lib/constants";
 import { LocationItem } from "@/typings";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useWatchContractEvent, useWriteContract } from "wagmi";
 
 const producerRegistry = contracts.producerRegistry;
 
 export default function Page() {
-	const [isRegistering, setIsRegistering] = useState(false);
+	const router = useRouter();
 	const [name, setName] = useState("");
 	const [location, setLocation] = useState<LocationItem>();
 
 	const {
-		writeContract: registerProducer,
-		data: hash,
+		submitTransaction: registerProducer,
+		isSubmitting,
+		isSuccess,
 		error,
-	} = useWriteContract();
-
-	useWatchContractEvent({
+	} = useWriteTransaction({
 		address: producerRegistry.address,
 		abi: producerRegistry.abi,
+		functionName: "registerProducer",
 		eventName: "ProducerRegistered",
-		onLogs(logs) {
-			logs.forEach((log) => {
-				if (log.transactionHash === hash) {
-					toast.success("Successfully registered producer");
-					setIsRegistering(false);
-					// Navigate to producer page
-				}
-			});
-		},
 	});
+
+	useEffect(() => {
+		if (isSuccess) {
+			toast.success("Successfully registered as producer");
+			router.push(`/`);
+		}
+	}, [isSuccess]);
 
 	useEffect(() => {
 		if (error) {
 			toast.error("Failed to register producer. Try again later.");
-			setIsRegistering(false);
 		}
 	}, [error]);
 
 	function handleSubmit() {
-		if (isRegistering) return;
-		setIsRegistering(true);
-
 		try {
-			registerProducer({
-				address: producerRegistry.address,
-				abi: producerRegistry.abi,
-				functionName: "registerProducer",
-				args: [name, location?.text, location?.h3Index],
-			});
+			registerProducer([name, location?.address, location?.h3Index]);
 		} catch (e) {
 			console.error(e);
-			setIsRegistering(false);
 		}
 	}
 
@@ -91,7 +80,7 @@ export default function Page() {
 								) : (
 									<>
 										<div className="text-sm text-gray-700">
-											{location?.text}
+											{location?.address}
 										</div>
 										<div className="text-sm text-gray-700">
 											{location?.lat}, {location?.lng}
@@ -104,8 +93,8 @@ export default function Page() {
 							</>
 						</div>
 						<Button
-							loading={isRegistering}
-							disabled={!name || !location?.h3Index || isRegistering}
+							loading={isSubmitting}
+							disabled={!name || !location?.h3Index || isSubmitting}
 							type="submit"
 						>
 							Register Producer

@@ -1,5 +1,5 @@
 import { contracts } from "@/lib/constants";
-import { Account, EthAddress, LocationItem } from "@/typings";
+import { Account, EthAddress, LocationItem, Producer } from "@/typings";
 import { formatEther } from "viem";
 import { useBalance, useReadContract } from "wagmi";
 
@@ -38,11 +38,14 @@ export function useAccountDetails({
 
 	const formattedBalance = balance?.value ? formatEther(balance?.value) : "0";
 
+	const typedData = data as Producer;
+	const producer = typedData?.location?.length > 0 ? typedData : undefined;
+
 	return {
 		account: {
 			address,
 			balance: formattedBalance,
-			producer: data ? (data as LocationItem) : undefined,
+			producer,
 		},
 		isLoading: isLoadingBalance || isLoadingProducerDetails,
 	};

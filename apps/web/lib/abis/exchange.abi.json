@@ -15,15 +15,28 @@
 		"inputs": [
 			{
 				"indexed": true,
+				"internalType": "string",
+				"name": "commodityType",
+				"type": "string"
+			}
+		],
+		"name": "CommodityApproved",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
 				"internalType": "uint256",
 				"name": "commodityId",
 				"type": "uint256"
 			},
 			{
 				"indexed": true,
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
+				"internalType": "string",
+				"name": "commodityType",
+				"type": "string"
 			},
 			{
 				"indexed": true,
@@ -58,25 +71,12 @@
 		"inputs": [
 			{
 				"indexed": true,
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
+				"internalType": "string",
+				"name": "commodityType",
+				"type": "string"
 			}
 		],
-		"name": "CommodityTokenApproved",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			}
-		],
-		"name": "CommodityTokenRemoved",
+		"name": "CommodityRemoved",
 		"type": "event"
 	},
 	{
@@ -95,12 +95,12 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
+				"internalType": "string",
+				"name": "commodityType",
+				"type": "string"
 			}
 		],
-		"name": "approveCommodityToken",
+		"name": "approveCommodity",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -108,12 +108,12 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
+				"internalType": "string",
 				"name": "",
-				"type": "address"
+				"type": "string"
 			}
 		],
-		"name": "approvedCommodityTokens",
+		"name": "approvedCommodities",
 		"outputs": [
 			{
 				"internalType": "bool",
@@ -135,9 +135,9 @@
 		"name": "commodities",
 		"outputs": [
 			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
+				"internalType": "string",
+				"name": "commodityType",
+				"type": "string"
 			},
 			{
 				"internalType": "address",
@@ -182,15 +182,66 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "getCommodities",
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "commodityId",
+				"type": "uint256"
+			}
+		],
+		"name": "getCommodity",
 		"outputs": [
 			{
 				"components": [
 					{
+						"internalType": "string",
+						"name": "commodityType",
+						"type": "string"
+					},
+					{
 						"internalType": "address",
-						"name": "tokenAddress",
+						"name": "producer",
 						"type": "address"
+					},
+					{
+						"internalType": "int64",
+						"name": "quantity",
+						"type": "int64"
+					},
+					{
+						"internalType": "uint256",
+						"name": "price",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "deliveryWindow",
+						"type": "uint256"
+					},
+					{
+						"internalType": "bool",
+						"name": "isActive",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct CommodityExchange.Commodity",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getListedCommodities",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "string",
+						"name": "commodityType",
+						"type": "string"
 					},
 					{
 						"internalType": "address",
@@ -229,60 +280,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
-				"name": "commodityId",
-				"type": "uint256"
-			}
-		],
-		"name": "getCommodity",
-		"outputs": [
-			{
-				"components": [
-					{
-						"internalType": "address",
-						"name": "tokenAddress",
-						"type": "address"
-					},
-					{
-						"internalType": "address",
-						"name": "producer",
-						"type": "address"
-					},
-					{
-						"internalType": "int64",
-						"name": "quantity",
-						"type": "int64"
-					},
-					{
-						"internalType": "uint256",
-						"name": "price",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "deliveryWindow",
-						"type": "uint256"
-					},
-					{
-						"internalType": "bool",
-						"name": "isActive",
-						"type": "bool"
-					}
-				],
-				"internalType": "struct CommodityExchange.Commodity",
-				"name": "",
-				"type": "tuple"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
+				"internalType": "string",
+				"name": "commodityType",
+				"type": "string"
 			},
 			{
 				"internalType": "int64",
@@ -308,12 +308,12 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
+				"internalType": "string",
+				"name": "commodityType",
+				"type": "string"
 			}
 		],
-		"name": "removeCommodityToken",
+		"name": "removeCommodity",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"

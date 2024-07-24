@@ -2,6 +2,10 @@ import { Abi } from "viem";
 import { http, createConfig } from "wagmi";
 import { hardhat, hederaTestnet } from "wagmi/chains";
 
+import exchangeAbi from "./abis/exchange.abi.json";
+import producersAbi from "./abis/producers.abi.json";
+import tokenAuthorityAbi from "./abis/token-authority.abi.json";
+
 const isLocal = process.env.NEXT_PUBLIC_IS_LOCAL === "true";
 
 const localOnlyOptions = [hardhat];
@@ -24,7 +28,10 @@ const localOnlyConfig = createConfig({
 export const optionConfig = isLocal ? localOnlyOptions : testnetOptions;
 export const chainOptions = isLocal ? localOnlyConfig : testnetOnlyConfig;
 
-type ContractNames = "producerRegistry";
+type ContractNames =
+	| "producerRegistry"
+	| "commodityExchange"
+	| "tokenAuthority";
 type ContractInfo = {
 	address: `0x${string}`;
 	abi: Abi;
@@ -32,133 +39,29 @@ type ContractInfo = {
 
 const localContracts: Record<ContractNames, ContractInfo> = {
 	producerRegistry: {
-		address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-		abi: [
-			{
-				anonymous: false,
-				inputs: [
-					{
-						indexed: true,
-						internalType: "address",
-						name: "producerAddress",
-						type: "address",
-					},
-					{
-						indexed: false,
-						internalType: "string",
-						name: "name",
-						type: "string",
-					},
-					{
-						indexed: false,
-						internalType: "string",
-						name: "location",
-						type: "string",
-					},
-					{
-						indexed: false,
-						internalType: "string",
-						name: "h3Index",
-						type: "string",
-					},
-				],
-				name: "ProducerRegistered",
-				type: "event",
-			},
-			{
-				inputs: [
-					{
-						internalType: "address",
-						name: "_producerAddress",
-						type: "address",
-					},
-				],
-				name: "getProducer",
-				outputs: [
-					{
-						components: [
-							{
-								internalType: "string",
-								name: "name",
-								type: "string",
-							},
-							{
-								internalType: "string",
-								name: "location",
-								type: "string",
-							},
-							{
-								internalType: "string",
-								name: "h3Index",
-								type: "string",
-							},
-						],
-						internalType: "struct ProducerRegistry.Producer",
-						name: "",
-						type: "tuple",
-					},
-				],
-				stateMutability: "view",
-				type: "function",
-			},
-			{
-				inputs: [
-					{
-						internalType: "address",
-						name: "",
-						type: "address",
-					},
-				],
-				name: "producers",
-				outputs: [
-					{
-						internalType: "string",
-						name: "name",
-						type: "string",
-					},
-					{
-						internalType: "string",
-						name: "location",
-						type: "string",
-					},
-					{
-						internalType: "string",
-						name: "h3Index",
-						type: "string",
-					},
-				],
-				stateMutability: "view",
-				type: "function",
-			},
-			{
-				inputs: [
-					{
-						internalType: "string",
-						name: "_name",
-						type: "string",
-					},
-					{
-						internalType: "string",
-						name: "_location",
-						type: "string",
-					},
-					{
-						internalType: "string",
-						name: "_h3Index",
-						type: "string",
-					},
-				],
-				name: "registerProducer",
-				outputs: [],
-				stateMutability: "nonpayable",
-				type: "function",
-			},
-		],
+		address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
+		abi: producersAbi as Abi,
+	},
+	commodityExchange: {
+		address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+		abi: exchangeAbi as Abi,
+	},
+	tokenAuthority: {
+		address: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+		abi: tokenAuthorityAbi as Abi,
 	},
 };
 
 const testnetContracts: Record<ContractNames, ContractInfo> = {
 	producerRegistry: {
+		address: "0x",
+		abi: [],
+	},
+	commodityExchange: {
+		address: "0x",
+		abi: [],
+	},
+	tokenAuthority: {
 		address: "0x",
 		abi: [],
 	},

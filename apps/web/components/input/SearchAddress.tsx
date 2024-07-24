@@ -67,7 +67,7 @@ export function SearchAddress({
 					onClick={() => handleLocationSelect(listItem)}
 					className="cursor-pointer hover:bg-gray-100 transition-colors duration-150"
 				>
-					{listItem?.text}
+					{listItem?.address}
 				</ContainedListItem>
 			))}
 		</ContainedList>
