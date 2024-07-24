@@ -20,11 +20,11 @@ contract CommodityExchange {
     mapping(uint256 => Commodity) public commodities;
     uint256 public commodityCount;
 
-    mapping(string => bool) public approvedCommodityTypes;
+    mapping(string => bool) public approvedCommodities;
 
     event CommodityListed(uint256 indexed commodityId, string indexed commodityType, address indexed producer, int64 quantity, uint256 price, uint256 deliveryWindow);
-    event CommodityTypeApproved(string indexed commodityType);
-    event CommodityTypeRemoved(string indexed commodityType);
+    event CommodityApproved(string indexed commodityType);
+    event CommodityRemoved(string indexed commodityType);
 
     constructor(address _tokenAuthority) {
         tokenAuthority = TokenAuthority(_tokenAuthority);
@@ -41,14 +41,14 @@ contract CommodityExchange {
         _;
     }
 
-    function approveCommodityType(string memory commodityType) external onlyAdmin {
-        approvedCommodityTypes[commodityType] = true;
-        emit CommodityTypeApproved(commodityType);
+    function approveCommodity(string memory commodityType) external onlyAdmin {
+        approvedCommodities[commodityType] = true;
+        emit CommodityApproved(commodityType);
     }
 
-    function removeCommodityType(string memory commodityType) external onlyAdmin {
-        approvedCommodityTypes[commodityType] = false;
-        emit CommodityTypeRemoved(commodityType);
+    function removeCommodity(string memory commodityType) external onlyAdmin {
+        approvedCommodities[commodityType] = false;
+        emit CommodityRemoved(commodityType);
     }
 
     function listCommodity(string memory commodityType, int64 quantity, uint256 price, uint256 deliveryWindow) external {
@@ -57,7 +57,7 @@ contract CommodityExchange {
         require(deliveryWindow > block.timestamp, "Delivery window must be in the future");
 
         // check if commodityType is approved
-        require(approvedCommodityTypes[commodityType], "Commodity type not approved for listing");
+        require(approvedCommodities[commodityType], "Commodity type not approved for listing");
 
         // Request token minting
         int64 responseCode = tokenAuthority.requestMinting(commodityType, quantity, deliveryWindow, msg.sender);
@@ -83,7 +83,7 @@ contract CommodityExchange {
         return commodities[commodityId];
     }
 
-    function getCommodities() public view returns (Commodity[] memory) {
+    function getListedCommodities() public view returns (Commodity[] memory) {
         Commodity[] memory result = new Commodity[](commodityCount);
         for (uint256 i = 0; i < commodityCount; i++) {
             result[i] = commodities[i];
@@ -91,7 +91,4 @@ contract CommodityExchange {
         return result;
     }
 
-    function getCommodityTokenAddress(string memory commodityType) public view returns (address) {
-        return tokenAuthority.getCommodityTokenAddress(commodityType);
-    }
 }

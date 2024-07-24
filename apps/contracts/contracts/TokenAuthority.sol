@@ -13,9 +13,9 @@ contract TokenAuthority {
     string[] public commodityTypes;
 
     event ProducerAuthorized(address indexed producer);
-    event ProducerDeauthorized(address indexed producer);
-    event TokenCreated(string indexed commodityType, address tokenAddress);
-    event TokenMinted(string indexed commodityType, address indexed producer, int64 amount);
+    event ProducerRevoked(address indexed producer);
+    event CommodityCreated(string indexed commodityType, address tokenAddress);
+    event CommodityMinted(string indexed commodityType, address indexed producer, int64 amount);
 
     constructor(address _commodityExchange, address _tokenService) {
         commodityExchange = _commodityExchange;
@@ -38,12 +38,12 @@ contract TokenAuthority {
         emit ProducerAuthorized(producer);
     }
 
-    function deauthorizeProducer(address producer) external onlyAdmin {
+    function revokeProducer(address producer) external onlyAdmin {
         authorizedProducers[producer] = false;
-        emit ProducerDeauthorized(producer);
+        emit ProducerRevoked(producer);
     }
 
-    function createCommodityToken(string memory commodityType, string memory name, string memory symbol) external onlyAdmin {
+    function createCommodity(string memory commodityType, string memory name, string memory symbol) external {
         require(commodityTokens[commodityType] == address(0), "Token for this commodity already exists");
 
         IHederaTokenService.HederaToken memory token = IHederaTokenService.HederaToken({
@@ -65,7 +65,7 @@ contract TokenAuthority {
 
         commodityTokens[commodityType] = createdToken;
         commodityTypes.push(commodityType);
-        emit TokenCreated(commodityType, createdToken);
+        emit CommodityCreated(commodityType, createdToken);
     }
 
     function requestMinting(string memory commodityType, int64 amount, uint256 deliveryWindow, address producer) external onlyCommodityExchange returns (int64 responseCode) {
@@ -81,7 +81,7 @@ contract TokenAuthority {
         (responseCode) = tokenService.transferToken(tokenAddress, address(this), producer, amount);
         require(responseCode == 0, "Token transfer to producer failed");
 
-        emit TokenMinted(commodityType, producer, amount);
+        emit CommodityMinted(commodityType, producer, amount);
 
         return responseCode;
     }
@@ -90,7 +90,7 @@ contract TokenAuthority {
         return commodityTypes;
     }
 
-    function getCommodityTokens() external view returns (address[] memory) {
+    function getCommodities() external view returns (address[] memory) {
         address[] memory tokens = new address[](commodityTypes.length);
         for (uint256 i = 0; i < commodityTypes.length; i++) {
             tokens[i] = commodityTokens[commodityTypes[i]];
@@ -98,7 +98,8 @@ contract TokenAuthority {
         return tokens;
     }
 
-    function getCommodityTokenAddress(string memory commodityType) external view returns (address) {
-        return commodityTokens[commodityType];
+    function getHederaTokenByAddress(address tokenAddress) external view returns (IHederaTokenService.HederaToken memory) {
+        return tokenService.tokens(tokenAddress);
     }
+
 }
