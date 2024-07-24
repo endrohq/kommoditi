@@ -1,5 +1,5 @@
 import { contracts } from "@/lib/constants";
-import { Commodity, CommodityListing } from "@/typings";
+import { Commodity, CommodityListingApproval } from "@/typings";
 import { useReadContract } from "wagmi";
 
 const { tokenAuthority, commodityExchange } = contracts;
@@ -32,12 +32,12 @@ export function useCommodities(): useCommoditiesReturnProps {
 	});
 
 	const commodities = commoditiesData as Commodity[];
-	const listings = listingsData as CommodityListing[];
+	const listings = listingsData as CommodityListingApproval[];
 
 	const isLoading = isLoadingCommodities || isLoadingListings;
 
 	return {
-		commodities: commodities?.map((commodity) => ({
+		commodities: (commodities || [])?.map((commodity) => ({
 			...commodity,
 			isListed:
 				listings?.find(

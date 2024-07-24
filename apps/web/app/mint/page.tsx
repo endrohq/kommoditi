@@ -6,11 +6,13 @@ import {
 	Content,
 	DatePicker,
 	DatePickerInput,
+	Dropdown,
 	Form,
 	Grid,
 	TextInput,
 } from "@carbon/react";
 
+import { useCommodities } from "@/hooks/useCommodities";
 import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
 import { ROUTE_HOME } from "@/utils/route.utils";
@@ -21,7 +23,7 @@ import toast from "react-hot-toast";
 const commodityExchange = contracts.commodityExchange;
 
 type CommodityListing = {
-	commodityType?: string;
+	tokenAddress?: string;
 	quantity?: number;
 	price?: number;
 	deliveryWindow?: number;
@@ -29,6 +31,7 @@ type CommodityListing = {
 
 export default function Page() {
 	const router = useRouter();
+	const { commodities } = useCommodities();
 	const [listing, setListing] = useState<Partial<CommodityListing>>({});
 
 	const {
@@ -51,6 +54,7 @@ export default function Page() {
 	}, [isSuccess]);
 
 	useEffect(() => {
+		console.log(error);
 		if (error) {
 			toast.error("Failed to list commodity");
 		}
@@ -58,16 +62,18 @@ export default function Page() {
 
 	function handleSubmit() {
 		try {
-			listCommodity([
-				listing.commodityType,
-				listing.quantity,
-				listing.price,
-				listing.deliveryWindow,
-			]);
+			console.log(listing);
+			listCommodity([listing.tokenAddress, 1, 1, 1]);
 		} catch (e) {
 			console.error(e);
 		}
 	}
+
+	const selectedItem = commodities.find(
+		(item) => item.tokenAddress === listing?.tokenAddress,
+	)?.symbol;
+
+	const symbols = commodities?.map((item) => item.symbol);
 
 	return (
 		<Content>
@@ -80,17 +86,20 @@ export default function Page() {
 							handleSubmit();
 						}}
 					>
-						<TextInput
-							id="commodityType"
-							labelText="Commodity Type"
-							value={listing.commodityType}
-							onChange={(e) =>
+						<Dropdown
+							id="default"
+							titleText="Commodity"
+							onChange={(item) =>
 								setListing((prev) => ({
 									...prev,
-									commodityType: e.target.value,
+									tokenAddress: commodities.find(
+										(c) => c.symbol === item?.selectedItem,
+									)?.tokenAddress,
 								}))
 							}
-							required
+							selectedItem={selectedItem}
+							label="Select a commodity"
+							items={symbols}
 						/>
 						<TextInput
 							id="quantity"
@@ -139,7 +148,7 @@ export default function Page() {
 							loading={isSubmitting}
 							disabled={
 								isSubmitting ||
-								!listing.commodityType ||
+								!listing.tokenAddress ||
 								!listing.quantity ||
 								!listing.price ||
 								!listing.deliveryWindow

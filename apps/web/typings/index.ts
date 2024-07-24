@@ -26,7 +26,15 @@ export type Commodity = {
 	isListed: boolean;
 };
 
-export type CommodityListing = {
+export type CommodityListingApproval = {
 	approved: boolean;
 	tokenAddress: string;
+};
+
+export type CommodityListing = {
+	tokenAddress: string;
+	quantity: number;
+	price: number;
+	producer: string;
+	deliveryWindow: number;
 };

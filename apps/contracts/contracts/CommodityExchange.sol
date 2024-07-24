@@ -107,16 +107,16 @@ contract CommodityExchange {
 
 
     function listCommodity(address tokenAddress, int64 quantity, uint256 price, uint256 deliveryWindow) external {
-        require(quantity > 0, "Quantity must be greater than zero");
+        /*require(quantity > 0, "Quantity must be greater than zero");
         require(price > 0, "Price must be greater than zero");
-        require(deliveryWindow > block.timestamp, "Delivery window must be in the future");
+        require(deliveryWindow > block.timestamp, "Delivery window must be in the future");*/
 
         uint256 index = findApprovedCommodityIndex(tokenAddress);
         require(approvedCommodities[index].approved, "Commodity not approved");
 
-        // Request token minting
+        /*// Request token minting
         int64 responseCode = tokenAuthority.requestMinting(tokenAddress, quantity, deliveryWindow, msg.sender);
-        require(responseCode == 0, "Token minting failed");
+        require(responseCode == 0, "Token minting failed");*/
 
         uint256 commodityId = commodityCount;
         commodityCount++;
