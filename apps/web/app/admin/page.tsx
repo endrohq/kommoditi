@@ -3,6 +3,7 @@
 import { CommodityListing } from "@/app/admin/CommodityListing";
 import { CreateCommodityModal } from "@/app/admin/CreateCommodityModal";
 import { Button } from "@/components/button";
+import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { contracts } from "@/lib/constants";
 import {
 	Content,
@@ -23,8 +24,8 @@ const tokenAuthority = contracts.tokenAuthority;
 
 export default function Page() {
 	const [showModal, setShowModal] = useState(false);
-	// Generate a page with IBM carbon/react that fetches data
-	const { data, refetch } = useReadContract({
+
+	const { data, refetch, isLoading } = useReadContract({
 		address: tokenAuthority.address,
 		abi: tokenAuthority.abi,
 		functionName: "getCommodities",
@@ -44,14 +45,30 @@ export default function Page() {
 						<TableHead>
 							<TableRow>
 								<TableHeader>Token</TableHeader>
-								<TableHeader>Address</TableHeader>
-								<TableHeader>Is Exchangable</TableHeader>
+								{!isLoading && tokens?.length > 0 && (
+									<>
+										<TableHeader>Address</TableHeader>
+										<TableHeader>Is Exchangable</TableHeader>
+									</>
+								)}
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{tokens?.map((row) => (
-								<CommodityListing commodity={row} key={row} />
-							))}
+							{isLoading ? (
+								<TableRow>
+									<TableCell>
+										<LoadingOutlined />
+									</TableCell>
+								</TableRow>
+							) : tokens?.length > 0 ? (
+								tokens?.map((row) => (
+									<CommodityListing commodity={row} key={row} />
+								))
+							) : (
+								<TableRow>
+									<TableCell>No commodities found</TableCell>
+								</TableRow>
+							)}
 						</TableBody>
 					</Table>
 				</TableContainer>

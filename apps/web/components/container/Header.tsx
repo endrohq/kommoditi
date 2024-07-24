@@ -6,9 +6,10 @@ import {
 	HeaderContainer,
 	HeaderGlobalAction,
 	HeaderGlobalBar,
+	HeaderMenu,
 	HeaderMenuButton,
 	HeaderMenuItem,
-	HeaderName,
+	HeaderNavigation,
 	HeaderSideNavItems,
 	OverflowMenu,
 	OverflowMenuItem,
@@ -20,7 +21,12 @@ import {
 import { EthAvatar } from "@/components/EthAvatar";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { useAuth } from "@/providers/AuthProvider";
-import { getProfileRoute } from "@/utils/route.utils";
+import {
+	HOME_ROUTE,
+	ROUTE_ADMIN_PAGE,
+	ROUTE_REGISTER_PAGE,
+	getProfileRoute,
+} from "@/utils/route.utils";
 import Link from "next/link";
 import React, { useState } from "react";
 
@@ -50,9 +56,17 @@ export function ContainerHeader() {
 							onClick={onClickSideNavExpand}
 							isActive={isSideNavExpanded}
 						/>
-						<Link href="/" passHref legacyBehavior>
-							<HeaderName prefix="">Hello Future</HeaderName>
+						<Link className="cds--header__name" href={HOME_ROUTE} passHref>
+							Hello Future
 						</Link>
+						<HeaderNavigation aria-label="Hello Future Navigation">
+							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
+								<Link href={ROUTE_REGISTER_PAGE}>Register</Link>
+							</HeaderMenuItem>
+							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
+								<Link href={ROUTE_ADMIN_PAGE}>Admin</Link>
+							</HeaderMenuItem>
+						</HeaderNavigation>
 						<SideNav
 							isPersistent={false}
 							aria-label="Side navigation"
@@ -60,7 +74,7 @@ export function ContainerHeader() {
 						>
 							<SideNavItems>
 								<HeaderSideNavItems>
-									<Link href="/" passHref legacyBehavior>
+									<Link href={HOME_ROUTE} passHref>
 										<HeaderMenuItem>Home</HeaderMenuItem>
 									</Link>
 								</HeaderSideNavItems>

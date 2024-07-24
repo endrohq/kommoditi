@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
 import "./globals.scss";
-import { ContainerHeader } from "@/components/Header";
 import { Container } from "@/components/container";
+import { ContainerHeader } from "@/components/container/Header";
 import { Providers } from "@/providers";
 
 const ibmPlexSans = IBM_Plex_Sans({

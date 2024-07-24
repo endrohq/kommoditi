@@ -1,8 +1,8 @@
 "use client";
 
-import { ContainerHeader } from "@/components/Header";
 import React, { ReactNode } from "react";
 import { Toaster } from "react-hot-toast";
+import { ContainerHeader } from "./Header";
 
 export function Container({ children }: { children: ReactNode }) {
 	return (
