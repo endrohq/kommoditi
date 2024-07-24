@@ -40,9 +40,13 @@ export function CommodityItem({
 
 	return (
 		<TableRow>
-			<TableCell>{commodity.symbol}</TableCell>
-			<TableCell>{getShortenedFormat(commodity.tokenAddress)}</TableCell>
-			<TableCell>
+			<TableCell className="font-medium !text-indigo-900" colSpan={4}>
+				{commodity.symbol}
+			</TableCell>
+			<TableCell colSpan={4}>
+				{getShortenedFormat(commodity.tokenAddress)}
+			</TableCell>
+			<TableCell colSpan={4}>
 				<div className="space-x-1 flex items-center">
 					{isListed ? (
 						<>
@@ -57,23 +61,24 @@ export function CommodityItem({
 							<span className="text-sm font-medium text-red-700">Disabled</span>
 						</>
 					)}
-					<div></div>
 				</div>
 			</TableCell>
-			<TableCell>
-				<div
-					className={clsx("font-medium cursor-pointer text-right !text-sm", {
-						"hover:text-blue-700": !isListed,
-						"hover:text-red-700": isListed,
-					})}
-					onClick={() => writeToContract([commodity.tokenAddress])}
-				>
-					{isSubmitting ? (
+			<TableCell colSpan={8}>
+				{isSubmitting ? (
+					<div className="w-full flex">
 						<LoadingOutlined />
-					) : (
-						<span>{isListed ? "Disable" : "Enable"} Trading</span>
-					)}
-				</div>
+					</div>
+				) : (
+					<div
+						className={clsx("font-medium w-full cursor-pointer !text-sm", {
+							"hover:text-blue-700": !isListed,
+							"hover:text-red-700": isListed,
+						})}
+						onClick={() => writeToContract([commodity.tokenAddress])}
+					>
+						{isListed ? "Disable" : "Enable"} Trading
+					</div>
+				)}
 			</TableCell>
 		</TableRow>
 	);

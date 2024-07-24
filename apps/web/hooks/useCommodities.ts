@@ -31,8 +31,6 @@ export function useCommodities(): useCommoditiesReturnProps {
 		functionName: "getApprovedCommodities",
 	});
 
-	console.log(listingsData);
-
 	const commodities = commoditiesData as Commodity[];
 	const listings = listingsData as CommodityListing[];
 

@@ -59,14 +59,16 @@ contract CommodityExchange {
     }
 
     function approveCommodity(address tokenAddress) external onlyAdmin {
-        // Check if Commodity is already approved
-        require(!isApprovedCommodity(tokenAddress), "Commodity already approved");
-
-        // Add commodity to approved list
-        approvedCommodities.push(ApprovedCommodity({
-            tokenAddress: tokenAddress,
-            approved: true
-        }));
+        uint256 index = findApprovedCommodityIndex(tokenAddress);
+        if (index == approvedCommodities.length) {
+            approvedCommodities.push(ApprovedCommodity({
+                tokenAddress: tokenAddress,
+                approved: true
+            }));
+        } else {
+            // Update the existing commodity's approved status
+            approvedCommodities[index].approved = true;
+        }
 
         emit CommodityApproved(tokenAddress);
     }
@@ -86,11 +88,12 @@ contract CommodityExchange {
                 return i;
             }
         }
-        revert("Commodity not approved");
+        return approvedCommodities.length; // Return length as indicator of not found
     }
 
     function removeCommodity(address tokenAddress) external onlyAdmin {
         uint256 index = findApprovedCommodityIndex(tokenAddress);
+        require(index < approvedCommodities.length && approvedCommodities[index].approved, "Commodity not approved");
         require(approvedCommodities[index].approved, "Commodity not approved");
 
         approvedCommodities[index].approved = false;

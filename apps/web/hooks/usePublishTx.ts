@@ -41,7 +41,6 @@ export function usePublishTx({
 		eventName,
 		onLogs(logs) {
 			logs.forEach((log) => {
-				console.log(hash, log.transactionHash);
 				if (log.transactionHash === hash) {
 					setIsSuccess(true);
 					setIsSubmitting(false);

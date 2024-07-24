@@ -33,12 +33,12 @@ export default function Page() {
 					<Table>
 						<TableHead>
 							<TableRow>
-								<TableHeader>Token</TableHeader>
+								<TableHeader colSpan={4}>Token</TableHeader>
 								{!isLoading && commodities?.length > 0 && (
 									<>
-										<TableHeader>Address</TableHeader>
-										<TableHeader>Trading Status</TableHeader>
-										<TableHeader></TableHeader>
+										<TableHeader colSpan={4}>Address</TableHeader>
+										<TableHeader colSpan={4}>Trading Status</TableHeader>
+										<TableHeader colSpan={8}></TableHeader>
 									</>
 								)}
 							</TableRow>
