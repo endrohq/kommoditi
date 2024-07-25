@@ -62,13 +62,19 @@ export function ContainerHeader() {
 						</Link>
 						<HeaderNavigation aria-label="Hello Future Navigation">
 							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
-								<Link href={ROUTE_REGISTER_PAGE}>Register</Link>
+								<Link className="h-full" href={ROUTE_REGISTER_PAGE}>
+									Register
+								</Link>
 							</HeaderMenuItem>
 							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
-								<Link href={ROUTE_MINT_PAGE}>Mint</Link>
+								<Link className="h-full" href={ROUTE_MINT_PAGE}>
+									Mint
+								</Link>
 							</HeaderMenuItem>
 							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
-								<Link href={ROUTE_ADMIN_PAGE}>Admin</Link>
+								<Link className="h-full" href={ROUTE_ADMIN_PAGE}>
+									Admin
+								</Link>
 							</HeaderMenuItem>
 						</HeaderNavigation>
 						<SideNav

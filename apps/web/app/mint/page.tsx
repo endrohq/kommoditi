@@ -54,7 +54,6 @@ export default function Page() {
 	}, [isSuccess]);
 
 	useEffect(() => {
-		console.log(error);
 		if (error) {
 			toast.error("Failed to list commodity");
 		}
@@ -62,8 +61,12 @@ export default function Page() {
 
 	function handleSubmit() {
 		try {
-			console.log(listing);
-			listCommodity([listing.tokenAddress, 1, 1, 1]);
+			listCommodity([
+				listing.tokenAddress,
+				listing.quantity,
+				listing.price,
+				listing.deliveryWindow,
+			]);
 		} catch (e) {
 			console.error(e);
 		}
@@ -73,7 +76,9 @@ export default function Page() {
 		(item) => item.tokenAddress === listing?.tokenAddress,
 	)?.symbol;
 
-	const symbols = commodities?.map((item) => item.symbol);
+	const symbols = commodities
+		?.filter((item) => item.isListed)
+		?.map((item) => item.symbol);
 
 	return (
 		<Content>

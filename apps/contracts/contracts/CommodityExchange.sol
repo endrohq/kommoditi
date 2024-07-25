@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.24;
 
-import "./IHederaTokenService.sol";
 import "./TokenAuthority.sol";
 
 contract CommodityExchange {
@@ -27,15 +26,11 @@ contract CommodityExchange {
     uint256 public commodityCount;
     ApprovedCommodity[] public approvedCommodities;
 
-    // Create a map for approved commodities
-
-
     event CommodityListed(uint256 indexed commodityId, address indexed tokenAddress, address indexed producer, int64 quantity, uint256 price, uint256 deliveryWindow);
     event CommodityApproved(address indexed tokenAddress);
     event CommodityRemoved(address indexed tokenAddress);
 
-    constructor(address _tokenAuthority) {
-        tokenAuthority = TokenAuthority(_tokenAuthority);
+    constructor() {
         admin = msg.sender;
     }
 
@@ -47,6 +42,10 @@ contract CommodityExchange {
     modifier onlyTokenAuthority() {
         require(msg.sender == address(tokenAuthority), "Only TokenAuthority can perform this action");
         _;
+    }
+
+    function setTokenAuthority(address _tokenAuthority) external onlyAdmin {
+        tokenAuthority = TokenAuthority(_tokenAuthority);
     }
 
     function isApprovedCommodity(address tokenAddress) public view returns (bool) {
@@ -114,9 +113,9 @@ contract CommodityExchange {
         uint256 index = findApprovedCommodityIndex(tokenAddress);
         require(approvedCommodities[index].approved, "Commodity not approved");
 
-        /*// Request token minting
-        int64 responseCode = tokenAuthority.requestMinting(tokenAddress, quantity, deliveryWindow, msg.sender);
-        require(responseCode == 0, "Token minting failed");*/
+        // Request token minting
+        int64 responseCode = tokenAuthority.requestMinting(tokenAddress, quantity, msg.sender);
+        require(responseCode == 0, "Token minting failed");
 
         uint256 commodityId = commodityCount;
         commodityCount++;

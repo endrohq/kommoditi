@@ -1,10 +1,7 @@
 "use client";
 
-import { CommodityItem } from "@/app/admin/CommodityItem";
-import { ButtonWithAuthentication } from "@/components/button/ButtonWithAuthentication";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { contracts } from "@/lib/constants";
-import { useAuth } from "@/providers/AuthProvider";
 import { CommodityListing } from "@/typings";
 import { formatNumber } from "@/utils/number.utils";
 import {
@@ -18,13 +15,11 @@ import {
 	TableRow,
 } from "@carbon/react";
 import React from "react";
-import { useReadContract, useSendTransaction } from "wagmi";
+import { useReadContract } from "wagmi";
 
 const { commodityExchange } = contracts;
 
 export function HomePageLayout() {
-	const { account } = useAuth();
-	const { sendTransaction } = useSendTransaction();
 	const { data: commoditiesData, isLoading } = useReadContract({
 		address: commodityExchange.address,
 		abi: commodityExchange.abi,
@@ -32,8 +27,6 @@ export function HomePageLayout() {
 	});
 
 	const data = commoditiesData as CommodityListing[];
-
-	console.log(data);
 
 	return (
 		<Content>

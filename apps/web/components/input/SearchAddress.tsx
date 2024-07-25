@@ -32,7 +32,7 @@ export function SearchAddress({
 		if (data.features && data.features.length > 0) {
 			const results: LocationItem[] = data.features.map((feature: any) => ({
 				id: feature.id,
-				text: feature.place_name,
+				address: feature.place_name,
 				lng: feature.center[0],
 				lat: feature.center[1],
 				h3Index: latLngToCell(feature.center[1], feature.center[0], 9),

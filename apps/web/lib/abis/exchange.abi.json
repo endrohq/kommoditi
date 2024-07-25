@@ -1,12 +1,6 @@
 [
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_tokenAuthority",
-				"type": "address"
-			}
-		],
+		"inputs": [],
 		"stateMutability": "nonpayable",
 		"type": "constructor"
 	},
@@ -363,6 +357,19 @@
 			}
 		],
 		"name": "removeCommodity",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_tokenAuthority",
+				"type": "address"
+			}
+		],
+		"name": "setTokenAuthority",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"

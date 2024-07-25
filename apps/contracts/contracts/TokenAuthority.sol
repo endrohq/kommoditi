@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.26;
+pragma solidity ^0.8.24;
 
 import "./IHederaTokenService.sol";
+
+import "hardhat/console.sol";
 
 contract TokenAuthority {
 
@@ -17,6 +19,11 @@ contract TokenAuthority {
     mapping(address => bool) public authorizedProducers;
     mapping(string => address) public commodityTokens;
     string[] public commoditySymbols;
+
+    uint64 private initialTotalSupply = 0;
+    uint64 private maxSupply = 0;
+    uint32 private decimals = 0;
+    bool private freezeDefaultStatus = false;
 
     event ProducerAuthorized(address indexed producer);
     event ProducerRevoked(address indexed producer);
@@ -50,44 +57,48 @@ contract TokenAuthority {
     }
 
     function createCommodity(string memory name, string memory symbol) external {
-        require(commodityTokens[symbol] == address(0), "Token for this commodity already exists");
+        require(commodityTokens[symbol] == address(0), "Commodity already exists");
+
+        IHederaTokenService.Expiry memory expiry = IHederaTokenService.Expiry(
+            0, msg.sender, 0
+        );
 
         IHederaTokenService.HederaToken memory token = IHederaTokenService.HederaToken({
             name: name,
             symbol: symbol,
-            treasury: address(this),
+            treasury: commodityExchange,
             memo: string(abi.encodePacked("Commodity Token for ", symbol)),
-            supplyType: true, // Infinite supply
-            maxSupply: 0, // No maximum supply
-            freezeDefault: false,
-            expiry: IHederaTokenService.Expiry({
-            second: 0,
-            autoRenewPeriod: 0
-        })
+            tokenSupplyType: true, // Infinite supply
+            maxSupply: 0,
+            freezeDefault: false, // Assuming freezeDefaultStatus is defined elsewhere
+            expiry: expiry
         });
 
-        (int64 responseCode, address createdToken) = tokenService.createFungibleToken(token, 0, 0, new IHederaTokenService.TokenKey[](0));
+        (int responseCode, address tokenAddress) = tokenService.createFungibleToken(token, initialTotalSupply, decimals);
+
         require(responseCode == 0, "Token creation failed");
 
-        commodityTokens[symbol] = createdToken;
+        commodityTokens[symbol] = tokenAddress;
         commoditySymbols.push(symbol);
-        emit CommodityCreated(symbol, createdToken);
+
+        emit CommodityCreated(symbol, tokenAddress);
     }
 
-    function requestMinting(address tokenAddress, int64 amount, uint256 deliveryWindow, address producer) external onlyCommodityExchange returns (int64 responseCode) {
-        require(authorizedProducers[producer], "Producer is not authorized");
+    function requestMinting(address tokenAddress, int64 amount, address producer) external onlyCommodityExchange returns (int64 responseCode) {
         require(tokenAddress != address(0), "Token for this commodity does not exist");
 
-        // Mint new tokens
-        (responseCode,, ) = tokenService.mintToken(tokenAddress, amount, new bytes[](0));
+        // Step 1: Ensure the producer is associated with the token
+        (responseCode) = tokenService.associateToken(producer, tokenAddress);
+        require(responseCode == 0 || responseCode == 4, "Producer token association failed"); // 4 is ACCOUNT_ALREADY_ASSOCIATED
+
+        // Step 2: Mint new tokens (this adds them to the Treasury)
+        (responseCode, , ) = tokenService.mintToken(tokenAddress, amount, new bytes[](0));
         require(responseCode == 0, "Token minting failed");
 
-        // Transfer the minted tokens to the producer
-        (responseCode) = tokenService.transferToken(tokenAddress, address(this), producer, amount);
-        require(responseCode == 0, "Token transfer to producer failed");
+        (responseCode) = tokenService.transferToken(tokenAddress, commodityExchange, producer, amount);
+        require(responseCode == 0, "Token transfer from Treasury to producer failed");
 
         emit CommodityMinted(tokenAddress, producer, amount);
-
         return responseCode;
     }
 
