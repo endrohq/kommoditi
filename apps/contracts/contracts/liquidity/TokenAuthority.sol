@@ -102,6 +102,8 @@ contract TokenAuthority {
         return responseCode;
     }
 
+
+
     function getCommodityTypes() external view returns (string[] memory) {
         return commoditySymbols;
     }

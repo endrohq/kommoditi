@@ -8,9 +8,7 @@ contract HederaTokenService is IHederaTokenService {
     mapping(address => uint64) public tokenSupply;
     mapping(address => mapping(address => uint64)) public tokenBalances;
     mapping(address => mapping(address => bool)) public tokenAssociations;
-    mapping(address => mapping(address => mapping(address => uint256))) public allowances;
-    mapping(address => mapping(uint256 => address)) public nftApprovals;
-    mapping(address => mapping(address => mapping(address => bool))) public operatorApprovals;
+    mapping(address => TokenInfo) public tokenInfos;
 
     uint256 private tokenCounter;
 
@@ -28,6 +26,17 @@ contract HederaTokenService is IHederaTokenService {
         tokens[tokenAddress] = token;
         tokenSupply[tokenAddress] = initialTotalSupply;
         tokenBalances[tokenAddress][token.treasury] = initialTotalSupply;
+
+        // Create and store TokenInfo
+        TokenInfo memory newTokenInfo = TokenInfo({
+            token: token,
+            totalSupply: int64(initialTotalSupply),
+            deleted: false,
+            defaultKycStatus: false,
+            pauseStatus: false
+        });
+        tokenInfos[tokenAddress] = newTokenInfo;
+
         return (0, tokenAddress); // 0 indicates success
     }
 
@@ -40,6 +49,10 @@ contract HederaTokenService is IHederaTokenService {
         tokenSupply[token] += uint64(amount);
         tokenBalances[token][tokens[token].treasury] += uint64(amount);
         newTotalSupply = tokenSupply[token];
+
+        // Update TokenInfo
+        tokenInfos[token].totalSupply += amount;
+
         return (0, newTotalSupply, new int64[](0)); // 0 indicates success
     }
 
@@ -56,16 +69,6 @@ contract HederaTokenService is IHederaTokenService {
         return 0; // 0 indicates success
     }
 
-    function transferNFT(
-        address token,
-        address sender,
-        address receiver,
-        int64 serialNumber
-    ) external override returns (int64 responseCode) {
-        // This is a mock, so we don't actually implement NFT logic
-        return 0; // 0 indicates success
-    }
-
     function associateToken(
         address account,
         address token
@@ -74,14 +77,9 @@ contract HederaTokenService is IHederaTokenService {
         return 0; // 0 indicates success
     }
 
-    function allowance(address token, address owner, address spender) external view returns (int64 responseCode, uint256 amount) {
-        return (0, allowances[token][owner][spender]);
+    function getTokenInfo(address token) external view override returns (int64 responseCode, TokenInfo memory tokenInfo) {
+        require(address(tokens[token].treasury) != address(0), "Token does not exist");
+        return (0, tokenInfos[token]); // 0 indicates success
     }
 
-    // Implement other functions as needed...
-
-    // Helper function to get token balance (not part of the interface)
-    function getTokenBalance(address token, address account) external view returns (uint64) {
-        return tokenBalances[token][account];
-    }
 }
