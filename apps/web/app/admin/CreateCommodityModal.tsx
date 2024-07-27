@@ -17,11 +17,16 @@ interface CreateCommodityModalProps {
 	onCancel(): void;
 }
 
+interface CommodityInput {
+	name?: string;
+	symbol?: string;
+}
+
 export function CreateCommodityModal({
 	onSuccess,
 	onCancel,
 }: CreateCommodityModalProps) {
-	const [commodity, setCommodity] = useState<Partial<CommodityToken>>({});
+	const [commodity, setCommodity] = useState<CommodityInput>({});
 	const {
 		writeToContract: registerCommodity,
 		isSubmitting,

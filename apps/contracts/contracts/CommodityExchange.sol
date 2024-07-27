@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import "./liquidity/TokenAuthority.sol";
 import "./liquidity/CommodityFactory.sol";
 import "./liquidity/CommodityPool.sol";
+import "hardhat/console.sol";
 
 contract CommodityExchange {
 
@@ -12,11 +13,13 @@ contract CommodityExchange {
     event CommodityListed(uint256 indexed commodityId, address indexed tokenAddress, address indexed producer, int64 quantity, uint256 price, uint256 deliveryWindow);
     event CommodityApproved(address indexed tokenAddress);
     event CommodityRemoved(address indexed tokenAddress);
+    event CommodityLPCreated(address indexed poolAddress);
 
     CommodityFactory public factory;
     TokenAuthority public tokenAuthority;
 
     constructor(address _factory) {
+        admin = msg.sender;
         factory = CommodityFactory(_factory);
     }
 
@@ -39,7 +42,7 @@ contract CommodityExchange {
         require(quantity > 0, "Quantity must be greater than zero");
         require(price > 0, "Price must be greater than zero");
 
-        require(tokenAuthority.isApprovedToken(tokenAddress), "Token not approved for trading");
+        // require(tokenAuthority.isApprovedToken(tokenAddress), "Token not approved for trading");
         address poolAddress = factory.commodityPoolsByToken(tokenAddress);
         require(poolAddress != address(0), "No pool exists for this commodity");
 
@@ -48,7 +51,7 @@ contract CommodityExchange {
     }
 
     function purchaseCommodity(address tokenAddress, int64 quantity, uint256 maxPrice) external payable {
-        require(tokenAuthority.isApprovedToken(tokenAddress), "Token not approved for trading");
+        // require(tokenAuthority.isApprovedToken(tokenAddress), "Token not approved for trading");
         address poolAddress = factory.commodityPoolsByToken(tokenAddress);
         require(poolAddress != address(0), "No pool exists for this commodity");
 
@@ -70,12 +73,6 @@ contract CommodityExchange {
 
         CommodityPool pool = CommodityPool(poolAddress);
         pool.removeLiquidity(msg.sender, amount);
-    }
-
-    function createCommodityLP(address tokenAddress) external onlyAdmin {
-        require(tokenAuthority.isApprovedToken(tokenAddress), "Token not approved for trading");
-
-        factory.createPool(tokenAddress, address(this));
     }
 
     /*function isApprovedCommodity(address tokenAddress) public view returns (bool) {

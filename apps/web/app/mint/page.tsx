@@ -77,7 +77,7 @@ export default function Page() {
 	)?.symbol;
 
 	const symbols = commodities
-		?.filter((item) => item.isListed)
+		?.filter((item) => item.isTradable)
 		?.map((item) => item.symbol);
 
 	return (

@@ -1,6 +1,7 @@
 "use client";
 
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
+import { TradingStatus } from "@/components/status";
 import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
 import { CommodityToken } from "@/typings";
@@ -17,7 +18,7 @@ interface CommodityListingProps {
 	onListingChange(): void;
 }
 
-const { commodityExchange } = contracts;
+const { commodityExchange, commodityFactory } = contracts;
 
 export function CommodityItem({
 	commodity,
@@ -25,10 +26,10 @@ export function CommodityItem({
 	isListed,
 }: CommodityListingProps) {
 	const { writeToContract, isSuccess, isSubmitting } = usePublishTx({
-		address: commodityExchange.address,
-		abi: commodityExchange.abi,
-		functionName: isListed ? "removeCommodity" : "approveCommodity",
-		eventName: isListed ? "CommodityRemoved" : "CommodityApproved",
+		address: commodityFactory.address,
+		abi: commodityFactory.abi,
+		functionName: "createPool",
+		eventName: "PoolCreated",
 	});
 
 	useEffect(() => {
@@ -47,21 +48,7 @@ export function CommodityItem({
 				{getShortenedFormat(commodity.tokenAddress)}
 			</TableCell>
 			<TableCell colSpan={4}>
-				<div className="space-x-1 flex items-center">
-					{isListed ? (
-						<>
-							<CheckmarkFilled className="text-green-700" />
-							<span className="text-sm font-medium text-green-700">
-								Tradable
-							</span>
-						</>
-					) : (
-						<>
-							<WarningFilled className="text-red-700" />
-							<span className="text-sm font-medium text-red-700">Disabled</span>
-						</>
-					)}
-				</div>
+				{getShortenedFormat(commodity.poolAddress) || "-"}
 			</TableCell>
 			<TableCell colSpan={8}>
 				{isSubmitting ? (
@@ -69,7 +56,9 @@ export function CommodityItem({
 						<LoadingOutlined />
 					</div>
 				) : (
-					<div
+					!commodity?.poolAddress && (
+						<>
+							{/*<div
 						className={clsx("font-medium w-full cursor-pointer !text-sm", {
 							"hover:text-blue-700": !isListed,
 							"hover:text-red-700": isListed,
@@ -77,7 +66,18 @@ export function CommodityItem({
 						onClick={() => writeToContract([commodity.tokenAddress])}
 					>
 						{isListed ? "Disable" : "Enable"} Trading
-					</div>
+					</div>*/}
+							<div
+								className={clsx("font-medium w-full cursor-pointer !text-sm", {
+									"hover:text-blue-700": !isListed,
+									"hover:text-red-700": isListed,
+								})}
+								onClick={() => writeToContract([commodity.tokenAddress])}
+							>
+								Create Liquidity Pool
+							</div>
+						</>
+					)
 				)}
 			</TableCell>
 		</TableRow>

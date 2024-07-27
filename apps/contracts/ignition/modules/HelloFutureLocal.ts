@@ -36,6 +36,8 @@ const HelloFutureModule = buildModule("HelloFutureModuleLocal", (m) => {
 
   // Call setAuthority on the CommodityExchange contract
   m.call(CommodityExchange, "setTokenAuthority", [TokenAuthority]);
+  m.call(CommodityFactory, "setTokenAuthority", [TokenAuthority]);
+  m.call(CommodityFactory, "setCommodityExchange", [CommodityExchange]);
 
 
   return {

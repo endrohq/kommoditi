@@ -36,8 +36,8 @@ export default function Page() {
 								<TableHeader colSpan={4}>Token</TableHeader>
 								{!isLoading && commodities?.length > 0 && (
 									<>
-										<TableHeader colSpan={4}>Address</TableHeader>
-										<TableHeader colSpan={4}>Trading Status</TableHeader>
+										<TableHeader colSpan={4}>Token Address</TableHeader>
+										<TableHeader colSpan={4}>LP Address</TableHeader>
 										<TableHeader colSpan={8}></TableHeader>
 									</>
 								)}

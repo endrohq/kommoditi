@@ -69,6 +69,19 @@
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "commodityExchange",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -93,11 +106,6 @@
 				"internalType": "address",
 				"name": "tokenAddress",
 				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "_commodityExchange",
-				"type": "address"
 			}
 		],
 		"name": "createPool",
@@ -110,12 +118,37 @@
 		"name": "getAllPools",
 		"outputs": [
 			{
-				"internalType": "address[]",
+				"components": [
+					{
+						"internalType": "address",
+						"name": "tokenAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "poolAddress",
+						"type": "address"
+					}
+				],
+				"internalType": "struct CommodityFactory.Pool[]",
 				"name": "",
-				"type": "address[]"
+				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_commodityExchange",
+				"type": "address"
+			}
+		],
+		"name": "setCommodityExchange",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{

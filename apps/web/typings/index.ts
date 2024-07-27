@@ -52,7 +52,12 @@ export type GetCommodityResponse = {
 	tokenAddress: string;
 };
 
-export type CommodityToken = HederaToken & {
-	isListed?: boolean;
+export type GetAllPoolsResponse = {
+	poolAddress: string;
 	tokenAddress: string;
+};
+
+export type CommodityToken = HederaToken & {
+	tokenAddress: string;
+	poolAddress?: string;
 };

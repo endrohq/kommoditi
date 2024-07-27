@@ -1,8 +1,13 @@
 import { contracts } from "@/lib/constants";
-import { CommodityToken, GetCommodityResponse, HederaToken } from "@/typings";
+import {
+	CommodityToken,
+	GetAllPoolsResponse,
+	GetCommodityResponse,
+	HederaToken,
+} from "@/typings";
 import { useReadContract } from "wagmi";
 
-const { tokenAuthority, commodityExchange } = contracts;
+const { tokenAuthority, commodityExchange, commodityFactory } = contracts;
 
 interface useCommoditiesReturnProps {
 	commodities: CommodityToken[];
@@ -14,34 +19,37 @@ export function useCommodities(): useCommoditiesReturnProps {
 	const {
 		data: commoditiesData,
 		refetch: refetchCommodities,
-		isLoading,
+		isLoading: isLoadingCommodityData,
 	} = useReadContract({
 		address: tokenAuthority.address,
 		abi: tokenAuthority.abi,
 		functionName: "getCommodities",
 	});
 
-	/*const {
-		data: listingsData,
-		refetch: refetchListings,
-		isLoading: isLoadingListings,
+	const {
+		data: poolData,
+		refetch: refetchPoolData,
+		isLoading: isLoadingPoolData,
 	} = useReadContract({
-		address: commodityExchange.address,
-		abi: commodityExchange.abi,
-		functionName: "getApprovedCommodities",
-	});*/
+		address: commodityFactory.address,
+		abi: commodityFactory.abi,
+		functionName: "getAllPools",
+	});
 
 	const tokens = commoditiesData as GetCommodityResponse[];
-	// const listings = listingsData as CommodityListingApproval[];
+	const pools = poolData as GetAllPoolsResponse[];
 
 	return {
 		commodities: (tokens || [])?.map(({ tokenInfo, tokenAddress }) => ({
 			...tokenInfo,
 			tokenAddress,
+			poolAddress: pools?.find((pool) => pool.tokenAddress === tokenAddress)
+				?.poolAddress,
 		})),
-		isLoading,
+		isLoading: isLoadingCommodityData || isLoadingPoolData,
 		refetch: () => {
 			refetchCommodities();
+			refetchPoolData();
 		},
 	};
 }
