@@ -20,7 +20,7 @@ import React, { useState } from "react";
 export default function Page() {
 	const [showModal, setShowModal] = useState(false);
 
-	const { isLoading, commodities, refetch } = useCommodities();
+	const { isLoading, commodities, refetch } = useCommodities({});
 
 	return (
 		<>

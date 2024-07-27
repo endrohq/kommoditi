@@ -18,7 +18,7 @@ interface CommodityListingProps {
 	onListingChange(): void;
 }
 
-const { commodityExchange, commodityFactory } = contracts;
+const { commodityFactory } = contracts;
 
 export function CommodityItem({
 	commodity,

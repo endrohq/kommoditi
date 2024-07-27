@@ -24,20 +24,12 @@ export type CommodityListingApproval = {
 	tokenAddress: string;
 };
 
-export type CommodityListing = {
-	tokenAddress: string;
-	quantity: number;
-	price: number;
-	producer: string;
-	deliveryWindow: number;
-};
-
 export type HederaToken = {
 	totalSymbol: number;
 	token: {
 		name: string;
 		symbol: string;
-		treasury: string;
+		treasury: EthAddress;
 		memo: string;
 		tokenSupplyType: boolean;
 	};
@@ -49,15 +41,15 @@ export type HederaToken = {
 
 export type GetCommodityResponse = {
 	tokenInfo: HederaToken;
-	tokenAddress: string;
+	tokenAddress: EthAddress;
 };
 
 export type GetAllPoolsResponse = {
-	poolAddress: string;
-	tokenAddress: string;
+	poolAddress: EthAddress;
+	tokenAddress: EthAddress;
 };
 
 export type CommodityToken = HederaToken & {
-	tokenAddress: string;
-	poolAddress?: string;
+	tokenAddress: EthAddress;
+	poolAddress?: EthAddress;
 };

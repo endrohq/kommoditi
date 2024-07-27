@@ -1,27 +1,22 @@
 import { contracts } from "@/lib/constants";
-import {
-	CommodityToken,
-	GetAllPoolsResponse,
-	GetCommodityResponse,
-} from "@/typings";
-import { parseCommodities } from "@/utils/parser.utils";
+import { CommodityToken, GetAllPoolsResponse, HederaToken } from "@/typings";
 import { useReadContract } from "wagmi";
 
-const { tokenAuthority, commodityExchange, commodityFactory } = contracts;
+const { tokenAuthority, commodityFactory } = contracts;
 
-interface useCommoditiesReturnProps {
-	commodities: CommodityToken[];
+interface useCommodityReturnProps {
+	commodity?: CommodityToken;
 	isLoading: boolean;
 	refetch(): void;
 }
 
-interface UseCommoditiesProps {
-	isTradable?: boolean;
+interface UseCommodityProps {
+	address: string;
 }
 
-export function useCommodities({
-	isTradable,
-}: UseCommoditiesProps): useCommoditiesReturnProps {
+export function useCommodity({
+	address,
+}: UseCommodityProps): useCommodityReturnProps {
 	const {
 		data: commoditiesData,
 		refetch: refetchCommodities,
@@ -29,7 +24,8 @@ export function useCommodities({
 	} = useReadContract({
 		address: tokenAuthority.address,
 		abi: tokenAuthority.abi,
-		functionName: "getCommodities",
+		functionName: "getTokenInfo",
+		args: [address],
 	});
 
 	const {
@@ -39,17 +35,25 @@ export function useCommodities({
 	} = useReadContract({
 		address: commodityFactory.address,
 		abi: commodityFactory.abi,
-		functionName: "getAllPools",
+		functionName: "getPoolByToken",
+		args: [address],
 	});
 
-	const tokens = commoditiesData as GetCommodityResponse[];
-	const pools = poolData as GetAllPoolsResponse[];
+	const token = commoditiesData as HederaToken;
+	const pool = poolData as string;
+
+	const commodity =
+		token && pool
+			? ({
+					...token,
+					tokenAddress: address,
+					poolAddress: poolData,
+				} as CommodityToken)
+			: undefined;
 
 	// Filter out commodities that are not tradable (should not have pool address) if isTradable is true
 	return {
-		commodities: parseCommodities(tokens, pools)?.filter((token) =>
-			isTradable ? token.poolAddress : true,
-		),
+		commodity,
 		isLoading: isLoadingCommodityData || isLoadingPoolData,
 		refetch: () => {
 			refetchCommodities();

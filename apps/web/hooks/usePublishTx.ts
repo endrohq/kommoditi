@@ -49,7 +49,7 @@ export function usePublishTx({
 		},
 	});
 
-	function writeToContract(args: unknown[]) {
+	function writeToContract(args: unknown[], value?: bigint) {
 		if (isSubmitting) return;
 		setIsSubmitting(true);
 		try {
@@ -58,6 +58,7 @@ export function usePublishTx({
 				abi,
 				functionName,
 				args,
+				value,
 			});
 		} catch (e) {
 			console.error(e);

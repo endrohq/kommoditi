@@ -70,4 +70,8 @@ contract CommodityFactory {
         return pools;
     }
 
+    function getPoolByToken(address tokenAddress) external view returns (address) {
+        return commodityPoolsByToken[tokenAddress];
+    }
+
 }
