@@ -1,6 +1,7 @@
 "use client";
 
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
+import { useCommodityPools } from "@/hooks/useCommodityPools";
 import { contracts } from "@/lib/constants";
 import { formatNumber } from "@/utils/number.utils";
 import {
@@ -14,11 +15,9 @@ import {
 	TableRow,
 } from "@carbon/react";
 import React from "react";
-import {useCommodityPools} from "@/hooks/useCommodityPools";
 
 export function HomePageLayout() {
-
-	const { pools, isLoading} = useCommodityPools();
+	const { pools, isLoading } = useCommodityPools();
 
 	return (
 		<Content>
@@ -42,7 +41,7 @@ export function HomePageLayout() {
 							)}
 						</TableRow>
 					</TableHead>
-					<TableBody>
+					{/*<TableBody>
 						{isLoading ? (
 							<TableRow>
 								<TableCell>
@@ -65,7 +64,7 @@ export function HomePageLayout() {
 								<TableCell>No commodities found</TableCell>
 							</TableRow>
 						)}
-					</TableBody>
+					</TableBody>*/}
 				</Table>
 			</TableContainer>
 		</Content>

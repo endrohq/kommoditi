@@ -4,7 +4,7 @@ import { Button } from "@/components/button";
 import { Modal } from "@/components/modal";
 import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
-import { Commodity } from "@/typings";
+import { CommodityToken } from "@/typings";
 import { Content, Form, TextInput } from "@carbon/react";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -21,7 +21,7 @@ export function CreateCommodityModal({
 	onSuccess,
 	onCancel,
 }: CreateCommodityModalProps) {
-	const [commodity, setCommodity] = useState<Partial<Commodity>>({});
+	const [commodity, setCommodity] = useState<Partial<CommodityToken>>({});
 	const {
 		writeToContract: registerCommodity,
 		isSubmitting,

@@ -53,9 +53,9 @@ export default function Page() {
 							) : commodities?.length > 0 ? (
 								commodities?.map((row) => (
 									<CommodityItem
-										isListed={row.isListed}
+										isListed={false}
 										commodity={row}
-										key={row.tokenAddress}
+										key={row.token?.symbol}
 										onListingChange={refetch}
 									/>
 								))

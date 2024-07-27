@@ -20,18 +20,37 @@
 		"inputs": [
 			{
 				"indexed": true,
-				"internalType": "string",
-				"name": "commoditySymbol",
-				"type": "string"
-			},
-			{
-				"indexed": false,
 				"internalType": "address",
 				"name": "tokenAddress",
 				"type": "address"
 			}
 		],
-		"name": "CommodityCreated",
+		"name": "TokenApproved",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "symbol",
+				"type": "string"
+			}
+		],
+		"name": "TokenCreated",
 		"type": "event"
 	},
 	{
@@ -56,7 +75,7 @@
 				"type": "int64"
 			}
 		],
-		"name": "CommodityMinted",
+		"name": "TokenMinted",
 		"type": "event"
 	},
 	{
@@ -65,24 +84,11 @@
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "producer",
+				"name": "tokenAddress",
 				"type": "address"
 			}
 		],
-		"name": "ProducerAuthorized",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "producer",
-				"type": "address"
-			}
-		],
-		"name": "ProducerRevoked",
+		"name": "TokenRevoked",
 		"type": "event"
 	},
 	{
@@ -102,11 +108,11 @@
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "producer",
+				"name": "tokenAddress",
 				"type": "address"
 			}
 		],
-		"name": "authorizeProducer",
+		"name": "approveToken",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -119,7 +125,7 @@
 				"type": "address"
 			}
 		],
-		"name": "authorizedProducers",
+		"name": "approvedTokens",
 		"outputs": [
 			{
 				"internalType": "bool",
@@ -133,44 +139,6 @@
 	{
 		"inputs": [],
 		"name": "commodityExchange",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "commoditySymbols",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			}
-		],
-		"name": "commodityTokens",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -200,27 +168,14 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "getCommodities",
-		"outputs": [
-			{
-				"internalType": "address[]",
-				"name": "",
-				"type": "address[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "commoditySymbol",
-				"type": "string"
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
 			}
 		],
-		"name": "getCommodityToken",
+		"name": "createdTokens",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -233,22 +188,108 @@
 	},
 	{
 		"inputs": [],
-		"name": "getCommodityTokens",
+		"name": "getCommodities",
 		"outputs": [
 			{
 				"components": [
 					{
-						"internalType": "string",
-						"name": "symbol",
-						"type": "string"
-					},
-					{
 						"internalType": "address",
 						"name": "tokenAddress",
 						"type": "address"
+					},
+					{
+						"components": [
+							{
+								"components": [
+									{
+										"internalType": "string",
+										"name": "name",
+										"type": "string"
+									},
+									{
+										"internalType": "string",
+										"name": "symbol",
+										"type": "string"
+									},
+									{
+										"internalType": "address",
+										"name": "treasury",
+										"type": "address"
+									},
+									{
+										"internalType": "string",
+										"name": "memo",
+										"type": "string"
+									},
+									{
+										"internalType": "bool",
+										"name": "tokenSupplyType",
+										"type": "bool"
+									},
+									{
+										"internalType": "uint32",
+										"name": "maxSupply",
+										"type": "uint32"
+									},
+									{
+										"internalType": "bool",
+										"name": "freezeDefault",
+										"type": "bool"
+									},
+									{
+										"components": [
+											{
+												"internalType": "int64",
+												"name": "second",
+												"type": "int64"
+											},
+											{
+												"internalType": "address",
+												"name": "autoRenewAccount",
+												"type": "address"
+											},
+											{
+												"internalType": "int64",
+												"name": "autoRenewPeriod",
+												"type": "int64"
+											}
+										],
+										"internalType": "struct IHederaTokenService.Expiry",
+										"name": "expiry",
+										"type": "tuple"
+									}
+								],
+								"internalType": "struct IHederaTokenService.HederaToken",
+								"name": "token",
+								"type": "tuple"
+							},
+							{
+								"internalType": "int64",
+								"name": "totalSupply",
+								"type": "int64"
+							},
+							{
+								"internalType": "bool",
+								"name": "deleted",
+								"type": "bool"
+							},
+							{
+								"internalType": "bool",
+								"name": "defaultKycStatus",
+								"type": "bool"
+							},
+							{
+								"internalType": "bool",
+								"name": "pauseStatus",
+								"type": "bool"
+							}
+						],
+						"internalType": "struct IHederaTokenService.TokenInfo",
+						"name": "tokenInfo",
+						"type": "tuple"
 					}
 				],
-				"internalType": "struct TokenAuthority.CommodityToken[]",
+				"internalType": "struct TokenAuthority.CommodityInfo[]",
 				"name": "",
 				"type": "tuple[]"
 			}
@@ -257,13 +298,124 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "getCommodityTypes",
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			}
+		],
+		"name": "getTokenInfo",
 		"outputs": [
 			{
-				"internalType": "string[]",
+				"components": [
+					{
+						"components": [
+							{
+								"internalType": "string",
+								"name": "name",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "symbol",
+								"type": "string"
+							},
+							{
+								"internalType": "address",
+								"name": "treasury",
+								"type": "address"
+							},
+							{
+								"internalType": "string",
+								"name": "memo",
+								"type": "string"
+							},
+							{
+								"internalType": "bool",
+								"name": "tokenSupplyType",
+								"type": "bool"
+							},
+							{
+								"internalType": "uint32",
+								"name": "maxSupply",
+								"type": "uint32"
+							},
+							{
+								"internalType": "bool",
+								"name": "freezeDefault",
+								"type": "bool"
+							},
+							{
+								"components": [
+									{
+										"internalType": "int64",
+										"name": "second",
+										"type": "int64"
+									},
+									{
+										"internalType": "address",
+										"name": "autoRenewAccount",
+										"type": "address"
+									},
+									{
+										"internalType": "int64",
+										"name": "autoRenewPeriod",
+										"type": "int64"
+									}
+								],
+								"internalType": "struct IHederaTokenService.Expiry",
+								"name": "expiry",
+								"type": "tuple"
+							}
+						],
+						"internalType": "struct IHederaTokenService.HederaToken",
+						"name": "token",
+						"type": "tuple"
+					},
+					{
+						"internalType": "int64",
+						"name": "totalSupply",
+						"type": "int64"
+					},
+					{
+						"internalType": "bool",
+						"name": "deleted",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "defaultKycStatus",
+						"type": "bool"
+					},
+					{
+						"internalType": "bool",
+						"name": "pauseStatus",
+						"type": "bool"
+					}
+				],
+				"internalType": "struct IHederaTokenService.TokenInfo",
 				"name": "",
-				"type": "string[]"
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			}
+		],
+		"name": "isApprovedToken",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
 			}
 		],
 		"stateMutability": "view",
@@ -280,11 +432,6 @@
 				"internalType": "int64",
 				"name": "amount",
 				"type": "int64"
-			},
-			{
-				"internalType": "uint256",
-				"name": "deliveryWindow",
-				"type": "uint256"
 			},
 			{
 				"internalType": "address",
@@ -307,26 +454,41 @@
 		"inputs": [
 			{
 				"internalType": "address",
-				"name": "producer",
+				"name": "tokenAddress",
 				"type": "address"
 			}
 		],
-		"name": "revokeProducer",
+		"name": "revokeToken",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "tokenService",
-		"outputs": [
+		"inputs": [
 			{
-				"internalType": "contract IHederaTokenService",
-				"name": "",
+				"internalType": "address",
+				"name": "tokenAddress",
 				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "int64",
+				"name": "amount",
+				"type": "int64"
 			}
 		],
-		"stateMutability": "view",
+		"name": "transferToken",
+		"outputs": [],
+		"stateMutability": "nonpayable",
 		"type": "function"
 	}
 ]

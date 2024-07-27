@@ -1,8 +1,8 @@
 "use client";
 
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
+import { useCommodityPools } from "@/hooks/useCommodityPools";
 import { contracts } from "@/lib/constants";
-import { CommodityListing } from "@/typings";
 import { formatNumber } from "@/utils/number.utils";
 import {
 	Content,
@@ -15,18 +15,9 @@ import {
 	TableRow,
 } from "@carbon/react";
 import React from "react";
-import { useReadContract } from "wagmi";
-
-const { commodityExchange } = contracts;
 
 export function HomePageLayout() {
-	const { data: commoditiesData, isLoading } = useReadContract({
-		address: commodityExchange.address,
-		abi: commodityExchange.abi,
-		functionName: "getListedCommodities",
-	});
-
-	const data = commoditiesData as CommodityListing[];
+	const { pools, isLoading } = useCommodityPools();
 
 	return (
 		<Content>
@@ -41,13 +32,6 @@ export function HomePageLayout() {
 					<TableHead>
 						<TableRow>
 							<TableHeader colSpan={4}>Entry</TableHeader>
-							{!isLoading && data?.length > 0 && (
-								<>
-									<TableHeader colSpan={4}>Price</TableHeader>
-									<TableHeader colSpan={4}>Producer</TableHeader>
-									<TableHeader colSpan={4}>Token Address</TableHeader>
-								</>
-							)}
 						</TableRow>
 					</TableHead>
 					<TableBody>
@@ -57,20 +41,15 @@ export function HomePageLayout() {
 									<LoadingOutlined />
 								</TableCell>
 							</TableRow>
-						) : data?.length > 0 ? (
-							data?.map((row) => (
+						) : pools?.length > 0 ? (
+							pools?.map((row) => (
 								<TableRow>
-									<TableCell colSpan={4}>
-										{formatNumber(row.quantity)}
-									</TableCell>
-									<TableCell colSpan={4}>{formatNumber(row.price)}</TableCell>
-									<TableCell colSpan={4}>{row.producer}</TableCell>
-									<TableCell colSpan={4}>{row.tokenAddress}</TableCell>
+									<TableCell colSpan={4}>{row}</TableCell>
 								</TableRow>
 							))
 						) : (
 							<TableRow>
-								<TableCell>No commodities found</TableCell>
+								<TableCell>No pools found</TableCell>
 							</TableRow>
 						)}
 					</TableBody>

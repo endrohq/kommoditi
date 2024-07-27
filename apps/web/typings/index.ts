@@ -19,13 +19,6 @@ export type Account = {
 	producer?: Producer;
 };
 
-export type Commodity = {
-	name: string;
-	symbol: string;
-	tokenAddress: string;
-	isListed: boolean;
-};
-
 export type CommodityListingApproval = {
 	approved: boolean;
 	tokenAddress: string;
@@ -37,4 +30,29 @@ export type CommodityListing = {
 	price: number;
 	producer: string;
 	deliveryWindow: number;
+};
+
+export type HederaToken = {
+	totalSymbol: number;
+	token: {
+		name: string;
+		symbol: string;
+		treasury: string;
+		memo: string;
+		tokenSupplyType: boolean;
+	};
+	totalSupply: number;
+	pauseStatus: boolean;
+	defaultKycStatus: boolean;
+	deleted: boolean;
+};
+
+export type GetCommodityResponse = {
+	tokenInfo: HederaToken;
+	tokenAddress: string;
+};
+
+export type CommodityToken = HederaToken & {
+	isListed?: boolean;
+	tokenAddress: string;
 };

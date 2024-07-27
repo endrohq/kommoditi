@@ -1,37 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "./TokenAuthority.sol";
+import "./liquidity/TokenAuthority.sol";
+import "./liquidity/CommodityFactory.sol";
+import "./liquidity/CommodityPool.sol";
 
 contract CommodityExchange {
 
-    struct ApprovedCommodity {
-        address tokenAddress;
-        bool approved;
-    }
-
     address public admin;
-    TokenAuthority public tokenAuthority;
-
-    struct Commodity {
-        address tokenAddress;
-        address producer;
-        int64 quantity;
-        uint256 price;
-        uint256 deliveryWindow;
-        bool isActive;
-    }
-
-    mapping(uint256 => Commodity) public commodities;
-    uint256 public commodityCount;
-    ApprovedCommodity[] public approvedCommodities;
 
     event CommodityListed(uint256 indexed commodityId, address indexed tokenAddress, address indexed producer, int64 quantity, uint256 price, uint256 deliveryWindow);
     event CommodityApproved(address indexed tokenAddress);
     event CommodityRemoved(address indexed tokenAddress);
 
-    constructor() {
-        admin = msg.sender;
+    CommodityFactory public factory;
+    TokenAuthority public tokenAuthority;
+
+    constructor(address _factory) {
+        factory = CommodityFactory(_factory);
+    }
+
+    function setTokenAuthority(address _tokenAuthority) external {
+        require(address(tokenAuthority) == address(0), "TokenAuthority already set");
+        tokenAuthority = TokenAuthority(_tokenAuthority);
     }
 
     modifier onlyAdmin() {
@@ -44,11 +35,50 @@ contract CommodityExchange {
         _;
     }
 
-    function setTokenAuthority(address _tokenAuthority) external onlyAdmin {
-        tokenAuthority = TokenAuthority(_tokenAuthority);
+    function listCommodity(address tokenAddress, int64 quantity, uint256 price) external {
+        require(quantity > 0, "Quantity must be greater than zero");
+        require(price > 0, "Price must be greater than zero");
+
+        require(tokenAuthority.isApprovedToken(tokenAddress), "Token not approved for trading");
+        address poolAddress = factory.commodityPoolsByToken(tokenAddress);
+        require(poolAddress != address(0), "No pool exists for this commodity");
+
+        CommodityPool pool = CommodityPool(poolAddress);
+        pool.addListing(msg.sender, quantity, price);
     }
 
-    function isApprovedCommodity(address tokenAddress) public view returns (bool) {
+    function purchaseCommodity(address tokenAddress, int64 quantity, uint256 maxPrice) external payable {
+        require(tokenAuthority.isApprovedToken(tokenAddress), "Token not approved for trading");
+        address poolAddress = factory.commodityPoolsByToken(tokenAddress);
+        require(poolAddress != address(0), "No pool exists for this commodity");
+
+        CommodityPool pool = CommodityPool(poolAddress);
+        pool.purchaseCommodity{value: msg.value}(msg.sender, quantity, maxPrice);
+    }
+
+    function provideLiquidity(address tokenAddress, uint256 minPrice, uint256 maxPrice) external payable {
+        address poolAddress = factory.commodityPoolsByToken(tokenAddress);
+        require(poolAddress != address(0), "No pool exists for this commodity");
+
+        CommodityPool pool = CommodityPool(poolAddress);
+        pool.provideLiquidity{value: msg.value}(msg.sender, minPrice, maxPrice);
+    }
+
+    function removeLiquidity(address tokenAddress, uint256 amount) external {
+        address poolAddress = factory.commodityPoolsByToken(tokenAddress);
+        require(poolAddress != address(0), "No pool exists for this commodity");
+
+        CommodityPool pool = CommodityPool(poolAddress);
+        pool.removeLiquidity(msg.sender, amount);
+    }
+
+    function createCommodityLP(address tokenAddress) external onlyAdmin {
+        require(tokenAuthority.isApprovedToken(tokenAddress), "Token not approved for trading");
+
+        factory.createPool(tokenAddress, address(this));
+    }
+
+    /*function isApprovedCommodity(address tokenAddress) public view returns (bool) {
         for (uint256 i = 0; i < approvedCommodities.length; i++) {
             if (approvedCommodities[i].tokenAddress == tokenAddress) {
                 return approvedCommodities[i].approved;
@@ -104,34 +134,6 @@ contract CommodityExchange {
         return approvedCommodities;
     }
 
-
-    function listCommodity(address tokenAddress, int64 quantity, uint256 price, uint256 deliveryWindow) external {
-        /*require(quantity > 0, "Quantity must be greater than zero");
-        require(price > 0, "Price must be greater than zero");
-        require(deliveryWindow > block.timestamp, "Delivery window must be in the future");*/
-
-        uint256 index = findApprovedCommodityIndex(tokenAddress);
-        require(approvedCommodities[index].approved, "Commodity not approved");
-
-        // Request token minting
-        int64 responseCode = tokenAuthority.requestMinting(tokenAddress, quantity, msg.sender);
-        require(responseCode == 0, "Token minting failed");
-
-        uint256 commodityId = commodityCount;
-        commodityCount++;
-
-        commodities[commodityId] = Commodity({
-            tokenAddress: tokenAddress,
-            producer: msg.sender,
-            quantity: quantity,
-            price: price,
-            deliveryWindow: deliveryWindow,
-            isActive: true
-        });
-
-        emit CommodityListed(commodityId, tokenAddress, msg.sender, quantity, price, deliveryWindow);
-    }
-
     function getCommodity(uint256 commodityId) public view returns (Commodity memory) {
         require(commodityId < commodityCount, "Commodity does not exist");
         return commodities[commodityId];
@@ -143,6 +145,6 @@ contract CommodityExchange {
             result[i] = commodities[i];
         }
         return result;
-    }
+    }*/
 
 }

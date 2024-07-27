@@ -1,11 +1,11 @@
 import { contracts } from "@/lib/constants";
-import { Commodity, CommodityListingApproval } from "@/typings";
+import { CommodityToken, GetCommodityResponse, HederaToken } from "@/typings";
 import { useReadContract } from "wagmi";
 
 const { tokenAuthority, commodityExchange } = contracts;
 
 interface useCommoditiesReturnProps {
-	commodities: Commodity[];
+	commodities: CommodityToken[];
 	isLoading: boolean;
 	refetch(): void;
 }
@@ -14,14 +14,14 @@ export function useCommodities(): useCommoditiesReturnProps {
 	const {
 		data: commoditiesData,
 		refetch: refetchCommodities,
-		isLoading: isLoadingCommodities,
+		isLoading,
 	} = useReadContract({
 		address: tokenAuthority.address,
 		abi: tokenAuthority.abi,
-		functionName: "getCommodityTokens",
+		functionName: "getCommodities",
 	});
 
-	const {
+	/*const {
 		data: listingsData,
 		refetch: refetchListings,
 		isLoading: isLoadingListings,
@@ -29,25 +29,19 @@ export function useCommodities(): useCommoditiesReturnProps {
 		address: commodityExchange.address,
 		abi: commodityExchange.abi,
 		functionName: "getApprovedCommodities",
-	});
+	});*/
 
-	const commodities = commoditiesData as Commodity[];
-	const listings = listingsData as CommodityListingApproval[];
-
-	const isLoading = isLoadingCommodities || isLoadingListings;
+	const tokens = commoditiesData as GetCommodityResponse[];
+	// const listings = listingsData as CommodityListingApproval[];
 
 	return {
-		commodities: (commodities || [])?.map((commodity) => ({
-			...commodity,
-			isListed:
-				listings?.find(
-					(listing) => listing.tokenAddress === commodity.tokenAddress,
-				)?.approved || false,
+		commodities: (tokens || [])?.map(({ tokenInfo, tokenAddress }) => ({
+			...tokenInfo,
+			tokenAddress,
 		})),
 		isLoading,
 		refetch: () => {
 			refetchCommodities();
-			refetchListings();
 		},
 	};
 }

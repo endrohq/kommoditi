@@ -3,7 +3,7 @@
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
-import { Commodity } from "@/typings";
+import { CommodityToken } from "@/typings";
 import { getShortenedFormat } from "@/utils/address.utils";
 import { CheckmarkFilled, WarningFilled } from "@carbon/icons-react";
 import { TableCell, TableRow } from "@carbon/react";
@@ -12,7 +12,7 @@ import React, { useEffect } from "react";
 import toast from "react-hot-toast";
 
 interface CommodityListingProps {
-	commodity: Commodity;
+	commodity: CommodityToken;
 	isListed: boolean;
 	onListingChange(): void;
 }
@@ -41,7 +41,7 @@ export function CommodityItem({
 	return (
 		<TableRow>
 			<TableCell className="font-medium !text-indigo-900" colSpan={4}>
-				{commodity.symbol}
+				{commodity.token.name} ({commodity.token.symbol})
 			</TableCell>
 			<TableCell colSpan={4}>
 				{getShortenedFormat(commodity.tokenAddress)}
