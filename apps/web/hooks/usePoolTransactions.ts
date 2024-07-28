@@ -1,4 +1,5 @@
 import { contracts } from "@/lib/constants";
+import { useNetworkManager } from "@/providers/NetworkManager";
 import { EthAddress, PoolTransaction } from "@/typings";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePublicClient } from "wagmi";
@@ -12,6 +13,7 @@ export function usePoolTransactions(
 	eventNames: string[],
 ) {
 	const publicClient = usePublicClient();
+	const { blockNumber } = useNetworkManager();
 	const [transactions, setTransactions] = useState<PoolTransaction[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
 	const latestFetchedBlockRef = useRef<bigint>(BigInt(0));
@@ -57,20 +59,19 @@ export function usePoolTransactions(
 	);
 
 	const updateTransactions = useCallback(async () => {
-		const currentBlock = await publicClient?.getBlockNumber();
-		if (!currentBlock) {
+		if (!blockNumber) {
 			setIsLoading(false);
 			return;
 		}
 
-		if (currentBlock <= latestFetchedBlockRef.current) {
+		if (blockNumber <= latestFetchedBlockRef.current) {
 			setIsLoading(false);
 			return; // No new blocks to fetch
 		}
 
 		const fetchedTxs = await fetchTransactions(
 			latestFetchedBlockRef.current + BigInt(1),
-			currentBlock,
+			blockNumber,
 		);
 
 		const existingTransactionHashes = new Set(
@@ -94,7 +95,7 @@ export function usePoolTransactions(
 
 			transactionsRef.current = updatedTxs;
 			setTransactions(updatedTxs);
-			latestFetchedBlockRef.current = currentBlock;
+			latestFetchedBlockRef.current = blockNumber;
 		}
 
 		if (isLoading) {

@@ -5,7 +5,13 @@ import { usePrivy } from "@privy-io/react-auth";
 import React, { ReactNode, createContext, useEffect } from "react";
 import { useAccount, useBlockNumber, useChainId, useSwitchChain } from "wagmi";
 
-export const NetworkManagerContext = createContext({});
+interface UseNetworkManagerProps {
+	blockNumber?: bigint;
+}
+
+export const NetworkManagerContext = createContext<UseNetworkManagerProps>({});
+
+export const useNetworkManager = () => React.useContext(NetworkManagerContext);
 
 type AuthProviderProps = {
 	children: ReactNode;
@@ -15,7 +21,7 @@ export default function NetworkManager({ children }: AuthProviderProps) {
 	const { ready } = usePrivy();
 	const { chainId } = useAccount();
 	const { chains, switchChain } = useSwitchChain();
-	const { data, isError, error } = useBlockNumber();
+	const { data } = useBlockNumber();
 
 	useEffect(() => {
 		if (!ready) return;
@@ -29,7 +35,11 @@ export default function NetworkManager({ children }: AuthProviderProps) {
 	}, [chains, ready]);
 
 	return (
-		<NetworkManagerContext.Provider value={{}}>
+		<NetworkManagerContext.Provider
+			value={{
+				blockNumber: data,
+			}}
+		>
 			{isNaN(Number(data)) && ready && (
 				<NetworkOffline
 					activeChain={chains?.find((a) => chainId === Number(a?.id))}
