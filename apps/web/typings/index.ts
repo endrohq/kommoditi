@@ -1,3 +1,5 @@
+import { Log } from "viem";
+
 export type LocationItem = {
 	address: string;
 	lat: number;
@@ -52,4 +54,22 @@ export type GetAllPoolsResponse = {
 export type CommodityToken = HederaToken & {
 	tokenAddress: EthAddress;
 	poolAddress?: EthAddress;
+};
+
+export type PoolTransactionType =
+	| "liquidity-added"
+	| "liquidity-removed"
+	| "trade"
+	| "listing-added"
+	| "listing-removed";
+
+export type PoolTransaction = {
+	type: PoolTransactionType;
+	dateCreated: Date;
+	transactionHash: EthAddress;
+	from: EthAddress;
+	to: EthAddress;
+	value: bigint;
+	blockNumber: bigint;
+	blockHash: EthAddress;
 };

@@ -1,6 +1,7 @@
 "use client";
 
 import { LiquidityProvider } from "@/app/tokens/[address]/LiquidityProvider";
+import TransactionList from "@/app/tokens/[address]/PoolTransactions";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { useCommodity } from "@/hooks/useCommodity";
 import { getTokenPage } from "@/utils/route.utils";
@@ -28,7 +29,7 @@ export default function Page({ params }: Props) {
 		);
 	}
 
-	if (!commodity) {
+	if (!commodity || !commodity?.poolAddress) {
 		return (
 			<Content className="px-56">
 				<div className="w-full flex justify-center">
@@ -47,7 +48,8 @@ export default function Page({ params }: Props) {
 						{commodity.token.name} ({commodity.token.symbol})
 					</span>
 				</div>
-				<div className="py-20 mt-10 bg-gray-200 rounded w-full" />
+				<div className="py-20 my-10 bg-gray-200 rounded w-full" />
+				<TransactionList poolAddress={commodity?.poolAddress} />
 			</div>
 			<div className="w-4/12">
 				<LiquidityProvider commodity={commodity} />

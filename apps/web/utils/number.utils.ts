@@ -1,4 +1,4 @@
-export function formatNumber(num: number | string) {
+export function formatNumber(num: number | string | bigint) {
 	return commafy(roundNumber(Number(num) || 0));
 }
 
