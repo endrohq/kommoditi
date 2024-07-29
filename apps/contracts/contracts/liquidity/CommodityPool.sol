@@ -9,7 +9,9 @@ contract CommodityPool {
         address producer;
         int64 quantity;
         uint256 price;
+        uint256 dateOffered;
         bool active;
+
     }
 
     struct CTFLiquidity {
@@ -46,11 +48,11 @@ contract CommodityPool {
 
     function addListing(address producer, int64 quantity, uint256 price) external onlyCommodityExchange {
         uint256 listingId = listingCount++;
-        listings[listingId] = Listing(producer, quantity, price, true);
+        listings[listingId] = Listing(producer, quantity, price, block.timestamp, true);
 
         emit ListingAdded(listingId, producer, quantity, price);
 
-        _checkForCTFMatch(listingId);
+        // _checkForCTFMatch(listingId);
     }
 
     function purchaseCommodity(address buyer, int64 quantity, uint256 maxPrice) external payable onlyCommodityExchange {

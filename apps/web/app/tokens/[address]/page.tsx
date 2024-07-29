@@ -59,9 +59,8 @@ export default function Page({ params }: Props) {
 						{commodity.token.name} ({commodity.token.symbol})
 					</span>
 				</div>
-				<PoolStatistics poolAddress={commodity?.poolAddress} />
-				<div className="py-20 my-10 bg-gray-200 rounded w-full" />
-				<div className="gap-6 flex flex-col">
+				<PoolStatistics commodity={commodity} />
+				<div className="gap-10 flex flex-col mt-10">
 					<Listings poolAddress={commodity?.poolAddress} />
 					<TransactionList poolAddress={commodity?.poolAddress} />
 				</div>

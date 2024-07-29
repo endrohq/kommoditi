@@ -21,6 +21,13 @@ export type Account = {
 	producer?: Producer;
 };
 
+export type CommodityListing = {
+	producer: EthAddress;
+	quantity: bigint;
+	price: bigint;
+	active: boolean;
+};
+
 export type CommodityListingApproval = {
 	approved: boolean;
 	tokenAddress: string;

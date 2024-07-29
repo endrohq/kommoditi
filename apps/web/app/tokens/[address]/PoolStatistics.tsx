@@ -6,27 +6,26 @@ import { formatEther } from "viem";
 import { useReadContract } from "wagmi";
 
 interface StatisticsProps {
-	poolAddress: EthAddress;
 	commodity: CommodityToken;
 }
 
 function Statistic({ value, label }: { label: string; value: string }) {
 	return (
 		<div>
-			<div className="text-sm text-gray-500 font-medium">{label}</div>
-			<div className="font-bold text-lg">{value}</div>
+			<div className="text-xs text-gray-500 font-medium">{label}</div>
+			<div className="font-bold text-base">{value}</div>
 		</div>
 	);
 }
 
-export function PoolStatistics({ poolAddress, commodity }: StatisticsProps) {
+export function PoolStatistics({ commodity }: StatisticsProps) {
 	const { data: liquidityData, error } = useReadContract({
-		address: poolAddress,
+		address: commodity?.poolAddress,
 		abi: contracts.commodityPool.abi,
 		functionName: "getTotalLiquidity",
 	});
 	return (
-		<div className="pt-10 pb-4 grid grid-cols-4">
+		<div className="mt-6 py-4 mb-4 bg-gray-50 rounded px-4 !border-gray-200 grid grid-cols-5">
 			<Statistic
 				label="TVL"
 				value={`${

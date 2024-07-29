@@ -37,7 +37,7 @@ export function TransactionList({ poolAddress }: TransactionListProps) {
 
 	return (
 		<div>
-			<h2 className="font-bold text-xl mb-6">Transactions</h2>
+			<h2 className="font-bold text-base mb-2">Transactions</h2>
 			<TableContainer>
 				<Table>
 					<TableHead>

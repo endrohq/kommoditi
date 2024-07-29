@@ -1,7 +1,7 @@
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { usePoolTransactions } from "@/hooks/usePoolTransactions";
 import { contracts } from "@/lib/constants";
-import { EthAddress } from "@/typings";
+import { CommodityListing, EthAddress } from "@/typings";
 import { getShortenedFormat } from "@/utils/address.utils";
 import { getDistanceForDate } from "@/utils/date.utils";
 import { formatNumber } from "@/utils/number.utils";
@@ -33,21 +33,23 @@ export function Listings({ poolAddress }: TransactionListProps) {
 		functionName: "getListings",
 	});
 
-	const listings = listingsData as any[];
+	const listings = listingsData as CommodityListing[];
+
+	console.log(listings);
 
 	return (
 		<div>
-			<h2 className="font-bold text-xl mb-6">Listings</h2>
+			<h2 className="font-bold text-base mb-2">Listings</h2>
 			<TableContainer>
 				<Table>
 					<TableHead>
 						<TableRow>
-							<TableCell colSpan={4}>Time</TableCell>
+							<TableCell>Producer</TableCell>
 							{!isLoading && listings?.length > 0 && (
 								<>
-									<TableHeader colSpan={4}>Type</TableHeader>
-									<TableHeader>HBAR</TableHeader>
-									<TableHeader>Wallet</TableHeader>
+									<TableHeader>Quantity</TableHeader>
+									<TableHeader>Price Offer</TableHeader>
+									<TableHeader>Total Price</TableHeader>
 								</>
 							)}
 						</TableRow>
@@ -60,15 +62,15 @@ export function Listings({ poolAddress }: TransactionListProps) {
 								</TableCell>
 							</TableRow>
 						) : listings?.length > 0 ? (
-							listings?.map((tx, index) => (
+							listings?.map((listing) => (
 								<TableRow>
-									<TableCell className="capitalize" colSpan={4}></TableCell>
-									<TableCell
-										className="font-medium !text-black"
-										colSpan={4}
-									></TableCell>
-									<TableCell></TableCell>
-									<TableCell></TableCell>
+									<TableCell>{getShortenedFormat(listing.producer)}</TableCell>
+
+									<TableCell>{listing?.quantity?.toString()}</TableCell>
+									<TableCell>${formatNumber(listing.price)}</TableCell>
+									<TableCell>
+										${formatNumber(listing.price * listing.quantity)}
+									</TableCell>
 								</TableRow>
 							))
 						) : (
