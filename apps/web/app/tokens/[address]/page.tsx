@@ -1,5 +1,7 @@
 "use client";
 
+import { CurrentPrice } from "@/app/tokens/[address]/CurrentPrice";
+import { LiquidityDistribution } from "@/app/tokens/[address]/LiquidityDistribution";
 import { LiquidityProvider } from "@/app/tokens/[address]/LiquidityProvider";
 import { Listings } from "@/app/tokens/[address]/Listings";
 import { PoolStatistics } from "@/app/tokens/[address]/PoolStatistics";
@@ -53,12 +55,16 @@ export default function Page({ params }: Props) {
 						},
 					]}
 				/>
-				<div className="font-medium flex items-center space-x-4 mt-4 !text-indigo-900">
-					<div className="bg-gray-300 w-8 aspect-square rounded-full" />
-					<span className="text-xl font-bold">
-						{commodity.token.name} ({commodity.token.symbol})
-					</span>
+				<div className="mt-4 flex items-center justify-between">
+					<div className="font-medium  flex items-center space-x-4 text-indigo-900">
+						<div className="bg-gray-300 w-8 aspect-square rounded-full" />
+						<span className="text-xl font-bold">
+							{commodity.token.name} ({commodity.token.symbol})
+						</span>
+					</div>
+					<CurrentPrice address={commodity?.poolAddress} />
 				</div>
+				<LiquidityDistribution address={commodity?.poolAddress} />
 				<PoolStatistics commodity={commodity} />
 				<div className="gap-10 flex flex-col mt-10">
 					<Listings poolAddress={commodity?.poolAddress} />

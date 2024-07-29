@@ -20,9 +20,20 @@ contract CommodityPool {
         uint256 maxPrice;
     }
 
+    struct CTFLiquidityView {
+        address ctf;
+        uint256 amount;
+        uint256 minPrice;
+        uint256 maxPrice;
+    }
+
     address public tokenAddress;
     TokenAuthority public tokenAuthority;
     address public commodityExchange;
+
+    uint256 public totalLiquidity;
+    uint256 public weightedTotalPrice;
+    uint256 public currentPrice;
 
     mapping(uint256 => Listing) public listings;
     uint256 public listingCount;
@@ -32,8 +43,8 @@ contract CommodityPool {
 
     event ListingAdded(uint256 indexed listingId, address indexed producer, int64 quantity, uint256 price);
     event ListingSold(uint256 indexed listingId, address indexed buyer, int64 quantity, uint256 price);
-    event LiquidityAdded(address indexed ctf, uint256 amount, uint256 minPrice, uint256 maxPrice);
-    event LiquidityRemoved(address indexed ctf, uint256 amount);
+    event LiquidityChanged(address ctf, uint256 amount, uint256 minPrice, uint256 maxPrice, bool isAdding);
+    event PriceUpdated(uint256 newPrice, uint256 timestamp);
 
     constructor(address _tokenAddress, address _tokenAuthority, address _commodityExchange) {
         tokenAddress = _tokenAddress;
@@ -52,7 +63,7 @@ contract CommodityPool {
 
         emit ListingAdded(listingId, producer, quantity, price);
 
-        // _checkForCTFMatch(listingId);
+        _checkForCTFMatch(listingId);
     }
 
     function purchaseCommodity(address buyer, int64 quantity, uint256 maxPrice) external payable onlyCommodityExchange {
@@ -81,16 +92,42 @@ contract CommodityPool {
         ctfLiquidity[ctf].minPrice = minPrice;
         ctfLiquidity[ctf].maxPrice = maxPrice;
 
-        emit LiquidityAdded(ctf, msg.value, minPrice, maxPrice);
+        totalLiquidity += msg.value;
+        weightedTotalPrice += msg.value * ((minPrice + maxPrice) / 2);
+
+        totalLiquidity += msg.value;
+        weightedTotalPrice += msg.value * ((minPrice + maxPrice) / 2);
+
+        emit LiquidityChanged(msg.sender, msg.value, minPrice, maxPrice, true);
+
+        updatePrice();
+    }
+
+    function updatePrice() internal onlyCommodityExchange {
+        uint256 newPrice = getCurrentPrice();
+        if (newPrice != currentPrice) {
+            currentPrice = newPrice;
+            emit PriceUpdated(currentPrice, block.timestamp);
+        }
+    }
+
+    function getCurrentPrice() public view returns (uint256) {
+        if (totalLiquidity == 0) return 0;
+        return weightedTotalPrice / totalLiquidity;
     }
 
     function removeLiquidity(address ctf, uint256 amount) external onlyCommodityExchange {
         require(ctfLiquidity[ctf].amount >= amount, "Insufficient liquidity");
 
         ctfLiquidity[ctf].amount -= amount;
+        totalLiquidity -= amount;
+        weightedTotalPrice -= amount * ((ctfLiquidity[msg.sender].minPrice + ctfLiquidity[msg.sender].maxPrice) / 2);
+
         payable(ctf).transfer(amount);
 
-        emit LiquidityRemoved(ctf, amount);
+        emit LiquidityChanged(ctf, amount, ctfLiquidity[ctf].minPrice, ctfLiquidity[ctf].maxPrice, false);
+
+        updatePrice();
     }
 
     function _checkForCTFMatch(uint256 listingId) internal {
@@ -162,5 +199,19 @@ contract CommodityPool {
             }
         }
         return activeListings;
+    }
+
+    function getAllCTFLiquidity() external view returns (CTFLiquidityView[] memory) {
+        CTFLiquidityView[] memory allLiquidity = new CTFLiquidityView[](ctfs.length);
+        for (uint i = 0; i < ctfs.length; i++) {
+            address ctf = ctfs[i];
+            allLiquidity[i] = CTFLiquidityView({
+                ctf: ctf,
+                amount: ctfLiquidity[ctf].amount,
+                minPrice: ctfLiquidity[ctf].minPrice,
+                maxPrice: ctfLiquidity[ctf].maxPrice
+            });
+        }
+        return allLiquidity;
     }
 }

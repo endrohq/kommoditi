@@ -9,11 +9,14 @@
 		"lint": "next lint"
 	},
 	"dependencies": {
+		"@carbon/charts": "^1.19.2",
+		"@carbon/charts-react": "^1.19.2",
 		"@carbon/icons-react": "^11.45.0",
 		"@carbon/react": "^1.62.0",
 		"@mapbox/search-js-react": "^1.0.0-beta.21",
 		"@privy-io/react-auth": "^1.76.0",
 		"@privy-io/wagmi": "^0.2.12",
+		"d3": "^7.9.0",
 		"date-fns": "^3.6.0",
 		"framer-motion": "^11.3.12",
 		"h3-js": "^4.1.0",
