@@ -1,7 +1,9 @@
 import { contracts } from "@/lib/constants";
 import { useNetworkManager } from "@/providers/NetworkManager";
 import { EthAddress, PoolTransaction } from "@/typings";
+import { formatNumber } from "@/utils/number.utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { formatEther } from "viem";
 import { usePublicClient } from "wagmi";
 
 const { commodityPool } = contracts;
@@ -44,11 +46,11 @@ export function usePoolTransactions(
 					});
 
 					return {
-						type: log.eventName?.toLowerCase() ?? "unknown",
+						type: log.eventName ?? "unknown",
 						transactionHash: log.transactionHash,
 						from: fullTx.from,
 						to: fullTx.to,
-						value: BigInt(fullTx.value),
+						value: formatNumber(formatEther(fullTx.value)),
 						blockNumber: BigInt(log.blockNumber),
 						dateCreated: block ? new Date(Number(block.timestamp) * 1000) : 0,
 					} as PoolTransaction;
@@ -81,12 +83,6 @@ export function usePoolTransactions(
 		const newTransactions = fetchedTxs.filter(
 			(tx) => !existingTransactionHashes.has(tx.transactionHash),
 		);
-
-		console.log({
-			newTransactions,
-			existingHashes: transactions.map((tx) => tx.transactionHash),
-			fetchedTxs: fetchedTxs?.map((tx) => tx.transactionHash),
-		});
 
 		if (newTransactions.length > 0) {
 			const updatedTxs = [...newTransactions, ...transactionsRef.current].sort(

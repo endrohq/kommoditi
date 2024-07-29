@@ -4,7 +4,9 @@ import { contracts } from "@/lib/constants";
 import { CommodityToken, EthAddress } from "@/typings";
 import { formatNumber } from "@/utils/number.utils";
 import { Form, TextInput } from "@carbon/react";
-import React from "react";
+import React, { useEffect } from "react";
+import toast from "react-hot-toast";
+import { formatEther } from "viem";
 import { useReadContract } from "wagmi";
 
 const { commodityPool, commodityExchange } = contracts;
@@ -18,16 +20,21 @@ function AddLiquidity({ tokenAddress }: { tokenAddress?: EthAddress }) {
 	const [minPrice, setMinPrice] = React.useState<number>(0);
 	const [maxPrice, setMaxPrice] = React.useState<number>(0);
 
-	// function provideLiquidity(address tokenAddress, uint256 minPrice, uint256 maxPrice)
 	const { writeToContract, isSuccess, isSubmitting } = usePublishTx({
 		address: commodityExchange.address,
 		abi: commodityExchange.abi,
 		functionName: "provideLiquidity",
-		eventName: "PoolCreated",
+		eventName: "CommodityLPAdded",
 	});
 
+	useEffect(() => {
+		if (isSuccess) {
+			toast.success("Liquidity added successfully");
+		}
+	}, [isSuccess]);
+
 	function handleAddLiquidity() {
-		writeToContract([tokenAddress, minPrice, maxPrice], amount);
+		writeToContract([tokenAddress, minPrice, maxPrice], `${amount}`);
 	}
 
 	return (
@@ -79,20 +86,8 @@ function AddLiquidity({ tokenAddress }: { tokenAddress?: EthAddress }) {
 }
 
 export function LiquidityProvider({ commodity }: LiquidityProviderProps) {
-	console.log(commodity);
-	const { data: liquidityData, error } = useReadContract({
-		address: commodity.poolAddress,
-		abi: commodityPool.abi,
-		functionName: "getTotalLiquidity",
-	});
-
-	console.log(liquidityData);
-
 	return (
 		<div className="p-6 bg-gray-50 rounded mt-10">
-			<p className="mb-6">
-				Total Liquidity: {formatNumber(liquidityData as number)} HBAR
-			</p>
 			<AddLiquidity tokenAddress={commodity.tokenAddress} />
 		</div>
 	);

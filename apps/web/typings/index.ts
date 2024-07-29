@@ -57,11 +57,11 @@ export type CommodityToken = HederaToken & {
 };
 
 export type PoolTransactionType =
-	| "liquidity-added"
-	| "liquidity-removed"
+	| "LiquidityAdded"
+	| "LiquidityRemoved"
 	| "trade"
-	| "listing-added"
-	| "listing-removed";
+	| "ListingAdded"
+	| "ListingRemoved";
 
 export type PoolTransaction = {
 	type: PoolTransactionType;
@@ -69,7 +69,7 @@ export type PoolTransaction = {
 	transactionHash: EthAddress;
 	from: EthAddress;
 	to: EthAddress;
-	value: bigint;
+	value: string;
 	blockNumber: bigint;
 	blockHash: EthAddress;
 };

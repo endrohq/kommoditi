@@ -6,9 +6,11 @@ import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
 import { CommodityToken } from "@/typings";
 import { getShortenedFormat } from "@/utils/address.utils";
+import { getTokenPage } from "@/utils/route.utils";
 import { CheckmarkFilled, WarningFilled } from "@carbon/icons-react";
 import { TableCell, TableRow } from "@carbon/react";
 import clsx from "clsx";
+import Link from "next/link";
 import React, { useEffect } from "react";
 import toast from "react-hot-toast";
 
@@ -42,7 +44,12 @@ export function CommodityItem({
 	return (
 		<TableRow>
 			<TableCell className="font-medium !text-indigo-900" colSpan={4}>
-				{commodity.token.name} ({commodity.token.symbol})
+				<Link
+					href={getTokenPage(commodity?.tokenAddress)}
+					className="font-medium !text-indigo-900"
+				>
+					{commodity.token.name} ({commodity.token.symbol})
+				</Link>
 			</TableCell>
 			<TableCell colSpan={4}>
 				{getShortenedFormat(commodity.tokenAddress)}

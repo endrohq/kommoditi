@@ -113,7 +113,7 @@ contract TokenAuthority {
     }
 
     function transferToken(address tokenAddress, address from, address to, int64 amount) external {
-        require(approvedTokens[tokenAddress], "Token not approved for trading");
+        // require(approvedTokens[tokenAddress], "Token not approved for trading");
         int responseCode = tokenService.transferToken(tokenAddress, from, to, amount);
         require(responseCode == 0, "Token transfer failed");
     }

@@ -33,6 +33,19 @@
 				"type": "address"
 			}
 		],
+		"name": "CommodityLPAdded",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "poolAddress",
+				"type": "address"
+			}
+		],
 		"name": "CommodityLPCreated",
 		"type": "event"
 	},
@@ -74,6 +87,19 @@
 				"internalType": "uint256",
 				"name": "deliveryWindow",
 				"type": "uint256"
+			}
+		],
+		"name": "CommodityListed",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "poolAddress",
+				"type": "address"
 			}
 		],
 		"name": "CommodityListed",

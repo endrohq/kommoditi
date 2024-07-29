@@ -132,7 +132,7 @@ contract CommodityPool {
         return ctfs;
     }
 
-    function getActiveListingsCount() external view returns (uint256) {
+    function getActiveListingsCount() internal view returns (uint256) {
         uint256 count = 0;
         for (uint256 i = 0; i < listingCount; i++) {
             if (listings[i].active) {
@@ -148,5 +148,17 @@ contract CommodityPool {
             total += ctfLiquidity[ctfs[i]].amount;
         }
         return total;
+    }
+
+    function getListings() external view returns (Listing[] memory) {
+        Listing[] memory activeListings = new Listing[](getActiveListingsCount());
+        uint256 index = 0;
+        for (uint256 i = 0; i < listingCount; i++) {
+            if (listings[i].active) {
+                activeListings[index] = listings[i];
+                index++;
+            }
+        }
+        return activeListings;
     }
 }

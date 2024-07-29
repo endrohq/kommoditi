@@ -2,13 +2,13 @@ import { PoolTransactionType } from "@/typings";
 
 export function formatTransactionType(type: PoolTransactionType) {
 	switch (type) {
-		case "liquidity-added":
+		case "LiquidityAdded":
 			return "Liquidity Added";
-		case "liquidity-removed":
+		case "LiquidityRemoved":
 			return "Liquidity Removed";
-		case "listing-added":
+		case "ListingAdded":
 			return "Listing Added";
-		case "listing-removed":
+		case "ListingRemoved":
 			return "Listing Removed";
 		case "trade":
 			return "Trade";

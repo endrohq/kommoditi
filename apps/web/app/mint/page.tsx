@@ -31,7 +31,9 @@ type CommodityListing = {
 
 export default function Page() {
 	const router = useRouter();
-	const { commodities } = useCommodities();
+	const { commodities } = useCommodities({
+		isTradable: true,
+	});
 	const [listing, setListing] = useState<Partial<CommodityListing>>({});
 
 	const {
@@ -61,12 +63,7 @@ export default function Page() {
 
 	function handleSubmit() {
 		try {
-			listCommodity([
-				listing.tokenAddress,
-				listing.quantity,
-				listing.price,
-				listing.deliveryWindow,
-			]);
+			listCommodity([listing.tokenAddress, listing.quantity, listing.price]);
 		} catch (e) {
 			console.error(e);
 		}
@@ -74,11 +71,11 @@ export default function Page() {
 
 	const selectedItem = commodities.find(
 		(item) => item.tokenAddress === listing?.tokenAddress,
-	)?.symbol;
+	)?.token?.symbol;
 
 	const symbols = commodities
-		?.filter((item) => item.isTradable)
-		?.map((item) => item.symbol);
+		?.filter((item) => !!item.poolAddress)
+		?.map((item) => item.token?.symbol);
 
 	return (
 		<Content>
@@ -98,7 +95,7 @@ export default function Page() {
 								setListing((prev) => ({
 									...prev,
 									tokenAddress: commodities.find(
-										(c) => c.symbol === item?.selectedItem,
+										(c) => c?.token?.symbol === item?.selectedItem,
 									)?.tokenAddress,
 								}))
 							}

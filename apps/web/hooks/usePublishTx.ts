@@ -1,6 +1,6 @@
 import { EthAddress } from "@/typings";
 import { useEffect, useState } from "react";
-import { Abi } from "viem";
+import { Abi, parseEther } from "viem";
 import { useWatchContractEvent, useWriteContract } from "wagmi";
 
 interface useWriteTransactionArgs {
@@ -11,7 +11,7 @@ interface useWriteTransactionArgs {
 }
 
 interface useWriteTransactionReturnProps {
-	writeToContract(args: unknown[]): void;
+	writeToContract(args: unknown[], value?: string): void;
 	isSubmitting: boolean;
 	error: Error | null;
 	isSuccess: boolean;
@@ -49,16 +49,17 @@ export function usePublishTx({
 		},
 	});
 
-	function writeToContract(args: unknown[], value?: bigint) {
+	function writeToContract(args: unknown[], value?: string) {
 		if (isSubmitting) return;
 		setIsSubmitting(true);
+		const valueToUse = value ? parseEther(value) : BigInt(0);
 		try {
 			writeContract({
 				address,
 				abi,
 				functionName,
 				args,
-				value,
+				value: valueToUse,
 			});
 		} catch (e) {
 			console.error(e);

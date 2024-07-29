@@ -14,6 +14,8 @@ contract CommodityExchange {
     event CommodityApproved(address indexed tokenAddress);
     event CommodityRemoved(address indexed tokenAddress);
     event CommodityLPCreated(address indexed poolAddress);
+    event CommodityLPAdded(address indexed poolAddress);
+    event CommodityListed(address indexed poolAddress);
 
     CommodityFactory public factory;
     TokenAuthority public tokenAuthority;
@@ -48,6 +50,8 @@ contract CommodityExchange {
 
         CommodityPool pool = CommodityPool(poolAddress);
         pool.addListing(msg.sender, quantity, price);
+
+        emit CommodityListed(tokenAddress);
     }
 
     function purchaseCommodity(address tokenAddress, int64 quantity, uint256 maxPrice) external payable {
@@ -65,6 +69,8 @@ contract CommodityExchange {
 
         CommodityPool pool = CommodityPool(poolAddress);
         pool.provideLiquidity{value: msg.value}(msg.sender, minPrice, maxPrice);
+
+        emit CommodityLPAdded(poolAddress);
     }
 
     function removeLiquidity(address tokenAddress, uint256 amount) external {
