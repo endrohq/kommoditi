@@ -21,3 +21,16 @@ export function roundNumber(value: number, digits = 2) {
 export function isInvalidNumber(value?: bigint) {
 	return isNaN(Number(value));
 }
+
+export function roundToTwoDecimals(value: number) {
+	return Math.round(value * 100) / 100;
+}
+
+export const PRICE_RANGE_PRECISION = 1e2;
+export function parseNumberToSmFormat(value: number) {
+	return Math.round(value * PRICE_RANGE_PRECISION);
+}
+
+export function parseSmToNumberFormat(value: number) {
+	return value / PRICE_RANGE_PRECISION;
+}

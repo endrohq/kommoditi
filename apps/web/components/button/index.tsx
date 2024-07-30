@@ -9,6 +9,7 @@ const buttonVariants = cva(
 		variants: {
 			variant: {
 				default: "bg-gray-200 text-primary-foreground hover:bg-gray-300",
+				black: "bg-black text-white hover:bg-black/90",
 				destructive:
 					"bg-destructive text-destructive-foreground hover:bg-destructive/90",
 				outline:
@@ -36,6 +37,7 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> &
 	VariantProps<typeof buttonVariants> & {
 		loading?: boolean;
 		fullWidth?: boolean;
+		icon?: React.ReactNode;
 	};
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -47,6 +49,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 			loading,
 			fullWidth,
 			children,
+			icon,
 			...props
 		},
 		ref,
@@ -62,7 +65,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 				disabled={props.disabled || loading}
 				{...props}
 			>
-				{loading && <LoadingOutlined className="mr-2 h-4 w-4" />}
+				{loading ? (
+					<LoadingOutlined className="mr-2" />
+				) : (
+					icon && <span className="mr-2">{icon}</span>
+				)}
 				{children}
 			</button>
 		);

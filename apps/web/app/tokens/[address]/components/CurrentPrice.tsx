@@ -1,14 +1,11 @@
 import { contracts } from "@/lib/constants";
-import { EthAddress } from "@/typings";
+import { useTokenPage } from "@/providers/TokenPageProvider";
 import { useReadContract } from "wagmi";
 
-interface CurrentPriceProps {
-	address: EthAddress;
-}
-
-export function CurrentPrice({ address }: CurrentPriceProps) {
-	const { data, error } = useReadContract({
-		address: address,
+export function CurrentPrice() {
+	const { commodity } = useTokenPage();
+	const { data } = useReadContract({
+		address: commodity?.poolAddress,
 		abi: contracts.commodityPool.abi,
 		functionName: "getCurrentPrice",
 	});

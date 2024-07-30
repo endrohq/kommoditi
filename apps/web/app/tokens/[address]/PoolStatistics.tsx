@@ -1,13 +1,9 @@
 import { contracts } from "@/lib/constants";
-import { CommodityToken, EthAddress } from "@/typings";
+import { useTokenPage } from "@/providers/TokenPageProvider";
 import { formatNumber } from "@/utils/number.utils";
 import React from "react";
 import { formatEther } from "viem";
 import { useReadContract } from "wagmi";
-
-interface StatisticsProps {
-	commodity: CommodityToken;
-}
 
 function Statistic({ value, label }: { label: string; value: string }) {
 	return (
@@ -18,7 +14,9 @@ function Statistic({ value, label }: { label: string; value: string }) {
 	);
 }
 
-export function PoolStatistics({ commodity }: StatisticsProps) {
+export function PoolStatistics() {
+	const { commodity } = useTokenPage();
+
 	const { data: liquidityData, error } = useReadContract({
 		address: commodity?.poolAddress,
 		abi: contracts.commodityPool.abi,

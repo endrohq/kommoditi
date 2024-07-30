@@ -23,7 +23,9 @@ contract CommodityPool {
     struct CTFLiquidityView {
         address ctf;
         uint256 amount;
+        // Stored with 1e2 precision to allow for 2 decimal places in our UI
         uint256 minPrice;
+        // Stored with 1e2 precision to allow for 2 decimal places in our UI
         uint256 maxPrice;
     }
 
@@ -70,6 +72,7 @@ contract CommodityPool {
         address ctf = _findMatchingCTF(quantity, maxPrice);
         require(ctf != address(0), "No matching liquidity found");
 
+        // TODO: Always taking minPrice doesnt make sense. Can we use current price instead?
         uint256 totalPrice = uint256(int256(quantity)) * ctfLiquidity[ctf].minPrice;
         require(msg.value >= totalPrice, "Insufficient payment");
 

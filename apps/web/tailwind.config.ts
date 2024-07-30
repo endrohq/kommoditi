@@ -13,18 +13,20 @@ const config: Config = {
 				secondary: "#287a93",
 				third: "#91d3e2",
 			},
-			borderColor: {
-				primary: "#004560",
-				secondary: "#287a93",
-				third: "#91d3e2",
-			},
 			colors: {
 				primary: "#004560",
 				secondary: "#287a93",
 				third: "#91d3e2",
 			},
+			borderWidth: {
+				"1": "1px",
+				"2": "2px",
+				"3": "3px",
+				"4": "4px",
+				"5": "5px",
+				"6": "6px",
+			},
 		},
 	},
-	plugins: [],
 };
 export default config;

@@ -1,9 +1,9 @@
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { usePoolTransactions } from "@/hooks/usePoolTransactions";
+import { useTokenPage } from "@/providers/TokenPageProvider";
 import { EthAddress } from "@/typings";
 import { getShortenedFormat } from "@/utils/address.utils";
 import { getDistanceForDate } from "@/utils/date.utils";
-import { formatNumber } from "@/utils/number.utils";
 import { getProfileRoute } from "@/utils/route.utils";
 import { formatTransactionType } from "@/utils/transaction.utils";
 import {
@@ -29,9 +29,10 @@ const eventNames = [
 	"LiquidityRemoved",
 ];
 
-export function TransactionList({ poolAddress }: TransactionListProps) {
+export function TransactionList() {
+	const { commodity } = useTokenPage();
 	const { transactions, isLoading } = usePoolTransactions(
-		poolAddress,
+		commodity?.poolAddress as EthAddress,
 		eventNames,
 	);
 

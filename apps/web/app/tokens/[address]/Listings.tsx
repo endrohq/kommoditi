@@ -1,6 +1,7 @@
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { usePoolTransactions } from "@/hooks/usePoolTransactions";
 import { contracts } from "@/lib/constants";
+import { useTokenPage } from "@/providers/TokenPageProvider";
 import { CommodityListing, EthAddress } from "@/typings";
 import { getShortenedFormat } from "@/utils/address.utils";
 import { getDistanceForDate } from "@/utils/date.utils";
@@ -20,16 +21,11 @@ import Link from "next/link";
 import React from "react";
 import { useReadContract } from "wagmi";
 
-interface TransactionListProps {
-	poolAddress: EthAddress;
-}
-
-const { commodityPool } = contracts;
-
-export function Listings({ poolAddress }: TransactionListProps) {
+export function Listings() {
+	const { commodity } = useTokenPage();
 	const { data: listingsData, isLoading } = useReadContract({
-		address: poolAddress,
-		abi: commodityPool.abi,
+		address: commodity?.poolAddress,
+		abi: contracts.commodityPool.abi,
 		functionName: "getListings",
 	});
 

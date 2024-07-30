@@ -1,15 +1,19 @@
 "use client";
 
-import { CurrentPrice } from "@/app/tokens/[address]/CurrentPrice";
-import { LiquidityDistribution } from "@/app/tokens/[address]/LiquidityDistribution";
-import { LiquidityProvider } from "@/app/tokens/[address]/LiquidityProvider";
 import { Listings } from "@/app/tokens/[address]/Listings";
 import { PoolStatistics } from "@/app/tokens/[address]/PoolStatistics";
 import { TransactionList } from "@/app/tokens/[address]/PoolTransactions";
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
-import { useCommodity } from "@/hooks/useCommodity";
+import { TokenPageHeader } from "@/app/tokens/[address]/components/TokenPageHeader";
+import {
+	LoadingTokenPage,
+	TokenNotFoundPage,
+} from "@/app/tokens/[address]/components/placeholders";
+import { Button } from "@/components/button";
+import { PlusOutlined } from "@/components/icons/PlusOutlined";
+import { useTokenPage } from "@/providers/TokenPageProvider";
+import { getTokenPage } from "@/utils/route.utils";
 import { Content } from "@carbon/react";
+import Link from "next/link";
 import React from "react";
 
 interface Props {
@@ -19,60 +23,28 @@ interface Props {
 }
 
 export default function Page({ params }: Props) {
-	const { commodity, isLoading } = useCommodity({
-		address: params.address,
-	});
-
+	const { isLoading, commodity } = useTokenPage();
 	if (isLoading) {
-		return (
-			<Content className="px-56">
-				<div className="w-full flex justify-center">
-					<LoadingOutlined />
-				</div>
-			</Content>
-		);
+		return <LoadingTokenPage />;
 	}
-
 	if (!commodity || !commodity?.poolAddress) {
-		return (
-			<Content className="px-56">
-				<div className="w-full flex justify-center">
-					<p>Commodity not found</p>
-				</div>
-			</Content>
-		);
+		return <TokenNotFoundPage />;
 	}
 
 	return (
-		<Content className="px-56 flex items-start space-x-10">
-			<div className="w-8/12">
-				<Breadcrumbs
-					crumbs={[
-						{ label: "Commodities" },
-						{
-							label: commodity.token.name,
-							href: `/tokens/${commodity.tokenAddress}`,
-						},
-					]}
-				/>
-				<div className="mt-4 flex items-center justify-between">
-					<div className="font-medium  flex items-center space-x-4 text-indigo-900">
-						<div className="bg-gray-300 w-8 aspect-square rounded-full" />
-						<span className="text-xl font-bold">
-							{commodity.token.name} ({commodity.token.symbol})
-						</span>
-					</div>
-					<CurrentPrice address={commodity?.poolAddress} />
-				</div>
-				<LiquidityDistribution address={commodity?.poolAddress} />
-				<PoolStatistics commodity={commodity} />
+		<Content className="px-72 flex items-start space-x-10">
+			<div className="w-8/12 mx-auto">
+				<TokenPageHeader />
+				<PoolStatistics />
 				<div className="gap-10 flex flex-col mt-10">
-					<Listings poolAddress={commodity?.poolAddress} />
-					<TransactionList poolAddress={commodity?.poolAddress} />
+					<Listings />
+					<TransactionList />
 				</div>
 			</div>
 			<div className="w-4/12">
-				<LiquidityProvider commodity={commodity} />
+				<Link href={`${getTokenPage(params.address)}/liquidity`}>
+					<Button icon={<PlusOutlined />}>Add Liquidity</Button>
+				</Link>
 			</div>
 		</Content>
 	);

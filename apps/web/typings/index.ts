@@ -80,3 +80,10 @@ export type PoolTransaction = {
 	blockNumber: bigint;
 	blockHash: EthAddress;
 };
+
+export interface CommodityPoolLiquidity {
+	ctf: string;
+	minPrice: number;
+	maxPrice: number;
+	amount: number;
+}
