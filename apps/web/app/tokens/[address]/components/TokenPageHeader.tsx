@@ -2,6 +2,7 @@ import { CurrentPrice } from "@/app/tokens/[address]/components/CurrentPrice";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { useCommodityPrice } from "@/hooks/useCommodityPrice";
 import { useTokenPage } from "@/providers/TokenPageProvider";
+import { getTokenPage } from "@/utils/route.utils";
 import React from "react";
 
 export function TokenPageHeader() {
@@ -21,7 +22,6 @@ export function TokenPageHeader() {
 					{ label: "Commodities" },
 					{
 						label: commodity.token.name,
-						href: `/tokens/${commodity.tokenAddress}`,
 					},
 				]}
 			/>

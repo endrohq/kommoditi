@@ -5,7 +5,7 @@ const HelloFutureModule = buildModule("HelloFutureModuleLocal", (m) => {
   const ProducerRegistry = m.contract("ProducerRegistry");
   const CommodityFactory = m.contract("CommodityFactory");
 
-  const TokenService = m.contract("HederaTokenService", [], {
+  const TokenService = m.contract("MockHederaTokenService", [], {
     after: [ProducerRegistry]
   });
 
@@ -17,28 +17,27 @@ const HelloFutureModule = buildModule("HelloFutureModuleLocal", (m) => {
     after: [CommodityExchange, TokenService]
   });
 
-  m.call(TokenAuthority, 'createCommodity', ['Cacao', 'CACAO'], {
-    id: 'createCacao'
-  })
-  m.call(TokenAuthority, 'createCommodity', ['Grain', 'GRAIN'], {
-    id: 'createGrain'
-  })
-  m.call(TokenAuthority, 'createCommodity', ['Basmati Rice', 'BASMATI'], {
-    id: 'createBasmati'
-  })
-  m.call(TokenAuthority, 'createCommodity', ['Coffee Beans', 'COFFEE'], {
-    id: 'createCoffee'
-  })
-
-  m.call(TokenAuthority, 'getCommodities', [], {
-    id: 'getCommodities'
-  })
-
   // Call setAuthority on the CommodityExchange contract
   m.call(CommodityExchange, "setTokenAuthority", [TokenAuthority]);
   m.call(CommodityFactory, "setTokenAuthority", [TokenAuthority]);
   m.call(CommodityFactory, "setCommodityExchange", [CommodityExchange]);
 
+  m.call(CommodityExchange, 'createCommodityToken', ['Cacao', 'CACAO'], {
+    id: 'createCacao',
+    after: [CommodityFactory, TokenAuthority]
+  })
+  m.call(CommodityExchange, 'createCommodityToken', ['Grain', 'GRAIN'], {
+    id: 'createGrain',
+    after: [CommodityFactory, TokenAuthority]
+  })
+  m.call(CommodityExchange, 'createCommodityToken', ['Basmati Rice', 'BASMATI'], {
+    id: 'createBasmati',
+    after: [CommodityFactory, TokenAuthority]
+  })
+  m.call(CommodityExchange, 'createCommodityToken', ['Coffee Beans', 'COFFEE'], {
+    id: 'createCoffee',
+    after: [CommodityFactory, TokenAuthority]
+  })
 
   return {
     ProducerRegistry,

@@ -24,6 +24,74 @@
 		"anonymous": false,
 		"inputs": [
 			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "ctf",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "producer",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "int64[]",
+				"name": "serialNumber",
+				"type": "int64[]"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			}
+		],
+		"name": "CTFPurchase",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "fp",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "ctf",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "int64",
+				"name": "serialNumber",
+				"type": "int64"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "price",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "fee",
+				"type": "uint256"
+			}
+		],
+		"name": "FPPurchase",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
 				"indexed": false,
 				"internalType": "address",
 				"name": "ctf",
@@ -74,15 +142,9 @@
 			},
 			{
 				"indexed": false,
-				"internalType": "int64",
-				"name": "quantity",
-				"type": "int64"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "price",
-				"type": "uint256"
+				"internalType": "int64[]",
+				"name": "serialNumbers",
+				"type": "int64[]"
 			}
 		],
 		"name": "ListingAdded",
@@ -106,7 +168,7 @@
 			{
 				"indexed": false,
 				"internalType": "int64",
-				"name": "quantity",
+				"name": "serialNumber",
 				"type": "int64"
 			},
 			{
@@ -146,14 +208,9 @@
 				"type": "address"
 			},
 			{
-				"internalType": "int64",
-				"name": "quantity",
-				"type": "int64"
-			},
-			{
-				"internalType": "uint256",
-				"name": "price",
-				"type": "uint256"
+				"internalType": "int64[]",
+				"name": "serialNumbers",
+				"type": "int64[]"
 			}
 		],
 		"name": "addListing",
@@ -341,14 +398,9 @@
 				"type": "address"
 			},
 			{
-				"internalType": "int64",
+				"internalType": "int64[]",
 				"name": "",
-				"type": "int64"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
+				"type": "int64[]"
 			},
 			{
 				"internalType": "bool",
@@ -371,14 +423,9 @@
 						"type": "address"
 					},
 					{
-						"internalType": "int64",
-						"name": "quantity",
-						"type": "int64"
-					},
-					{
-						"internalType": "uint256",
-						"name": "price",
-						"type": "uint256"
+						"internalType": "int64[]",
+						"name": "serialNumbers",
+						"type": "int64[]"
 					},
 					{
 						"internalType": "uint256",
@@ -441,16 +488,6 @@
 				"type": "address"
 			},
 			{
-				"internalType": "int64",
-				"name": "quantity",
-				"type": "int64"
-			},
-			{
-				"internalType": "uint256",
-				"name": "price",
-				"type": "uint256"
-			},
-			{
 				"internalType": "uint256",
 				"name": "dateOffered",
 				"type": "uint256"
@@ -496,13 +533,8 @@
 			},
 			{
 				"internalType": "int64",
-				"name": "quantity",
+				"name": "serialNumber",
 				"type": "int64"
-			},
-			{
-				"internalType": "uint256",
-				"name": "maxPrice",
-				"type": "uint256"
 			}
 		],
 		"name": "purchaseCommodity",

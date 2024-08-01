@@ -5,3 +5,7 @@ export function getDistanceForDate(date: Date) {
 		addSuffix: true,
 	});
 }
+
+export function parseSmartContractDate(date: bigint) {
+	return new Date(Number(date) * 1000);
+}

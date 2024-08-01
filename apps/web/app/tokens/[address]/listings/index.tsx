@@ -1,13 +1,12 @@
+import CreateListingModal from "@/app/tokens/[address]/listings/CreateListingModal";
+import { Button } from "@/components/button";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
-import { usePoolTransactions } from "@/hooks/usePoolTransactions";
+import { PlusOutlined } from "@/components/icons/PlusOutlined";
 import { contracts } from "@/lib/constants";
 import { useTokenPage } from "@/providers/TokenPageProvider";
-import { CommodityListing, EthAddress } from "@/typings";
+import { CommodityListing } from "@/typings";
 import { getShortenedFormat } from "@/utils/address.utils";
-import { getDistanceForDate } from "@/utils/date.utils";
-import { formatNumber } from "@/utils/number.utils";
-import { getProfileRoute } from "@/utils/route.utils";
-import { formatTransactionType } from "@/utils/transaction.utils";
+import { getDistanceForDate, parseSmartContractDate } from "@/utils/date.utils";
 import {
 	Table,
 	TableBody,
@@ -17,11 +16,11 @@ import {
 	TableHeader,
 	TableRow,
 } from "@carbon/react";
-import Link from "next/link";
 import React from "react";
 import { useReadContract } from "wagmi";
 
-export function Listings() {
+export function CommodityListings() {
+	const [createModalOpen, setCreateModalOpen] = React.useState(false);
 	const { commodity } = useTokenPage();
 	const { data: listingsData, isLoading } = useReadContract({
 		address: commodity?.poolAddress,
@@ -29,13 +28,30 @@ export function Listings() {
 		functionName: "getListings",
 	});
 
-	const listings = listingsData as CommodityListing[];
+	const listings = (listingsData as Record<string, any>[])?.map(
+		(listing) =>
+			({
+				dateOffered: parseSmartContractDate(listing.dateOffered),
+				producer: listing.producer,
+				serialNumbers: listing.serialNumbers.map((i: bigint) => Number(i)),
+				active: listing.active,
+			}) as CommodityListing,
+	);
 
 	console.log(listings);
 
 	return (
 		<div>
-			<h2 className="font-bold text-base mb-2">Listings</h2>
+			<div className="flex justify-between mb-2">
+				<h2 className="font-bold text-base ">Listings</h2>
+				<Button
+					onClick={() => setCreateModalOpen(true)}
+					icon={<PlusOutlined />}
+					variant="link"
+				>
+					Add Listings
+				</Button>
+			</div>
 			<TableContainer>
 				<Table>
 					<TableHead>
@@ -43,9 +59,8 @@ export function Listings() {
 							<TableCell>Producer</TableCell>
 							{!isLoading && listings?.length > 0 && (
 								<>
-									<TableHeader>Quantity</TableHeader>
-									<TableHeader>Price Offer</TableHeader>
-									<TableHeader>Total Price</TableHeader>
+									<TableHeader>Time</TableHeader>
+									<TableHeader>Serial Number</TableHeader>
 								</>
 							)}
 						</TableRow>
@@ -62,11 +77,10 @@ export function Listings() {
 								<TableRow>
 									<TableCell>{getShortenedFormat(listing.producer)}</TableCell>
 
-									<TableCell>{listing?.quantity?.toString()}</TableCell>
-									<TableCell>${formatNumber(listing.price)}</TableCell>
 									<TableCell>
-										${formatNumber(listing.price * listing.quantity)}
+										{getDistanceForDate(listing?.dateOffered)}
 									</TableCell>
+									<TableCell>#{listing.serialNumbers?.join(",")}</TableCell>
 								</TableRow>
 							))
 						) : (
@@ -77,6 +91,9 @@ export function Listings() {
 					</TableBody>
 				</Table>
 			</TableContainer>
+			{createModalOpen && (
+				<CreateListingModal handleClose={() => setCreateModalOpen(false)} />
+			)}
 		</div>
 	);
 }

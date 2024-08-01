@@ -18,15 +18,12 @@ import {
 import Link from "next/link";
 import React from "react";
 
-interface TransactionListProps {
-	poolAddress: EthAddress;
-}
-
 const eventNames = [
-	"LiquidityAdded",
 	"ListingAdded",
 	"ListingSold",
-	"LiquidityRemoved",
+	"LiquidityChanged",
+	"CTFPurchase",
+	"FPPurchase",
 ];
 
 export function TransactionList() {

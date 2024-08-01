@@ -23,9 +23,9 @@ export type Account = {
 
 export type CommodityListing = {
 	producer: EthAddress;
-	quantity: bigint;
-	price: bigint;
 	active: boolean;
+	serialNumbers: number[];
+	dateOffered: Date;
 };
 
 export type CommodityListingApproval = {

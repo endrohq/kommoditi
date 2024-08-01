@@ -28,8 +28,6 @@ contract CommodityFactory {
     }
 
     modifier onlyCommodityExchange() {
-        console.log("msg.sender: %s", msg.sender);
-        console.log("admin: %s", commodityExchange);
         require(msg.sender == admin, "Only CommodityExchange can perform this action");
         _;
     }
@@ -43,7 +41,7 @@ contract CommodityFactory {
         tokenAuthority = TokenAuthority(_tokenAuthority);
     }
 
-    function createPool(address tokenAddress) external onlyAdmin {
+    function createPool(address tokenAddress) external {
         require(address(tokenAuthority) != address(0), "TokenAuthority not set");
         // require(tokenAuthority.isApprovedToken(tokenAddress), "Token not approved for trading");
         require(commodityPoolsByToken[tokenAddress] == address(0), "Pool already exists");

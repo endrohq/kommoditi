@@ -8,7 +8,7 @@ interface IHederaTokenService {
         address treasury;
         string memo;
         bool tokenSupplyType;
-        uint32 maxSupply;
+        int64 maxSupply;
         bool freezeDefault;
         Expiry expiry;
     }
@@ -25,32 +25,22 @@ interface IHederaTokenService {
         bool deleted;
         bool defaultKycStatus;
         bool pauseStatus;
-        // Add other fields as necessary
     }
 
-    function createFungibleToken(
-        HederaToken memory token,
-        uint64 initialTotalSupply,
-        uint32 decimals
-    ) external payable returns (int64 responseCode, address tokenAddress);
+    function createNonFungibleToken(HederaToken memory token) external payable returns (int64 responseCode, address tokenAddress);
 
-    function mintToken(
-        address token,
-        int64 amount,
-        bytes[] memory metadata
-    ) external returns (int64 responseCode, uint64 newTotalSupply, int64[] memory serialNumbers);
+    function mintToken(address token, int64 amount, bytes[] memory metadata) external returns (int64 responseCode, int64 newTotalSupply, int64[] memory serialNumbers);
 
-    function transferToken(
-        address token,
-        address sender,
-        address recipient,
-        int64 amount
-    ) external returns (int64 responseCode);
+    function transferNFT(address token, address sender, address receiver, int64 serialNumber) external returns (int64 responseCode);
 
-    function associateToken(
-        address account,
-        address token
-    ) external returns (int64 responseCode);
+    function associateToken(address account, address token) external returns (int64 responseCode);
 
-    function getTokenInfo(address token) external view returns (int64 responseCode, TokenInfo memory tokenInfo);
+    function getTokenInfo(address token) external returns (int64 responseCode, TokenInfo memory tokenInfo);
+
+    function getNonFungibleTokenInfo(address token, int64 serialNumber) external returns (int64 responseCode, NonFungibleTokenInfo memory tokenInfo);
+
+    struct NonFungibleTokenInfo {
+        int64[] serialNumbers;
+        bytes[] metadata;
+    }
 }

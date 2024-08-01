@@ -1,6 +1,5 @@
 "use client";
 
-import { Listings } from "@/app/tokens/[address]/Listings";
 import { PoolStatistics } from "@/app/tokens/[address]/PoolStatistics";
 import { TransactionList } from "@/app/tokens/[address]/PoolTransactions";
 import { TokenPageHeader } from "@/app/tokens/[address]/components/TokenPageHeader";
@@ -8,6 +7,7 @@ import {
 	LoadingTokenPage,
 	TokenNotFoundPage,
 } from "@/app/tokens/[address]/components/placeholders";
+import { CommodityListings } from "@/app/tokens/[address]/listings";
 import { Button } from "@/components/button";
 import { PlusOutlined } from "@/components/icons/PlusOutlined";
 import { useTokenPage } from "@/providers/TokenPageProvider";
@@ -37,7 +37,7 @@ export default function Page({ params }: Props) {
 				<TokenPageHeader />
 				<PoolStatistics />
 				<div className="gap-10 flex flex-col mt-10">
-					<Listings />
+					<CommodityListings />
 					<TransactionList />
 				</div>
 			</div>

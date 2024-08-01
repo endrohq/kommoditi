@@ -67,11 +67,6 @@ export function ContainerHeader() {
 								</Link>
 							</HeaderMenuItem>
 							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
-								<Link className="h-full" href={ROUTE_MINT_PAGE}>
-									Mint
-								</Link>
-							</HeaderMenuItem>
-							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
 								<Link className="h-full" href={ROUTE_ADMIN_PAGE}>
 									Admin
 								</Link>
@@ -89,9 +84,6 @@ export function ContainerHeader() {
 									</HeaderMenuItem>
 									<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
 										<Link href={ROUTE_ADMIN_PAGE}>Admin</Link>
-									</HeaderMenuItem>
-									<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
-										<Link href={ROUTE_MINT_PAGE}>Mint</Link>
 									</HeaderMenuItem>
 								</HeaderSideNavItems>
 							</SideNavItems>

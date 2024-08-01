@@ -23,9 +23,52 @@
 				"internalType": "address",
 				"name": "tokenAddress",
 				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "int64",
+				"name": "serialNumber",
+				"type": "int64"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "owner",
+				"type": "address"
 			}
 		],
-		"name": "TokenApproved",
+		"name": "NFTMinted",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "int64",
+				"name": "serialNumber",
+				"type": "int64"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			}
+		],
+		"name": "NFTTransferred",
 		"type": "event"
 	},
 	{
@@ -54,44 +97,6 @@
 		"type": "event"
 	},
 	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "producer",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "int64",
-				"name": "amount",
-				"type": "int64"
-			}
-		],
-		"name": "TokenMinted",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			}
-		],
-		"name": "TokenRevoked",
-		"type": "event"
-	},
-	{
 		"inputs": [],
 		"name": "admin",
 		"outputs": [
@@ -99,38 +104,6 @@
 				"internalType": "address",
 				"name": "",
 				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			}
-		],
-		"name": "approveToken",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "approvedTokens",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
 			}
 		],
 		"stateMutability": "view",
@@ -162,8 +135,14 @@
 				"type": "string"
 			}
 		],
-		"name": "createCommodity",
-		"outputs": [],
+		"name": "createToken",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
@@ -227,9 +206,9 @@
 										"type": "bool"
 									},
 									{
-										"internalType": "uint32",
+										"internalType": "int64",
 										"name": "maxSupply",
-										"type": "uint32"
+										"type": "int64"
 									},
 									{
 										"internalType": "bool",
@@ -294,7 +273,7 @@
 				"type": "tuple[]"
 			}
 		],
-		"stateMutability": "view",
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -337,9 +316,9 @@
 								"type": "bool"
 							},
 							{
-								"internalType": "uint32",
+								"internalType": "int64",
 								"name": "maxSupply",
-								"type": "uint32"
+								"type": "int64"
 							},
 							{
 								"internalType": "bool",
@@ -399,54 +378,6 @@
 				"type": "tuple"
 			}
 		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			}
-		],
-		"name": "isApprovedToken",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "int64",
-				"name": "amount",
-				"type": "int64"
-			},
-			{
-				"internalType": "address",
-				"name": "producer",
-				"type": "address"
-			}
-		],
-		"name": "requestMinting",
-		"outputs": [
-			{
-				"internalType": "int64",
-				"name": "responseCode",
-				"type": "int64"
-			}
-		],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
@@ -456,10 +387,26 @@
 				"internalType": "address",
 				"name": "tokenAddress",
 				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "receiver",
+				"type": "address"
+			},
+			{
+				"internalType": "int64",
+				"name": "quantity",
+				"type": "int64"
 			}
 		],
-		"name": "revokeToken",
-		"outputs": [],
+		"name": "mintNFT",
+		"outputs": [
+			{
+				"internalType": "int64[]",
+				"name": "",
+				"type": "int64[]"
+			}
+		],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
@@ -482,11 +429,11 @@
 			},
 			{
 				"internalType": "int64",
-				"name": "amount",
+				"name": "serialNumber",
 				"type": "int64"
 			}
 		],
-		"name": "transferToken",
+		"name": "transferNFT",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
