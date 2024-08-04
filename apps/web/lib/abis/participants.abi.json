@@ -1,0 +1,226 @@
+[
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "participantAddress",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			},
+			{
+				"indexed": false,
+				"internalType": "enum ParticipantRegistry.ParticipantType",
+				"name": "participantType",
+				"type": "uint8"
+			}
+		],
+		"name": "ParticipantRegistered",
+		"type": "event"
+	},
+	{
+		"inputs": [],
+		"name": "consumerCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "consumers",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "overheadPercentage",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "ctfCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "ctfs",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "overheadPercentage",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_participantAddress",
+				"type": "address"
+			}
+		],
+		"name": "getParticipantByAddress",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "overheadPercentage",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"components": [
+							{
+								"internalType": "string",
+								"name": "name",
+								"type": "string"
+							},
+							{
+								"internalType": "string[]",
+								"name": "h3Indexes",
+								"type": "string[]"
+							}
+						],
+						"internalType": "struct ParticipantRegistry.Location[]",
+						"name": "locations",
+						"type": "tuple[]"
+					}
+				],
+				"internalType": "struct ParticipantRegistry.Participant",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "producerCount",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"name": "producers",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "overheadPercentage",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "name",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "string",
+				"name": "_name",
+				"type": "string"
+			},
+			{
+				"internalType": "uint256",
+				"name": "_overheadPercentage",
+				"type": "uint256"
+			},
+			{
+				"internalType": "enum ParticipantRegistry.ParticipantType",
+				"name": "_participantType",
+				"type": "uint8"
+			},
+			{
+				"components": [
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"internalType": "string[]",
+						"name": "h3Indexes",
+						"type": "string[]"
+					}
+				],
+				"internalType": "struct ParticipantRegistry.Location[]",
+				"name": "_locations",
+				"type": "tuple[]"
+			}
+		],
+		"name": "registerParticipant",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]

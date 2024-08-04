@@ -1,16 +1,17 @@
 import {buildModule} from "@nomicfoundation/hardhat-ignition/modules";
+import {commodityTokens, listings, participantsOnDevnet} from "../data";
 
 const HelloFutureModule = buildModule("HelloFutureModuleLocal", (m) => {
 
-  const ProducerRegistry = m.contract("ProducerRegistry");
+  const ParticipantRegistry = m.contract("ParticipantRegistry");
   const CommodityFactory = m.contract("CommodityFactory");
 
   const TokenService = m.contract("MockHederaTokenService", [], {
-    after: [ProducerRegistry]
+    after: [ParticipantRegistry]
   });
 
   const CommodityExchange = m.contract("CommodityExchange",[CommodityFactory],{
-    after: [ProducerRegistry, CommodityFactory]
+    after: [ParticipantRegistry, CommodityFactory]
   });
 
   const TokenAuthority = m.contract("TokenAuthority", [CommodityExchange, TokenService], {
@@ -22,25 +23,32 @@ const HelloFutureModule = buildModule("HelloFutureModuleLocal", (m) => {
   m.call(CommodityFactory, "setTokenAuthority", [TokenAuthority]);
   m.call(CommodityFactory, "setCommodityExchange", [CommodityExchange]);
 
-  m.call(CommodityExchange, 'createCommodityToken', ['Cacao', 'CACAO'], {
-    id: 'createCacao',
-    after: [CommodityFactory, TokenAuthority]
-  })
-  m.call(CommodityExchange, 'createCommodityToken', ['Grain', 'GRAIN'], {
-    id: 'createGrain',
-    after: [CommodityFactory, TokenAuthority]
-  })
-  m.call(CommodityExchange, 'createCommodityToken', ['Basmati Rice', 'BASMATI'], {
-    id: 'createBasmati',
-    after: [CommodityFactory, TokenAuthority]
-  })
-  m.call(CommodityExchange, 'createCommodityToken', ['Coffee Beans', 'COFFEE'], {
-    id: 'createCoffee',
-    after: [CommodityFactory, TokenAuthority]
-  })
+  let tokenFutures = [];
+  for (const tokens of commodityTokens) {
+   const tokenDeployment = m.call(CommodityExchange, 'createCommodityToken', [tokens.name, tokens.symbol], {
+      id: tokens.id,
+      after: [CommodityFactory, TokenAuthority]
+    })
+    tokenFutures.push(tokenDeployment);
+  }
+
+  for (const producer of participantsOnDevnet) {
+    m.call(ParticipantRegistry, 'registerParticipant', [producer.name, producer.overheadPercentage, producer.type, producer.locations], {
+      from: producer.account,
+      id: `registerParticipant_${producer.name?.replace(/\s/g, '')}`,
+    })
+  }
+
+  for (const listing of listings) {
+    m.call(CommodityExchange, 'listCommodity', [listing.token, listing.quantity], {
+      id: listing.id,
+      from: listing.producer,
+      after: tokenFutures
+    })
+  }
 
   return {
-    ProducerRegistry,
+    ParticipantRegistry,
     TokenService,
     CommodityExchange,
     TokenAuthority,

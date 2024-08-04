@@ -12,3 +12,21 @@
 .cds--cc--grid rect.chart-grid-backdrop {
   fill: transparent !important;
 }
+
+.mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib-inner {
+  display: none !important;
+}
+
+@layer base {
+  .layout {
+    @apply w-[95%] xl:w-[90%] mx-auto max-w-[1140px];
+  }
+}
+
+* {
+  z-index: inherit;
+}
+
+canvas {
+  z-index: 0 !important;
+}

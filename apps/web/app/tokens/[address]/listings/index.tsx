@@ -25,7 +25,7 @@ export function CommodityListings() {
 	const { data: listingsData, isLoading } = useReadContract({
 		address: commodity?.poolAddress,
 		abi: contracts.commodityPool.abi,
-		functionName: "getListings",
+		functionName: "getOffers",
 	});
 
 	const listings = (listingsData as Record<string, any>[])?.map(

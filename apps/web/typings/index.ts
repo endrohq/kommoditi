@@ -7,19 +7,23 @@ export type LocationItem = {
 	h3Index?: string;
 };
 
-export type Producer = {
+export type ParticipantType = "producer" | "consumer" | "ctf";
+
+export type Participant = {
 	name: string;
-	location: string;
-	h3Index?: string;
+	type: ParticipantType;
+	overheadPercentage: number;
+	locations: Region[];
 };
 
 export type EthAddress = `0x${string}`;
 
-export type Account = {
+export type AccountBase = {
 	address: EthAddress;
 	balance?: string;
-	producer?: Producer;
 };
+
+export type Account = AccountBase & Participant;
 
 export type CommodityListing = {
 	producer: EthAddress;
@@ -87,3 +91,15 @@ export interface CommodityPoolLiquidity {
 	maxPrice: number;
 	amount: number;
 }
+
+export type Region = {
+	id: string;
+	name: string;
+	h3Indexes: string[];
+};
+
+export type MapBoxViewState = {
+	longitude: number;
+	latitude: number;
+	zoom: number;
+};

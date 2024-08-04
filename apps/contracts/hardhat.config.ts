@@ -1,10 +1,9 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import * as dotenv from "dotenv";
+import {adminAccount, localAccounts} from "./ignition/data";
 
 dotenv.config();
-
-const PRIVATE_KEY = process.env.PRIVATE_KEY || "";
 
 const config: HardhatUserConfig = {
   solidity: "0.8.26",
@@ -12,7 +11,13 @@ const config: HardhatUserConfig = {
     hederaTestnet: {
       url: "https://testnet.hashio.io/api",
       chainId: 296,
-      accounts: [PRIVATE_KEY],
+      accounts: [adminAccount],
+    },
+    hardhat: {
+      accounts: localAccounts?.map((account) => ({
+        privateKey: `0x${account}`,
+        balance: "1000000000000000000000000",
+      })),
     }
   }
 };

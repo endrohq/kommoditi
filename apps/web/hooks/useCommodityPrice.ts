@@ -11,9 +11,7 @@ export function useCommodityPrice(poolAddress?: EthAddress) {
 	});
 
 	return {
-		currentPrice: currentPrice
-			? parseSmToNumberFormat(Number(currentPrice))
-			: 0,
+		currentPrice: currentPrice ? Number(currentPrice) / 10e7 : 0,
 		priceIsLoading,
 	};
 }

@@ -58,7 +58,7 @@ export function ContainerHeader() {
 							isActive={isSideNavExpanded}
 						/>
 						<Link className="cds--header__name" href={ROUTE_HOME} passHref>
-							Hello Future
+							Hello Future {account?.type ? `(As ${account?.type})` : ""}
 						</Link>
 						<HeaderNavigation aria-label="Hello Future Navigation">
 							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>

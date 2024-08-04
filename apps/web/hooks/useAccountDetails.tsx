@@ -1,5 +1,5 @@
 import { contracts } from "@/lib/constants";
-import { Account, EthAddress, LocationItem, Producer } from "@/typings";
+import { Account, EthAddress, Participant } from "@/typings";
 import { formatEther } from "viem";
 import { useBalance, useReadContract } from "wagmi";
 
@@ -13,8 +13,6 @@ interface UseAccountDetailsProps {
 	isLoading: boolean;
 }
 
-const producerRegistry = contracts.producerRegistry;
-
 export function useAccountDetails({
 	address,
 	enabled = true,
@@ -27,9 +25,9 @@ export function useAccountDetails({
 		},
 	});
 	const { data, isLoading: isLoadingProducerDetails } = useReadContract({
-		address: producerRegistry.address,
-		abi: producerRegistry.abi,
-		functionName: "getProducer",
+		address: contracts.participantRegistry.address,
+		abi: contracts.participantRegistry.abi,
+		functionName: "getParticipantByAddress",
 		args: [address],
 		query: {
 			enabled: canFetch,
@@ -37,15 +35,16 @@ export function useAccountDetails({
 	});
 
 	const formattedBalance = balance?.value ? formatEther(balance?.value) : "0";
-
-	const typedData = data as Producer;
-	const producer = typedData?.location?.length > 0 ? typedData : undefined;
+	const participant = data as Participant;
 
 	return {
 		account: {
 			address,
 			balance: formattedBalance,
-			producer,
+			locations: participant?.locations || [],
+			name: participant?.name || "",
+			type: participant?.type,
+			overheadPercentage: Number(participant?.overheadPercentage),
 		},
 		isLoading: isLoadingBalance || isLoadingProducerDetails,
 	};

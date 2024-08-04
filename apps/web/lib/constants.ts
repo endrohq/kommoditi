@@ -5,7 +5,7 @@ import { hardhat, hederaTestnet } from "wagmi/chains";
 import commodityPoolAbi from "./abis/commodity-pool.abi.json";
 import exchangeAbi from "./abis/exchange.abi.json";
 import commodityFactoryAbi from "./abis/factory.abi.json";
-import producersAbi from "./abis/producers.abi.json";
+import participantsAbi from "./abis/participants.abi.json";
 import tokenAuthorityAbi from "./abis/token-authority.abi.json";
 
 const isLocal = process.env.NEXT_PUBLIC_IS_LOCAL === "true";
@@ -31,7 +31,7 @@ export const optionConfig = isLocal ? localOnlyOptions : testnetOptions;
 export const chainOptions = isLocal ? localOnlyConfig : testnetOnlyConfig;
 
 type ContractNames =
-	| "producerRegistry"
+	| "participantRegistry"
 	| "commodityExchange"
 	| "tokenAuthority"
 	| "commodityFactory"
@@ -43,20 +43,20 @@ type ContractInfo = {
 };
 
 const localContracts: Record<ContractNames, ContractInfo> = {
-	producerRegistry: {
-		address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-		abi: producersAbi as Abi,
+	participantRegistry: {
+		address: "0xc5BE7797465EEe63523c4674F347730A9D0472A4",
+		abi: participantsAbi as Abi,
 	},
 	commodityExchange: {
-		address: "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+		address: "0x5e06fC9925536348d0c2184Da3e628A079409Cc3",
 		abi: exchangeAbi as Abi,
 	},
 	tokenAuthority: {
-		address: "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+		address: "0x8F9A6c5F2f41F0f71E28B21ae32C26C6B0330702",
 		abi: tokenAuthorityAbi as Abi,
 	},
 	commodityFactory: {
-		address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+		address: "0x7952A2d5fA150c78C1FFD0434175ee3D59b628B7",
 		abi: commodityFactoryAbi as Abi,
 	},
 	commodityPool: {
@@ -66,7 +66,7 @@ const localContracts: Record<ContractNames, ContractInfo> = {
 };
 
 const testnetContracts: Record<ContractNames, ContractInfo> = {
-	producerRegistry: {
+	participantRegistry: {
 		address: "0x",
 		abi: [],
 	},
