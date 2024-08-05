@@ -282,6 +282,42 @@
 				"internalType": "address",
 				"name": "tokenAddress",
 				"type": "address"
+			},
+			{
+				"internalType": "int64",
+				"name": "serialNumber",
+				"type": "int64"
+			}
+		],
+		"name": "getNonFungibleTokenInfo",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "int64[]",
+						"name": "serialNumbers",
+						"type": "int64[]"
+					},
+					{
+						"internalType": "bytes[]",
+						"name": "metadata",
+						"type": "bytes[]"
+					}
+				],
+				"internalType": "struct IHederaTokenService.NonFungibleTokenInfo",
+				"name": "",
+				"type": "tuple"
+			}
+		],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
 			}
 		],
 		"name": "getTokenInfo",

@@ -1,5 +1,7 @@
+import { useParticipant } from "@/hooks/useParticipant";
 import { contracts } from "@/lib/constants";
 import { Account, EthAddress, Participant } from "@/typings";
+import { useMemo } from "react";
 import { formatEther } from "viem";
 import { useBalance, useReadContract } from "wagmi";
 
@@ -15,29 +17,30 @@ interface UseAccountDetailsProps {
 
 export function useAccountDetails({
 	address,
+	enabled,
 }: UseAccountDetailsArgs): UseAccountDetailsProps {
-	const { data: balance, isLoading: isLoadingBalance } = useBalance({
+	const { data: balance } = useBalance({
 		address,
 	});
-	const { data, isLoading: isLoadingProducerDetails } = useReadContract({
-		address: contracts.participantRegistry.address,
-		abi: contracts.participantRegistry.abi,
-		functionName: "getParticipantByAddress",
-		args: [address],
-	});
 
-	const formattedBalance = balance?.value ? formatEther(balance?.value) : "0";
-	const participant = data as Participant;
+	const participant = useParticipant({ address, enabled });
 
-	return {
-		account: {
+	const account = useMemo(() => {
+		return {
 			address,
-			balance: formattedBalance,
+			balance: balance?.value ? formatEther(balance?.value) : "0",
 			locations: participant?.locations || [],
 			name: participant?.name || "",
 			type: participant?.type,
 			overheadPercentage: Number(participant?.overheadPercentage),
-		},
-		isLoading: isLoadingProducerDetails,
-	};
+		};
+	}, [participant, balance]);
+
+	return useMemo(
+		() => ({
+			account,
+			isLoading: false,
+		}),
+		[account],
+	);
 }

@@ -20,7 +20,7 @@ import React, { useState } from "react";
 export default function Page() {
 	const [showModal, setShowModal] = useState(false);
 
-	const { isLoading, commodities, refetch } = useCommodities({});
+	const { isLoading, commodities } = useCommodities();
 
 	return (
 		<>
@@ -56,7 +56,6 @@ export default function Page() {
 										isListed={false}
 										commodity={row}
 										key={row.token?.symbol}
-										onListingChange={refetch}
 									/>
 								))
 							) : (
@@ -72,7 +71,6 @@ export default function Page() {
 			{showModal && (
 				<CreateCommodityModal
 					onSuccess={() => {
-						refetch();
 						setShowModal(false);
 					}}
 					onCancel={() => setShowModal(false)}

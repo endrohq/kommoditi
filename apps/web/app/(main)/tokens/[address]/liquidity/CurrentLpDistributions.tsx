@@ -1,4 +1,4 @@
-import { TimeWindowOverlay } from "@/app/tokens/[address]/liquidity/TimeWindowOverlay";
+import { TimeWindowOverlay } from "@/app/(main)/tokens/[address]/liquidity/TimeWindowOverlay";
 import { contracts } from "@/lib/constants";
 import { useTokenPage } from "@/providers/TokenPageProvider";
 import { CommodityPoolLiquidity } from "@/typings";

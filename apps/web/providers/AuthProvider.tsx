@@ -3,7 +3,7 @@
 import { useAccountDetails } from "@/hooks/useAccountDetails";
 import { Account, EthAddress } from "@/typings";
 import { usePrivy } from "@privy-io/react-auth";
-import React, { ReactNode, createContext, useContext } from "react";
+import React, { ReactNode, createContext, useContext, useMemo } from "react";
 
 export interface AuthContextProps {
 	account?: Account;
@@ -37,23 +37,26 @@ type AuthProviderProps = {
 
 export default function AuthProvider({ children }: AuthProviderProps) {
 	const { authenticated, user, login, ready, logout } = usePrivy();
-
-	const { account, isLoading } = useAccountDetails({
+	const { account, isLoading: isLoadingAccount } = useAccountDetails({
 		address: user?.wallet?.address as EthAddress,
+		enabled: ready,
 	});
 
-	return (
-		<AuthContext.Provider
-			value={{
-				account,
-				isAuthenticated: authenticated,
-				hasBalance: account?.balance !== "0",
-				login,
-				logout,
-				isLoading: !ready || isLoading,
-			}}
-		>
-			{children}
-		</AuthContext.Provider>
+	console.log(account);
+
+	const isLoading = !ready || isLoadingAccount;
+
+	const values = useMemo(
+		() => ({
+			account,
+			isAuthenticated: authenticated,
+			hasBalance: account?.balance !== "0",
+			login: () => login(),
+			logout: () => logout(),
+			isLoading,
+		}),
+		[isLoading, account, authenticated],
 	);
+
+	return <AuthContext.Provider value={values}>{children}</AuthContext.Provider>;
 }

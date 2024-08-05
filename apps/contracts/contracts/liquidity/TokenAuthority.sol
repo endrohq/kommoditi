@@ -104,6 +104,12 @@ contract TokenAuthority {
         return tokenInfo;
     }
 
+    function getNonFungibleTokenInfo(address tokenAddress, int64 serialNumber) external returns (IHederaTokenService.NonFungibleTokenInfo memory) {
+        (int64 responseCode, IHederaTokenService.NonFungibleTokenInfo memory tokenInfo) = tokenService.getNonFungibleTokenInfo(tokenAddress, serialNumber);
+        require(responseCode == HederaResponseCodes.SUCCESS, "Failed to get NFT info");
+        return tokenInfo;
+    }
+
     function getCommodities() external returns (CommodityInfo[] memory) {
         CommodityInfo[] memory commodities = new CommodityInfo[](createdTokens.length);
 

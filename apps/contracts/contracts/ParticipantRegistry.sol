@@ -70,25 +70,13 @@ contract ParticipantRegistry {
         emit ParticipantRegistered(msg.sender, _name, _participantType);
     }
 
-    function getParticipantTypeByAddress(address _participantAddress) internal view returns (ParticipantType) {
-        if (bytes(producers[_participantAddress].name).length != 0) {
-            return ParticipantType.Producer;
-        } else if (bytes(ctfs[_participantAddress].name).length != 0) {
-            return ParticipantType.CTF;
-        } else if (bytes(consumers[_participantAddress].name).length != 0) {
-            return ParticipantType.Consumer;
-        }
-        return ParticipantType.Producer;
-    }
-
     function getParticipantByAddress(address _participantAddress) public view returns (ParticipantView memory) {
-        ParticipantType participantType = getParticipantTypeByAddress(_participantAddress);
-        if (participantType == ParticipantType.Producer) {
-            return ParticipantView(producers[_participantAddress].overheadPercentage, producers[_participantAddress].name, producers[_participantAddress].locations, participantType);
-        } else if (participantType == ParticipantType.CTF) {
-            return ParticipantView(ctfs[_participantAddress].overheadPercentage, ctfs[_participantAddress].name, ctfs[_participantAddress].locations, participantType);
-        } else if (participantType == ParticipantType.Consumer) {
-            return ParticipantView(consumers[_participantAddress].overheadPercentage, consumers[_participantAddress].name, consumers[_participantAddress].locations, participantType);
+        if (bytes(producers[_participantAddress].name).length != 0) {
+            return ParticipantView(producers[_participantAddress].overheadPercentage, producers[_participantAddress].name, producers[_participantAddress].locations, ParticipantType.Producer);
+        } else if (bytes(ctfs[_participantAddress].name).length != 0) {
+            return ParticipantView(ctfs[_participantAddress].overheadPercentage, ctfs[_participantAddress].name, ctfs[_participantAddress].locations, ParticipantType.CTF);
+        } else if (bytes(consumers[_participantAddress].name).length != 0) {
+            return ParticipantView(consumers[_participantAddress].overheadPercentage, consumers[_participantAddress].name, consumers[_participantAddress].locations, ParticipantType.Consumer);
         }
         return ParticipantView(0, "", new Location[](0), ParticipantType.Producer);
     }

@@ -124,6 +124,11 @@
 						"components": [
 							{
 								"internalType": "string",
+								"name": "id",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
 								"name": "name",
 								"type": "string"
 							},
@@ -136,9 +141,14 @@
 						"internalType": "struct ParticipantRegistry.Location[]",
 						"name": "locations",
 						"type": "tuple[]"
+					},
+					{
+						"internalType": "enum ParticipantRegistry.ParticipantType",
+						"name": "participantType",
+						"type": "uint8"
 					}
 				],
-				"internalType": "struct ParticipantRegistry.Participant",
+				"internalType": "struct ParticipantRegistry.ParticipantView",
 				"name": "",
 				"type": "tuple"
 			}
@@ -202,6 +212,11 @@
 			},
 			{
 				"components": [
+					{
+						"internalType": "string",
+						"name": "id",
+						"type": "string"
+					},
 					{
 						"internalType": "string",
 						"name": "name",

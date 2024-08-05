@@ -44,6 +44,8 @@ contract CommodityPool {
     uint256 constant FEE_PERCENTAGE = 500;  // 5% fee (500 basis points)
     uint256 constant FEE_PRECISION = 10000;  // 100% = 10000
 
+    // Not in sync with frontend
+    
     event ListingAdded(uint256 indexed listingId, address indexed producer, int64[] serialNumbers);
     event ListingSold(uint256 indexed listingId, address indexed buyer, int64 serialNumber, uint256 price);
     event LiquidityChanged(address ctf, uint256 amount, uint256 minPrice, uint256 maxPrice, bool isAdding);

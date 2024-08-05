@@ -17,7 +17,7 @@ import toast from "react-hot-toast";
 interface CommodityListingProps {
 	commodity: CommodityToken;
 	isListed: boolean;
-	onListingChange(): void;
+	onListingChange?(): void;
 }
 
 const { commodityFactory } = contracts;
@@ -37,7 +37,7 @@ export function CommodityItem({
 	useEffect(() => {
 		if (isSuccess) {
 			toast.success(`Commodity ${isListed ? "disabled" : "enabled"}`);
-			onListingChange();
+			onListingChange?.();
 		}
 	}, [isSuccess]);
 

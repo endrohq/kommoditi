@@ -3,7 +3,7 @@
 import {
 	LoadingTokenPage,
 	TokenNotFoundPage,
-} from "@/app/tokens/[address]/components/placeholders";
+} from "@/app/(main)/tokens/[address]/components/placeholders";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { Button } from "@/components/button";
 import { usePublishTx } from "@/hooks/usePublishTx";
@@ -14,7 +14,7 @@ import React, { useEffect } from "react";
 import toast from "react-hot-toast";
 import { useReadContract } from "wagmi";
 import "@carbon/charts/styles.css";
-import { CurrentLpDistributions } from "@/app/tokens/[address]/liquidity/CurrentLpDistributions";
+import { CurrentLpDistributions } from "@/app/(main)/tokens/[address]/liquidity/CurrentLpDistributions";
 import { useCommodityPrice } from "@/hooks/useCommodityPrice";
 import { useAuth } from "@/providers/AuthProvider";
 import {
