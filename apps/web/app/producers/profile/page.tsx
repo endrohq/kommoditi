@@ -8,7 +8,7 @@ import React from "react";
 export default function Page() {
 	const { account } = useAuth();
 	return (
-		<div className="p-8">
+		<div className="">
 			<div className="flex flex-col items-center">
 				<div className="border-gray-50 bg-gray-50 rounded-full">
 					<EthAvatar address={account?.address || ""} size={75} />

@@ -27,6 +27,9 @@ contract CommodityPool {
     uint256 public constant BASE_PRICE = 100_000_000;
     uint256 public currentPrice;
 
+    mapping(address => uint256[]) private producerListings;
+    mapping(address => uint256) public producerListingCount;
+
     mapping(uint256 => Listing) public listings;
     uint256 public listingCount;
 
@@ -71,6 +74,10 @@ contract CommodityPool {
     function addListing(address producer, int64[] memory serialNumbers) external onlyCommodityExchange {
         uint256 listingId = listingCount++;
         listings[listingId] = Listing(producer, serialNumbers, block.timestamp, true);
+
+        // Simple mappings for quick retrieval. This can definitely be replaced with the graph or others
+        producerListings[producer].push(listingId);
+        producerListingCount[producer]++;
 
         emit ListingAdded(listingId, producer, serialNumbers);
 
@@ -225,5 +232,17 @@ contract CommodityPool {
 
     function getCurrentPrice() external view returns (uint256) {
         return currentPrice;
+    }
+
+    function getListingsByProducer(address producer) external view returns (Listing[] memory) {
+        uint256 count = producerListingCount[producer];
+        Listing[] memory producerListingsToReturn = new Listing[](count);
+
+        for (uint256 i = 0; i < count; i++) {
+            uint256 listingId = producerListings[producer][i];
+            producerListingsToReturn[i] = listings[listingId];
+        }
+
+        return producerListingsToReturn;
     }
 }

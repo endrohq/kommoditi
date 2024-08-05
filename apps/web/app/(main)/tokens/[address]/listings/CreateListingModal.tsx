@@ -13,9 +13,9 @@ import {
 } from "@carbon/react";
 
 import { Modal } from "@/components/modal";
-import { useCommodities } from "@/hooks/useCommodities";
 import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
+import { useCommodities } from "@/providers/CommoditiesProvider";
 import { useTokenPage } from "@/providers/TokenPageProvider";
 import { ROUTE_HOME } from "@/utils/route.utils";
 import { useRouter } from "next/navigation";

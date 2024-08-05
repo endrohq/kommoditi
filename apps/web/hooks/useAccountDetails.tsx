@@ -15,23 +15,15 @@ interface UseAccountDetailsProps {
 
 export function useAccountDetails({
 	address,
-	enabled = true,
 }: UseAccountDetailsArgs): UseAccountDetailsProps {
-	const canFetch = enabled && !!address;
 	const { data: balance, isLoading: isLoadingBalance } = useBalance({
 		address,
-		query: {
-			enabled: canFetch,
-		},
 	});
 	const { data, isLoading: isLoadingProducerDetails } = useReadContract({
 		address: contracts.participantRegistry.address,
 		abi: contracts.participantRegistry.abi,
 		functionName: "getParticipantByAddress",
 		args: [address],
-		query: {
-			enabled: canFetch,
-		},
 	});
 
 	const formattedBalance = balance?.value ? formatEther(balance?.value) : "0";
@@ -46,6 +38,6 @@ export function useAccountDetails({
 			type: participant?.type,
 			overheadPercentage: Number(participant?.overheadPercentage),
 		},
-		isLoading: isLoadingBalance || isLoadingProducerDetails,
+		isLoading: isLoadingProducerDetails,
 	};
 }

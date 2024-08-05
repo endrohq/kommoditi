@@ -1,4 +1,4 @@
-import CreateListingModal from "@/app/tokens/[address]/listings/CreateListingModal";
+import CreateListingModal from "@/app/(main)/tokens/[address]/listings/CreateListingModal";
 import { Button } from "@/components/button";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { PlusOutlined } from "@/components/icons/PlusOutlined";
@@ -7,6 +7,7 @@ import { useTokenPage } from "@/providers/TokenPageProvider";
 import { CommodityListing } from "@/typings";
 import { getShortenedFormat } from "@/utils/address.utils";
 import { getDistanceForDate, parseSmartContractDate } from "@/utils/date.utils";
+import { parseListings } from "@/utils/parser.utils";
 import {
 	Table,
 	TableBody,
@@ -28,15 +29,7 @@ export function CommodityListings() {
 		functionName: "getOffers",
 	});
 
-	const listings = (listingsData as Record<string, any>[])?.map(
-		(listing) =>
-			({
-				dateOffered: parseSmartContractDate(listing.dateOffered),
-				producer: listing.producer,
-				serialNumbers: listing.serialNumbers.map((i: bigint) => Number(i)),
-				active: listing.active,
-			}) as CommodityListing,
-	);
+	const listings = parseListings(listingsData as Record<string, any>[]);
 
 	console.log(listings);
 

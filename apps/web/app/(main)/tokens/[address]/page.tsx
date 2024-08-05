@@ -1,13 +1,13 @@
 "use client";
 
-import { PoolStatistics } from "@/app/tokens/[address]/PoolStatistics";
-import { TransactionList } from "@/app/tokens/[address]/PoolTransactions";
-import { TokenPageHeader } from "@/app/tokens/[address]/components/TokenPageHeader";
+import { PoolStatistics } from "@/app/(main)/tokens/[address]/PoolStatistics";
+import { TransactionList } from "@/app/(main)/tokens/[address]/PoolTransactions";
+import { TokenPageHeader } from "@/app/(main)/tokens/[address]/components/TokenPageHeader";
 import {
 	LoadingTokenPage,
 	TokenNotFoundPage,
-} from "@/app/tokens/[address]/components/placeholders";
-import { CommodityListings } from "@/app/tokens/[address]/listings";
+} from "@/app/(main)/tokens/[address]/components/placeholders";
+import { CommodityListings } from "@/app/(main)/tokens/[address]/listings";
 import { Button } from "@/components/button";
 import { PlusOutlined } from "@/components/icons/PlusOutlined";
 import { useTokenPage } from "@/providers/TokenPageProvider";

@@ -2,6 +2,7 @@
 
 import { chainOptions, optionConfig } from "@/lib/constants";
 import AuthProvider from "@/providers/AuthProvider";
+import { CommoditiesProvider } from "@/providers/CommoditiesProvider";
 import NetworkManager from "@/providers/NetworkManager";
 import { PrivyProvider } from "@privy-io/react-auth";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -24,7 +25,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 			<QueryClientProvider client={queryClient}>
 				<WagmiProvider config={chainOptions}>
 					<NetworkManager>
-						<AuthProvider>{children}</AuthProvider>
+						<AuthProvider>
+							<CommoditiesProvider>{children}</CommoditiesProvider>
+						</AuthProvider>
 					</NetworkManager>
 				</WagmiProvider>
 			</QueryClientProvider>

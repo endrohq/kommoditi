@@ -1,6 +1,5 @@
 "use client";
 
-import { EthAvatar } from "@/components/EthAvatar";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { MapToDisplay } from "@/components/input/MapToDisplay";
 import { useAccountDetails } from "@/hooks/useAccountDetails";
@@ -8,6 +7,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { EthAddress } from "@/typings";
 import { getShortenedFormat } from "@/utils/address.utils";
 import React from "react";
+import { EthAvatar } from "../../../../components/EthAvatar";
 
 interface ProfilePageProps {
 	params: {

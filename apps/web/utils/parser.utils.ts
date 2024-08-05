@@ -1,4 +1,9 @@
-import { GetAllPoolsResponse, GetCommodityResponse } from "@/typings";
+import {
+	CommodityListing,
+	GetAllPoolsResponse,
+	GetCommodityResponse,
+} from "@/typings";
+import { parseSmartContractDate } from "@/utils/date.utils";
 
 export function parseCommodity(
 	commodity: GetCommodityResponse,
@@ -19,5 +24,17 @@ export function parseCommodities(
 ) {
 	return (commodities || [])?.map((commodity) =>
 		parseCommodity(commodity, pools),
+	);
+}
+
+export function parseListings(listingsData: Record<string, any>[]) {
+	return listingsData?.map(
+		(listing) =>
+			({
+				dateOffered: parseSmartContractDate(listing.dateOffered),
+				producer: listing.producer,
+				serialNumbers: listing.serialNumbers.map((i: bigint) => Number(i)),
+				active: listing.active,
+			}) as CommodityListing,
 	);
 }

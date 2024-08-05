@@ -1,7 +1,7 @@
 "use client";
 
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
-import { useCommodities } from "@/hooks/useCommodities";
+import { useCommodities } from "@/providers/CommoditiesProvider";
 import { getShortenedFormat } from "@/utils/address.utils";
 import { getTokenPage } from "@/utils/route.utils";
 import {

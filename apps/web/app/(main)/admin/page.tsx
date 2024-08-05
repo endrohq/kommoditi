@@ -1,10 +1,10 @@
 "use client";
 
-import { CommodityItem } from "@/app/admin/CommodityItem";
-import { CreateCommodityModal } from "@/app/admin/CreateCommodityModal";
+import { CommodityItem } from "@/app/(main)/admin/CommodityItem";
+import { CreateCommodityModal } from "@/app/(main)/admin/CreateCommodityModal";
 import { Button } from "@/components/button";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
-import { useCommodities } from "@/hooks/useCommodities";
+import { useCommodities } from "@/providers/CommoditiesProvider";
 import {
 	Content,
 	Table,

@@ -56,7 +56,7 @@ export default function Page() {
 	}
 
 	return (
-		<div className="p-8">
+		<div className="">
 			<div className="flex justify-between mb-4">
 				<h2 className="font-bold text-base">Add Listing</h2>
 			</div>
