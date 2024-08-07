@@ -7,9 +7,14 @@ export type LocationItem = {
 	h3Index?: string;
 };
 
-export type ParticipantType = "producer" | "consumer" | "ctf";
+export enum ParticipantType {
+	PRODUCER = "PRODUCER",
+	CTF = "CTF",
+	CONSUMER = "CONSUMER",
+}
 
 export type Participant = {
+	id: string;
 	name: string;
 	type: ParticipantType;
 	overheadPercentage: number;
@@ -76,22 +81,35 @@ export type CommodityToken = {
 };
 
 export type PoolTransactionType =
-	| "LiquidityAdded"
-	| "LiquidityRemoved"
-	| "trade"
+	| "LiquidityChanged"
+	| "CTFPurchase"
+	| "CommodityPurchased"
+	| "PriceUpdated"
+	| "SerialNumberStatusChanged"
 	| "ListingAdded"
-	| "ListingRemoved";
+	| "ListingSold";
+
+export const poolTransactionTypes: PoolTransactionType[] = [
+	"ListingAdded",
+	"ListingSold",
+	"LiquidityChanged",
+	"CTFPurchase",
+	"CommodityPurchased",
+	"PriceUpdated",
+];
 
 export type PoolTransaction = {
-	type: PoolTransactionType;
-	dateCreated: Date;
-	transactionHash: EthAddress;
+	id: EthAddress;
+	createdAt: Date;
 	from: EthAddress;
 	to: EthAddress;
 	value: string;
-	blockNumber: bigint;
+	blockNumber: number;
 	blockHash: EthAddress;
-	args: Record<string, any>;
+	events: Array<{
+		type: string;
+		logArgs: any;
+	}>;
 };
 
 export interface CommodityPoolLiquidity {
@@ -112,3 +130,8 @@ export type MapBoxViewState = {
 	latitude: number;
 	zoom: number;
 };
+
+export interface BlockchainConfig {
+	id: number;
+	blockNumber: number;
+}

@@ -20,16 +20,9 @@ import React from "react";
 
 export function TransactionList() {
 	const { commodity } = useTokenPage();
-	const { transactions, isLoading } = usePoolTransactions(
-		[commodity?.poolAddress as EthAddress],
-		[
-			"ListingAdded",
-			"ListingSold",
-			"LiquidityChanged",
-			"CTFPurchase",
-			"FPPurchase",
-		],
-	);
+	const { transactions, isLoading } = usePoolTransactions([
+		commodity?.poolAddress as EthAddress,
+	]);
 
 	return (
 		<div>
@@ -60,7 +53,7 @@ export function TransactionList() {
 							transactions?.map((tx, index) => (
 								<TableRow className="!text-sm">
 									<TableCell className="capitalize" colSpan={4}>
-										{getDistanceForDate(tx.dateCreated)}
+										{getDistanceForDate(tx.createdAt)}
 									</TableCell>
 									<TableCell className="font-medium !text-black" colSpan={4}>
 										{formatTransactionType(tx.type)}
@@ -75,7 +68,7 @@ export function TransactionList() {
 										</Link>
 									</TableCell>
 									<TableCell className="text-gray-500 !text-sm">
-										{getShortenedFormat(tx.transactionHash)}
+										{getShortenedFormat(tx.id)}
 									</TableCell>
 								</TableRow>
 							))

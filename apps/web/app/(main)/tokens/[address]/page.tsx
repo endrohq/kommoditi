@@ -37,7 +37,6 @@ export default function Page({ params }: Props) {
 				<TokenPageHeader />
 				<PoolStatistics />
 				<div className="gap-10 flex flex-col mt-10">
-					<CommodityListings />
 					<TransactionList />
 				</div>
 			</div>

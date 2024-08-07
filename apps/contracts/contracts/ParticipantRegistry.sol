@@ -80,4 +80,22 @@ contract ParticipantRegistry {
         }
         return ParticipantView(0, "", new Location[](0), ParticipantType.Producer);
     }
+
+    function getParticipants() public view returns (ParticipantView[] memory) {
+        ParticipantView[] memory participants = new ParticipantView[](producerCount + ctfCount + consumerCount);
+        uint256 index = 0;
+        for (uint i = 0; i < producerCount; i++) {
+            participants[index] = ParticipantView(producers[address(uint160(i))].overheadPercentage, producers[address(uint160(i))].name, producers[address(uint160(i))].locations, ParticipantType.Producer);
+            index++;
+        }
+        for (uint i = 0; i < ctfCount; i++) {
+            participants[index] = ParticipantView(ctfs[address(uint160(i))].overheadPercentage, ctfs[address(uint160(i))].name, ctfs[address(uint160(i))].locations, ParticipantType.CTF);
+            index++;
+        }
+        for (uint i = 0; i < consumerCount; i++) {
+            participants[index] = ParticipantView(consumers[address(uint160(i))].overheadPercentage, consumers[address(uint160(i))].name, consumers[address(uint160(i))].locations, ParticipantType.Consumer);
+            index++;
+        }
+        return participants;
+    }
 }

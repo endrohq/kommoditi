@@ -1,6 +1,7 @@
 import supabase from "@/utils/supabase.utils";
 
 import { networkId } from "@/lib/constants";
+import { BlockchainConfig } from "@/typings";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
@@ -12,6 +13,7 @@ export async function GET() {
 			.single();
 
 		if (error) {
+			await saveConfig({ id: networkId, blockNumber: 0 });
 			return NextResponse.json(0);
 		}
 
@@ -44,4 +46,18 @@ export async function POST(req: NextRequest) {
 		console.error("Error storing config:", error);
 		return new NextResponse("Error storing config", { status: 500 });
 	}
+}
+
+async function saveConfig(config: BlockchainConfig) {
+	const { data, error } = await supabase.from("blockchain").upsert(config, {
+		onConflict: "id",
+		ignoreDuplicates: false,
+	});
+
+	if (error) {
+		console.error("Error storing config:", error);
+		return false;
+	}
+
+	return true;
 }

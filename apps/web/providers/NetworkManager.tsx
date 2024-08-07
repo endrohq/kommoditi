@@ -2,7 +2,11 @@
 
 import { NetworkOffline } from "@/components/NetworkOffline";
 import { fetchWrapper } from "@/utils/fetch.utils";
-import { getCommoditiesFromClient } from "@/utils/sync.utils";
+import {
+	getCommoditiesFromClient,
+	getParticipants,
+	getPoolTransactions,
+} from "@/utils/sync.utils";
 import { usePrivy } from "@privy-io/react-auth";
 import React, { ReactNode, createContext, useEffect } from "react";
 import { useAccount, useBlockNumber, useChainId, useSwitchChain } from "wagmi";
@@ -11,7 +15,9 @@ interface UseNetworkManagerProps {
 	blockNumber?: bigint;
 }
 
-const SYNC_INTERVAL = 30000; // 30 seconds
+const BLOCKCHAIN_API_ENDPOINT = "/api/blockchain";
+
+const SYNC_INTERVAL = 3000000; // 3000 seconds
 
 export const NetworkManagerContext = createContext<UseNetworkManagerProps>({});
 
@@ -40,13 +46,22 @@ export default function NetworkManager({ children }: AuthProviderProps) {
 
 	useEffect(() => {
 		const checkAndSync = async () => {
-			const blockNumberOnApi = await fetchWrapper<number>("/api/blockchain");
+			const blockNumberOnApi = await fetchWrapper<number>(
+				BLOCKCHAIN_API_ENDPOINT,
+			);
 			if (blockNumberOnApi < Number(currentBlockNumber)) {
-				// sync the commodities
-				await getCommoditiesFromClient(Number(chainId));
+				const commodities = await getCommoditiesFromClient(Number(chainId));
+				if (currentBlockNumber) {
+					await getParticipants(BigInt(blockNumberOnApi), currentBlockNumber);
+					await getPoolTransactions(
+						BigInt(blockNumberOnApi),
+						currentBlockNumber,
+						commodities,
+					);
+				}
 
 				// Finalise our data sync with supabase by updating the blockNumber
-				await fetchWrapper<number>("/api/blockchain", {
+				await fetchWrapper<number>(BLOCKCHAIN_API_ENDPOINT, {
 					method: "POST",
 					body: JSON.stringify({ blockNumber: Number(currentBlockNumber) }),
 				});

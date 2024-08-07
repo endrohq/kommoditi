@@ -15,19 +15,9 @@ export function SalesOverview({ poolAddresses }: SalesOverviewProps) {
 	const { account } = useAuth();
 	const [activeTx, setActiveTx] = useState<PoolTransaction>();
 
-	const { transactions, isLoading } = usePoolTransactions(
-		poolAddresses,
-		[
-			"ListingAdded",
-			"ListingSold",
-			"LiquidityChanged",
-			"CTFPurchase",
-			"FPPurchase",
-		],
-		{
-			address: account?.address,
-		},
-	);
+	const { transactions, isLoading } = usePoolTransactions(poolAddresses, {
+		address: account?.address,
+	});
 
 	return (
 		<>

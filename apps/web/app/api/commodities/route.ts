@@ -1,5 +1,7 @@
 import supabase from "@/utils/supabase.utils";
 
+import { networkId } from "@/lib/constants";
+import { CommodityToken } from "@/typings";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
@@ -22,7 +24,11 @@ export async function GET() {
 
 export async function POST(req: NextRequest, res: NextResponse) {
 	try {
-		const commodities = await req.json();
+		const bodyInput = await req.json();
+		const commodities = bodyInput.map((item: CommodityToken) => ({
+			...item,
+			chainId: networkId,
+		}));
 
 		const { data, error } = await supabase
 			.from("commodities")

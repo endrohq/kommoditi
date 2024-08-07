@@ -1,6 +1,6 @@
 import { contracts } from "@/lib/constants";
 import { useNetworkManager } from "@/providers/NetworkManager";
-import { EthAddress, PoolTransaction } from "@/typings";
+import { EthAddress, PoolTransaction, poolTransactionTypes } from "@/typings";
 import { formatNumber } from "@/utils/number.utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatEther } from "viem";
@@ -10,23 +10,12 @@ const { commodityPool } = contracts;
 
 const POLLING_INTERVAL = 10000; // 10 seconds
 
-commodityPool.abi;
-
-type Events =
-	| "ListingAdded"
-	| "ListingSold"
-	| "LiquidityChanged"
-	| "CTFPurchase"
-	| "FPPurchase"
-	| "PriceUpdated";
-
 type Filters = {
 	address?: EthAddress;
 };
 
 export function usePoolTransactions(
 	poolAddresses: EthAddress[] = [],
-	eventNames: Events[],
 	filters?: Filters,
 ) {
 	const publicClient = usePublicClient();
@@ -44,7 +33,7 @@ export function usePoolTransactions(
 				address: poolAddresses,
 				events: commodityPool.abi.filter((event) =>
 					// @ts-ignore
-					eventNames.includes(event.name ?? ""),
+					poolTransactionTypes.includes(event.name ?? ""),
 				),
 				fromBlock,
 				toBlock,
@@ -60,6 +49,13 @@ export function usePoolTransactions(
 						hash: log.transactionHash,
 					});
 
+					console.log({
+						log,
+						block,
+						fullTx,
+					});
+					console.log("\n\n");
+
 					return {
 						type: log.eventName ?? "unknown",
 						transactionHash: log.transactionHash,
@@ -68,12 +64,12 @@ export function usePoolTransactions(
 						value: formatNumber(formatEther(fullTx.value)),
 						blockNumber: BigInt(log.blockNumber),
 						dateCreated: block ? new Date(Number(block.timestamp) * 1000) : 0,
-						args: log.args,
+						logArgs: log.args,
 					} as PoolTransaction;
 				}),
 			);
 		},
-		[publicClient, poolAddresses, eventNames],
+		[publicClient, poolAddresses],
 	);
 
 	const updateTransactions = useCallback(async () => {

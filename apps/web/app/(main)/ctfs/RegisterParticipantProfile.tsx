@@ -7,6 +7,7 @@ import { SearchAddress } from "@/components/input/SearchAddress";
 import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
 import { ParticipantType, Region } from "@/typings";
+import { participantTypeToSmParticipantType } from "@/utils/parser.utils";
 import {
 	Content,
 	Form,
@@ -69,19 +70,8 @@ export function RegisterParticipantProfile({
 		}
 	}, [error]);
 
-	function typeToParticipantType(type: ParticipantType) {
-		switch (type) {
-			case "ctf":
-				return ParticipantTypeArg.CTF;
-			case "producer":
-				return ParticipantTypeArg.Producer;
-			case "consumer":
-				return ParticipantTypeArg.Consumer;
-		}
-	}
-
 	function handleSubmit() {
-		const contractType = typeToParticipantType(type);
+		const contractType = participantTypeToSmParticipantType(type);
 		try {
 			register([participant?.name, 25, contractType, participant?.locations]);
 		} catch (e) {

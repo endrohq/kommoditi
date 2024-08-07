@@ -3,6 +3,7 @@ import {
 	CommodityToken,
 	GetAllPoolsResponse,
 	GetCommodityResponse,
+	ParticipantType,
 } from "@/typings";
 import { parseSmartContractDate } from "@/utils/date.utils";
 
@@ -46,4 +47,26 @@ export function parseListings(listingsData: Record<string, any>[]) {
 				active: listing.active,
 			}) as CommodityListing,
 	);
+}
+
+export function participantTypeToSmParticipantType(type: ParticipantType) {
+	switch (type) {
+		case ParticipantType.PRODUCER:
+			return 0;
+		case ParticipantType.CTF:
+			return 1;
+		case ParticipantType.CONSUMER:
+			return 2;
+	}
+}
+
+export function smParticipantTypeToParticipantType(type: number) {
+	switch (type) {
+		case 0:
+			return ParticipantType.PRODUCER;
+		case 1:
+			return ParticipantType.CTF;
+		case 2:
+			return ParticipantType.CONSUMER;
+	}
 }
