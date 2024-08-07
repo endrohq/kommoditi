@@ -9,6 +9,7 @@ import { parseSmartContractDate } from "@/utils/date.utils";
 export function parseCommodity(
 	commodity: GetCommodityResponse,
 	pools: GetAllPoolsResponse[] = [],
+	chainId: number,
 ): CommodityToken {
 	const token = commodity.tokenInfo || ({} as CommodityToken);
 	return {
@@ -21,15 +22,17 @@ export function parseCommodity(
 		poolAddress: pools.find(
 			(pool) => pool.tokenAddress === commodity.tokenAddress,
 		)?.poolAddress,
+		chainId,
 	};
 }
 
 export function parseCommodities(
 	commodities: GetCommodityResponse[],
 	pools: GetAllPoolsResponse[],
+	chainId: number,
 ) {
 	return (commodities || [])?.map((commodity) =>
-		parseCommodity(commodity, pools),
+		parseCommodity(commodity, pools, chainId),
 	);
 }
 

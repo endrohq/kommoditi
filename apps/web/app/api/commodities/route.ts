@@ -1,7 +1,5 @@
-import { CommodityToken } from "@/typings";
 import supabase from "@/utils/supabase.utils";
 
-import { NextApiRequest, NextApiResponse } from "next";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
@@ -29,7 +27,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 		const { data, error } = await supabase
 			.from("commodities")
 			.upsert(commodities, {
-				onConflict: "id", // Assuming 'id' is the unique identifier for commodities
+				onConflict: "tokenAddress", // Assuming 'id' is the unique identifier for commodities
 				ignoreDuplicates: false, // Set to true if you want to ignore duplicates
 			});
 

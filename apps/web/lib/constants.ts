@@ -10,6 +10,8 @@ import tokenAuthorityAbi from "./abis/token-authority.abi.json";
 
 export const isLocalNetwork = process.env.NEXT_PUBLIC_IS_LOCAL === "true";
 
+export const networkId = isLocalNetwork ? hardhat.id : hederaTestnet.id;
+
 const localOnlyOptions = [hardhat];
 const testnetOptions = [hederaTestnet];
 

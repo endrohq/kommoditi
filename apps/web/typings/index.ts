@@ -72,6 +72,7 @@ export type CommodityToken = {
 	pauseStatus?: boolean;
 	defaultKycStatus?: boolean;
 	deleted?: boolean;
+	chainId: number;
 };
 
 export type PoolTransactionType =
