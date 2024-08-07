@@ -5,7 +5,7 @@ import { MapToDisplay } from "@/components/input/MapToDisplay";
 import { MobileModal } from "@/components/modal/MobileModal";
 import { useParticipant } from "@/hooks/useParticipant";
 import { contracts } from "@/lib/constants";
-import { CommodityListing, EthAddress } from "@/typings";
+import { CommodityListing, EthAddress, PoolTransaction } from "@/typings";
 import { getShortenedFormat } from "@/utils/address.utils";
 import { getDistanceForDate } from "@/utils/date.utils";
 import { parseListings } from "@/utils/parser.utils";
@@ -13,13 +13,13 @@ import { useState } from "react";
 import { useReadContracts } from "wagmi";
 
 interface SaleItemModalProps {
-	listing: CommodityListing;
+	tx: PoolTransaction;
 	handleClose(): void;
 }
 
-export function SaleItemModal({ listing, handleClose }: SaleItemModalProps) {
+export function SaleItemModal({ tx, handleClose }: SaleItemModalProps) {
 	const participant = useParticipant({
-		address: listing.producer,
+		address: tx?.args.producer,
 		enabled: true,
 	});
 
@@ -44,7 +44,7 @@ export function SaleItemModal({ listing, handleClose }: SaleItemModalProps) {
 				<div className="">
 					<div>Producer</div>
 					<div className="font-semibold text-black">
-						{participant?.name || getShortenedFormat(listing.producer)}
+						{participant?.name || getShortenedFormat(tx.args.producer)}
 					</div>
 				</div>
 				<div>

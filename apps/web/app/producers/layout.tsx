@@ -11,14 +11,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 	const { isAuthenticated, isLoading } = useAuth();
 
 	return (
-		<div className="h-screen w-full ">
+		<div className="h-screen w-full flex flex-col">
 			<div className="bg-black py-3 px-6 flex items-center space-x-2 w-full">
 				<ArrowLeftOutlined className="text-white text-sm" />
 				<Link className="text-white text-xs font-medium" href="/">
 					Back to overview
 				</Link>
 			</div>
-			<div className="flex items-center justify-center h-[calc(100%-40px)] bg-gray-300">
+			<div className="flex items-center justify-center max-h-[calc(100%-40px)] min-h-[calc(100%-40px)] bg-gray-300">
 				<div className="w-full max-w-md relative h-[720px] bg-white rounded-xl shadow overflow-hidden flex flex-col">
 					<main className="flex-grow overflow-auto p-8">
 						{isLoading ? (

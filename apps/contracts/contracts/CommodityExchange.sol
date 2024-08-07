@@ -55,11 +55,11 @@ contract CommodityExchange {
         emit CommodityListed(tokenAddress, serialNumbers, msg.sender);
     }
 
-    function purchaseCommodity(address tokenAddress, int64 quantity, int64 serialNumber) external payable {
+    function purchaseCommodity(address tokenAddress, uint256 quantity) external payable {
         address poolAddress = factory.commodityPoolsByToken(tokenAddress);
         require(poolAddress != address(0), "No pool exists for this commodity");
 
-        CommodityPool(poolAddress).purchaseCommodity{value: msg.value}(msg.sender, serialNumber);
+        CommodityPool(poolAddress).purchaseCommodity{value: msg.value}(msg.sender, quantity);
     }
 
     function provideLiquidity(address tokenAddress, uint256 minPrice, uint256 maxPrice) external payable {

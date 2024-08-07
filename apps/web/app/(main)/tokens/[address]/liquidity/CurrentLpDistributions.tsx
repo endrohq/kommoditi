@@ -1,4 +1,5 @@
 import { TimeWindowOverlay } from "@/app/(main)/tokens/[address]/liquidity/TimeWindowOverlay";
+import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { contracts } from "@/lib/constants";
 import { useTokenPage } from "@/providers/TokenPageProvider";
 import { CommodityPoolLiquidity } from "@/typings";
@@ -33,13 +34,11 @@ export function CurrentLpDistributions({
 
 	const ctfLiquidity = useMemo(() => {
 		if (!ctfLiquidityData) return [];
-		console.log(ctfLiquidityData);
 		return formatLpLiquidities(ctfLiquidityData as CommodityPoolLiquidity[]);
 	}, [ctfLiquidityData]);
 
 	const ctfPriceDistributionDataSet = useMemo(() => {
 		if (!ctfLiquidity) return [];
-		console.log(ctfLiquidity);
 		return processPriceDistribution(ctfLiquidity);
 	}, [ctfLiquidity]);
 
@@ -98,6 +97,14 @@ export function CurrentLpDistributions({
 		},
 		width: "100%",
 	};
+
+	if (isLoading) {
+		return (
+			<div className="bg-gray-200 animate-pulse rounded h-[150px] w-full place-content-center text-center">
+				<LoadingOutlined />
+			</div>
+		);
+	}
 
 	if (!ctfPriceDistributionDataSet.length && !isLoading) {
 		return (

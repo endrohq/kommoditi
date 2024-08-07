@@ -40,8 +40,6 @@ export function SearchAddress({
 
 	const handleResultSelect = useCallback(
 		(result: any) => {
-			console.log("Geocoding result:", result);
-
 			let h3Indexes: string[];
 			let bbox: [number, number, number, number];
 

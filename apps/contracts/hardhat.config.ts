@@ -6,7 +6,7 @@ import {adminAccount, localAccounts} from "./ignition/data";
 dotenv.config();
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.26",
+  solidity: "0.8.24",
   networks: {
     hederaTestnet: {
       url: "https://testnet.hashio.io/api",

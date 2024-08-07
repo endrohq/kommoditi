@@ -10,9 +10,24 @@ const { commodityPool } = contracts;
 
 const POLLING_INTERVAL = 10000; // 10 seconds
 
+commodityPool.abi;
+
+type Events =
+	| "ListingAdded"
+	| "ListingSold"
+	| "LiquidityChanged"
+	| "CTFPurchase"
+	| "FPPurchase"
+	| "PriceUpdated";
+
+type Filters = {
+	address?: EthAddress;
+};
+
 export function usePoolTransactions(
-	poolAddress: EthAddress,
-	eventNames: string[],
+	poolAddresses: EthAddress[] = [],
+	eventNames: Events[],
+	filters?: Filters,
 ) {
 	const publicClient = usePublicClient();
 	const { blockNumber } = useNetworkManager();
@@ -26,7 +41,7 @@ export function usePoolTransactions(
 			if (!publicClient) return [];
 
 			const events = await publicClient.getLogs({
-				address: poolAddress,
+				address: poolAddresses,
 				events: commodityPool.abi.filter((event) =>
 					// @ts-ignore
 					eventNames.includes(event.name ?? ""),
@@ -53,11 +68,12 @@ export function usePoolTransactions(
 						value: formatNumber(formatEther(fullTx.value)),
 						blockNumber: BigInt(log.blockNumber),
 						dateCreated: block ? new Date(Number(block.timestamp) * 1000) : 0,
+						args: log.args,
 					} as PoolTransaction;
 				}),
 			);
 		},
-		[publicClient, poolAddress, eventNames],
+		[publicClient, poolAddresses, eventNames],
 	);
 
 	const updateTransactions = useCallback(async () => {
@@ -85,9 +101,15 @@ export function usePoolTransactions(
 		);
 
 		if (newTransactions.length > 0) {
-			const updatedTxs = [...newTransactions, ...transactionsRef.current].sort(
-				(a, b) => b.dateCreated?.getTime() - a.dateCreated?.getTime(),
-			);
+			const updatedTxs = [...newTransactions, ...transactionsRef.current]
+				.sort((a, b) => b.dateCreated?.getTime() - a.dateCreated?.getTime())
+				?.filter((tx) => {
+					if (!filters?.address) return true;
+					return (
+						tx.from?.toLowerCase() === filters.address?.toLowerCase() ||
+						tx.to?.toLowerCase() === filters.address?.toLowerCase()
+					);
+				});
 
 			transactionsRef.current = updatedTxs;
 			setTransactions(updatedTxs);
@@ -97,7 +119,7 @@ export function usePoolTransactions(
 		if (isLoading) {
 			setIsLoading(false);
 		}
-	}, [fetchTransactions, publicClient, isLoading]);
+	}, [fetchTransactions, publicClient, isLoading, filters]);
 
 	useEffect(() => {
 		updateTransactions();

@@ -3,10 +3,10 @@ import {commodityTokens, listings, participantsOnDevnet} from "../data";
 
 const HelloFutureModule = buildModule("HelloFutureModuleLocal", (m) => {
 
-  const ParticipantRegistry = m.contract("ParticipantRegistry");
-  const CommodityFactory = m.contract("CommodityFactory");
 
-  const TokenService = m.contract("MockHederaTokenService", [], {
+  const ParticipantRegistry = m.contract("ParticipantRegistry");
+  const TokenService = m.contract("MockHederaTokenService", []);
+  const CommodityFactory = m.contract("CommodityFactory", [ParticipantRegistry, false], {
     after: [ParticipantRegistry]
   });
 

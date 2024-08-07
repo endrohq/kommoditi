@@ -33,7 +33,7 @@ export default function Page({ params }: Props) {
 
 	return (
 		<Content className="px-72 flex items-start space-x-10">
-			<div className="w-8/12 mx-auto">
+			<div className="w-10/12 mx-auto">
 				<TokenPageHeader />
 				<PoolStatistics />
 				<div className="gap-10 flex flex-col mt-10">
@@ -41,7 +41,7 @@ export default function Page({ params }: Props) {
 					<TransactionList />
 				</div>
 			</div>
-			<div className="w-4/12">
+			<div className="w-2/12">
 				<Link href={`${getTokenPage(params.address)}/liquidity`}>
 					<Button icon={<PlusOutlined />}>Add Liquidity</Button>
 				</Link>

@@ -1,5 +1,6 @@
 import {
 	CommodityListing,
+	CommodityToken,
 	GetAllPoolsResponse,
 	GetCommodityResponse,
 } from "@/typings";
@@ -8,9 +9,14 @@ import { parseSmartContractDate } from "@/utils/date.utils";
 export function parseCommodity(
 	commodity: GetCommodityResponse,
 	pools: GetAllPoolsResponse[] = [],
-) {
+): CommodityToken {
+	const token = commodity.tokenInfo || ({} as CommodityToken);
 	return {
-		...commodity.tokenInfo,
+		totalSupply: Number(commodity.tokenInfo.totalSupply),
+		name: token.token.name,
+		symbol: token.token.symbol,
+		treasury: token.token.treasury,
+		maxSupply: 0,
 		tokenAddress: commodity.tokenAddress,
 		poolAddress: pools.find(
 			(pool) => pool.tokenAddress === commodity.tokenAddress,

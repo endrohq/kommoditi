@@ -10,6 +10,8 @@ contract CommodityFactory {
     TokenAuthority public tokenAuthority;
     mapping(address => address) public commodityPoolsByToken; // token address => pool address
     address[] public allPools;
+    address public participantRegistry;
+    bool public isHedera;
 
     struct Pool {
         address tokenAddress;
@@ -18,8 +20,10 @@ contract CommodityFactory {
 
     event PoolCreated(address indexed tokenAddress, address indexed poolAddress);
 
-    constructor() {
+    constructor(address _participantRegistry, bool _isHedera) {
         admin = msg.sender;
+        participantRegistry = _participantRegistry;
+        isHedera = _isHedera;
     }
 
     modifier onlyAdmin() {
@@ -46,7 +50,7 @@ contract CommodityFactory {
         // require(tokenAuthority.isApprovedToken(tokenAddress), "Token not approved for trading");
         require(commodityPoolsByToken[tokenAddress] == address(0), "Pool already exists");
 
-        CommodityPool newPool = new CommodityPool(tokenAddress, address(tokenAuthority), commodityExchange);
+        CommodityPool newPool = new CommodityPool(tokenAddress, address(tokenAuthority), commodityExchange, address(participantRegistry), isHedera);
         commodityPoolsByToken[tokenAddress] = address(newPool);
         allPools.push(address(newPool));
 

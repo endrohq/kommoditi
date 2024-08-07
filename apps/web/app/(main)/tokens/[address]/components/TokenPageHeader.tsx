@@ -1,4 +1,3 @@
-import { CurrentPrice } from "@/app/tokens/[address]/components/CurrentPrice";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { useCommodityPrice } from "@/hooks/useCommodityPrice";
 import { useTokenPage } from "@/providers/TokenPageProvider";

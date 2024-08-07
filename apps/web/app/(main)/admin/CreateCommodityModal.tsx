@@ -4,11 +4,9 @@ import { Button } from "@/components/button";
 import { Modal } from "@/components/modal";
 import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
-import { CommodityToken } from "@/typings";
 import { Content, Form, TextInput } from "@carbon/react";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { useReadContract, useWriteContract } from "wagmi";
 
 const tokenAuthority = contracts.tokenAuthority;
 

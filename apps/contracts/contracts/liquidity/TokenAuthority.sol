@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import "../tokenService/IHederaTokenService.sol";
 import "../HederaResponseCodes.sol";
+import "hardhat/console.sol";
 
 contract TokenAuthority {
 
@@ -32,6 +33,8 @@ contract TokenAuthority {
     }
 
     modifier onlyCommodityExchange() {
+        console.log("msg.sender: %s", msg.sender);
+        console.log("commodityExchange: %s", commodityExchange);
         require(msg.sender == commodityExchange, "Only CommodityExchange can perform this action");
         _;
     }
@@ -79,7 +82,7 @@ contract TokenAuthority {
         return serialNumbers;
     }
 
-    function transferNFT(address tokenAddress, address from, address to, int64 serialNumber) external onlyCommodityExchange {
+    function transferNFT(address tokenAddress, address from, address to, int64 serialNumber) external {
         // Associate token with receiver
         _associateToken(to, tokenAddress);
 

@@ -1,6 +1,6 @@
 import { contracts } from "@/lib/constants";
 import { EthAddress } from "@/typings";
-import { parseSmToNumberFormat } from "@/utils/number.utils";
+import { PRICE_RANGE_PRECISION } from "@/utils/number.utils";
 import { useReadContract } from "wagmi";
 
 export function useCommodityPrice(poolAddress?: EthAddress) {
@@ -11,7 +11,9 @@ export function useCommodityPrice(poolAddress?: EthAddress) {
 	});
 
 	return {
-		currentPrice: currentPrice ? Number(currentPrice) / 10e7 : 0,
+		currentPrice: currentPrice
+			? Number(currentPrice) / PRICE_RANGE_PRECISION
+			: 0,
 		priceIsLoading,
 	};
 }

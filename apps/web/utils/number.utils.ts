@@ -1,3 +1,5 @@
+import { isLocalNetwork } from "@/lib/constants";
+
 export function formatNumber(num: number | string | bigint) {
 	return commafy(roundNumber(Number(num) || 0));
 }
@@ -18,15 +20,15 @@ export function roundNumber(value: number, digits = 2) {
 	return Math.round(value * tenToN) / tenToN;
 }
 
-export function isInvalidNumber(value?: bigint) {
-	return isNaN(Number(value));
-}
-
 export function roundToTwoDecimals(value: number) {
 	return Math.round(value * 100) / 100;
 }
 
-export const PRICE_RANGE_PRECISION = 1e2;
+export const ETHEREUM_PRECISION = 1e18;
+export const HEDERA_PRECISION = 1e8;
+export const PRICE_RANGE_PRECISION = isLocalNetwork
+	? ETHEREUM_PRECISION
+	: HEDERA_PRECISION;
 export function parseNumberToSmFormat(value: number) {
 	return Math.round(value * PRICE_RANGE_PRECISION);
 }

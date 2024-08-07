@@ -3,6 +3,8 @@ pragma solidity ^0.8.0;
 
 import "./TokenAuthority.sol";
 import "../HederaResponseCodes.sol";
+import "../ParticipantRegistry.sol";
+import "hardhat/console.sol";
 
 contract CommodityPool {
     struct Listing {
@@ -20,11 +22,14 @@ contract CommodityPool {
 
     address public tokenAddress;
     TokenAuthority public tokenAuthority;
+    ParticipantRegistry public participantRegistry;
     address public commodityExchange;
 
     uint256 public totalLiquidity;
-    // In Hedera, 1 HBAR is represented as 100,000,000 tinybar
-    uint256 public constant BASE_PRICE = 100_000_000;
+
+    uint256 public constant ETHEREUM_BASE_PRICE = 1e18; // 18 decimal places
+    uint256 public constant HEDERA_BASE_PRICE = 1e8;   // 8 decimal places
+
     uint256 public currentPrice;
 
     mapping(address => uint256[]) private producerListings;
@@ -36,6 +41,9 @@ contract CommodityPool {
     mapping(address => CTFLiquidity) public ctfLiquidity;
     address[] public ctfs;
 
+    // Add these as state variables
+    uint256[] public unmatchedListings;
+
     // Price adjustment factors
     uint256 constant PRICE_ADJUSTMENT_FACTOR = 1000; // 0.1% adjustment
     uint256 constant PRICE_ADJUSTMENT_PRECISION = 1000000;
@@ -44,13 +52,23 @@ contract CommodityPool {
     uint256 constant FEE_PERCENTAGE = 500;  // 5% fee (500 basis points)
     uint256 constant FEE_PRECISION = 10000;  // 100% = 10000
 
+    // Mapping to store which CTF owns which serial numbers
+    mapping(address => int64[]) public ctfOwnedSerialNumbers;
+
     // Not in sync with frontend
-    
-    event ListingAdded(uint256 indexed listingId, address indexed producer, int64[] serialNumbers);
-    event ListingSold(uint256 indexed listingId, address indexed buyer, int64 serialNumber, uint256 price);
+
+    event ListingAdded(uint256 indexed listingId, address indexed producer, int64[] serialNumbers, uint256 timestamp);
+    event ListingSold(uint256 indexed listingId, address indexed buyer, int64 serialNumber, uint256 price, uint256 timestamp);
     event LiquidityChanged(address ctf, uint256 amount, uint256 minPrice, uint256 maxPrice, bool isAdding);
     event CTFPurchase(address indexed ctf, address indexed producer, int64[] serialNumber, uint256 price);
-    event FPPurchase(address indexed fp, address indexed ctf, int64 serialNumber, uint256 price, uint256 fee);
+    event CommodityPurchased(
+        address indexed buyer,
+        address indexed ctf,
+        int64[] serialNumbers,
+        uint256 quantity,
+        uint256 basePrice,
+        uint256 ctfFee
+    );
     event PriceUpdated(uint256 newPrice);
 
     event SerialNumberStatusChanged(
@@ -61,11 +79,12 @@ contract CommodityPool {
         uint256 timestamp
     );
 
-    constructor(address _tokenAddress, address _tokenAuthority, address _commodityExchange) {
+    constructor(address _tokenAddress, address _tokenAuthority, address _commodityExchange, address _participantRegistry, bool isHedera) {
         tokenAddress = _tokenAddress;
         tokenAuthority = TokenAuthority(_tokenAuthority);
         commodityExchange = _commodityExchange;
-        currentPrice = BASE_PRICE;
+        participantRegistry = ParticipantRegistry(_participantRegistry);
+        currentPrice = isHedera ? HEDERA_BASE_PRICE : ETHEREUM_BASE_PRICE;
     }
 
     modifier onlyCommodityExchange() {
@@ -77,16 +96,16 @@ contract CommodityPool {
         uint256 listingId = listingCount++;
         listings[listingId] = Listing(producer, serialNumbers, block.timestamp, true);
 
-        // Simple mappings for quick retrieval. This can definitely be replaced with the graph or others
         producerListings[producer].push(listingId);
         producerListingCount[producer]++;
 
-        emit ListingAdded(listingId, producer, serialNumbers);
+        emit ListingAdded(listingId, producer, serialNumbers, block.timestamp);
 
-        // Adjust price downwards when new supply is added
         adjustPrice(false);
 
-        _checkForCTFMatch(listingId);
+        if (!_tryMatch(listingId)) {
+            unmatchedListings.push(listingId);
+        }
     }
 
     function getListingDetails(uint256 listingId) external view returns (address, int64[] memory, bool) {
@@ -117,6 +136,8 @@ contract CommodityPool {
         totalLiquidity += msg.value;
 
         emit LiquidityChanged(ctf, msg.value, minPrice, maxPrice, true);
+
+        _tryMatchLiquidity(ctf, msg.value);
     }
 
     function removeLiquidity(address ctf, uint256 amount) external onlyCommodityExchange {
@@ -130,35 +151,55 @@ contract CommodityPool {
         emit LiquidityChanged(ctf, amount, ctfLiquidity[ctf].minPrice, ctfLiquidity[ctf].maxPrice, false);
     }
 
-    function purchaseCommodity(address buyer, int64 serialNumber) external payable onlyCommodityExchange {
-        uint256 listingId = findListingBySerialNumber(serialNumber);
-        require(listingId < listingCount, "Listing not found");
-        Listing storage listing = listings[listingId];
-        require(listing.active, "Listing is not active");
+    function purchaseCommodity(address buyer, uint256 quantity) external payable onlyCommodityExchange {
+        require(quantity > 0, "Quantity must be greater than 0");
 
-        uint256 basePrice = currentPrice;
-        uint256 fee = (basePrice * FEE_PERCENTAGE) / FEE_PRECISION;
-        uint256 totalPrice = basePrice + fee;
+        address ctf = findMatchingCTF(quantity);
+        require(ctf != address(0), "No matching CTF found");
+
+        uint256 basePrice = currentPrice * quantity;
+
+        // Get CTF's overhead percentage
+        ParticipantRegistry.ParticipantView memory participant = participantRegistry.getParticipantByAddress(ctf);
+
+        uint256 ctfFee = (basePrice * participant.overheadPercentage) / 10000; // Assuming overhead is in basis points
+        uint256 totalPrice = basePrice + ctfFee;
 
         require(msg.value >= totalPrice, "Insufficient payment");
 
-        address ctf = _findMatchingCTF(basePrice);
-        require(ctf != address(0), "No matching CTF found");
+        // Transfer commodities
+        int64[] memory purchasedSerialNumbers = transferCommodities(ctf, buyer, quantity);
 
-        tokenAuthority.transferNFT(tokenAddress, listing.producer, buyer, serialNumber);
-        ctfLiquidity[ctf].amount -= basePrice;
-        totalLiquidity -= basePrice;
-        ctfLiquidity[ctf].amount += fee;
-        payable(ctf).transfer(basePrice);
-        payable(listing.producer).transfer(fee);
+        // Transfer payment
+        payable(ctf).transfer(totalPrice);
 
-        emit FPPurchase(buyer, ctf, serialNumber, basePrice, fee);
-        emit ListingSold(listingId, buyer, serialNumber, basePrice);
+        emit CommodityPurchased(buyer, ctf, purchasedSerialNumbers, quantity, basePrice, ctfFee);
 
-        listing.active = false;
-
-        // Adjust price upwards when a purchase is made
         adjustPrice(true);
+    }
+
+    function findMatchingCTF(uint256 quantity) internal view returns (address) {
+        for (uint i = 0; i < ctfs.length; i++) {
+            address ctf = ctfs[i];
+            if (ctfOwnedSerialNumbers[ctf].length >= quantity) {
+                return ctf;
+            }
+        }
+        return address(0);
+    }
+
+    function transferCommodities(address ctf, address buyer, uint256 quantity) internal returns (int64[] memory) {
+        require(ctfOwnedSerialNumbers[ctf].length >= quantity, "Insufficient CTF holdings");
+
+        int64[] memory transferredSerialNumbers = new int64[](quantity);
+        for (uint i = 0; i < quantity; i++) {
+            int64 serialNumber = ctfOwnedSerialNumbers[ctf][ctfOwnedSerialNumbers[ctf].length - 1];
+            ctfOwnedSerialNumbers[ctf].pop();
+            transferredSerialNumbers[i] = serialNumber;
+            tokenAuthority.transferNFT(tokenAddress, ctf, buyer, serialNumber);
+        }
+
+        return transferredSerialNumbers;
     }
 
     function adjustPrice(bool increase) internal {
@@ -170,40 +211,61 @@ contract CommodityPool {
         emit PriceUpdated(currentPrice);
     }
 
-    function _checkForCTFMatch(uint256 listingId) internal {
+    function _tryMatch(uint256 listingId) internal returns (bool) {
         Listing storage listing = listings[listingId];
-        address ctf = _findMatchingCTF(currentPrice);
+        uint256 totalPrice = currentPrice * listing.serialNumbers.length;
 
-        if (ctf != address(0)) {
-            uint256 totalPrice = currentPrice * listing.serialNumbers.length;
-            require(ctfLiquidity[ctf].amount >= totalPrice, "Insufficient CTF liquidity");
-
-            for (uint i = 0; i < listing.serialNumbers.length; i++) {
-                tokenAuthority.transferNFT(tokenAddress, listing.producer, ctf, listing.serialNumbers[i]);
+        for (uint i = 0; i < ctfs.length; i++) {
+            address ctf = ctfs[i];
+            if (ctfLiquidity[ctf].amount >= totalPrice &&
+            currentPrice >= ctfLiquidity[ctf].minPrice &&
+                currentPrice <= ctfLiquidity[ctf].maxPrice) {
+                _executeTrade(listingId, ctf);
+                return true;
             }
+        }
+        return false;
+    }
 
-            ctfLiquidity[ctf].amount -= totalPrice;
-            totalLiquidity -= totalPrice;
-            payable(listing.producer).transfer(totalPrice);
+    function _tryMatchLiquidity(address ctf, uint256 amount) internal {
+        while (amount > 0 && unmatchedListings.length > 0) {
+            uint256 listingId = unmatchedListings[unmatchedListings.length - 1];
+            Listing storage listing = listings[listingId];
+            uint256 totalPrice = currentPrice * listing.serialNumbers.length;
 
-            emit CTFPurchase(ctf, listing.producer, listing.serialNumbers, currentPrice);
-            listing.active = false;
-
-            // Adjust price upwards when a CTF purchase is made
-            adjustPrice(true);
+            console.log("Amount: %s", amount);
+            console.log("totalPrice: %s", totalPrice);
+            console.log("ctfLiquidity[ctf].minPrice: %s", ctfLiquidity[ctf].minPrice);
+            console.log("ctfLiquidity[ctf].maxPrice: %s", ctfLiquidity[ctf].maxPrice);
+            console.log("currentPrice: %s", currentPrice);
+            if (amount >= totalPrice &&
+            currentPrice >= ctfLiquidity[ctf].minPrice &&
+                currentPrice <= ctfLiquidity[ctf].maxPrice) {
+                _executeTrade(listingId, ctf);
+                amount -= totalPrice;
+                unmatchedListings.pop();
+            } else {
+                break;
+            }
         }
     }
 
-    function _findMatchingCTF(uint256 price) internal view returns (address) {
-        for (uint i = 0; i < ctfs.length; i++) {
-            address ctf = ctfs[i];
-            if (ctfLiquidity[ctf].amount >= price &&
-            price >= ctfLiquidity[ctf].minPrice &&
-                price <= ctfLiquidity[ctf].maxPrice) {
-                return ctf;
-            }
+    function _executeTrade(uint256 listingId, address ctf) internal {
+        Listing storage listing = listings[listingId];
+        uint256 totalPrice = currentPrice * listing.serialNumbers.length;
+
+        for (uint i = 0; i < listing.serialNumbers.length; i++) {
+            tokenAuthority.transferNFT(tokenAddress, listing.producer, ctf, listing.serialNumbers[i]);
         }
-        return address(0);
+
+        ctfLiquidity[ctf].amount -= totalPrice;
+        totalLiquidity -= totalPrice;
+        payable(listing.producer).transfer(totalPrice);
+
+        emit CTFPurchase(ctf, listing.producer, listing.serialNumbers, currentPrice);
+        listing.active = false;
+
+        adjustPrice(true);
     }
 
     function findListingBySerialNumber(int64 serialNumber) internal view returns (uint256) {
@@ -246,5 +308,12 @@ contract CommodityPool {
         }
 
         return producerListingsToReturn;
+    }
+
+    // This function should be called when a CTF purchases from a producer
+    function updateCTFHoldings(address ctf, int64[] memory serialNumbers) internal {
+        for (uint i = 0; i < serialNumbers.length; i++) {
+            ctfOwnedSerialNumbers[ctf].push(serialNumbers[i]);
+        }
     }
 }

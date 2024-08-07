@@ -1,13 +1,14 @@
 "use client";
 
+import { EthAvatar } from "@/components/EthAvatar";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { MapToDisplay } from "@/components/input/MapToDisplay";
 import { useAccountDetails } from "@/hooks/useAccountDetails";
 import { useAuth } from "@/providers/AuthProvider";
 import { EthAddress } from "@/typings";
 import { getShortenedFormat } from "@/utils/address.utils";
+import { formatNumber } from "@/utils/number.utils";
 import React from "react";
-import { EthAvatar } from "../../../../components/EthAvatar";
 
 interface ProfilePageProps {
 	params: {
@@ -18,19 +19,27 @@ interface ProfilePageProps {
 function ProfileHeader() {
 	const { account } = useAuth();
 	return (
-		<div className="flex flex-col lg:flex-row items-start lg:space-x-14">
-			<div className="border-4 lg:border-8 border-gray-50 bg-gray-50 rounded-full">
-				<EthAvatar address={account?.address || ""} size={100} />
+		<div className="flex flex-col lg:justify-between lg:flex-row items-center lg:space-x-8">
+			<div>
+				<EthAvatar address={account?.address || ""} size={70} />
 			</div>
-			<div className="mt-3 lg:mt-6 w-full space-y-6 lg:space-y-0 lg:horizontal justify-between">
+			<div className=" w-full space-y-6 lg:space-y-0 flex lg:horizontal justify-between">
 				<div>
 					<h2 className="font-bold text-3xl">
 						{account?.name || getShortenedFormat(account?.address)}
 					</h2>
-					<div className="text-[11px] lg:text-xs text-gray-500 font-medium">
-						{account?.balance} HBAR
+					<div className="text-[11px] lg:text-sm text-gray-500 font-medium">
+						{account?.address}
 					</div>
 				</div>
+				{account?.balance && (
+					<div className="text-right">
+						<div className="font-bold text-gray-800 text-base">
+							{formatNumber(account?.balance)}
+						</div>
+						<div className="text-[11px] lg:text-sm text-gray-500">HBAR</div>
+					</div>
+				)}
 			</div>
 		</div>
 	);
@@ -52,8 +61,8 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 				regions={account?.locations || []}
 				mapHeight={250}
 			/>
-			<div className="!z-[9999] flex flex-col lg:flex-row items-start lg:space-x-14">
-				<div className="bg-white shadow rounded p-6 layout -mt-14 mb-6">
+			<div className="!z-[9999] flex flex-col">
+				<div className="bg-white shadow rounded py-8 px-10 layout -mt-14 mb-6">
 					{isLoading ? (
 						<div className="flex items-center space-x-2">
 							<LoadingOutlined />
@@ -62,7 +71,10 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 					) : !account?.type ? (
 						<>
 							<ProfileHeader />
-							<div className="text-sm mt-6 text-gray-600 pt-6 border-t-2">
+							<div
+								style={{ borderTop: "1px solid #efefef" }}
+								className="text-sm mt-6 text-gray-600 pt-6"
+							>
 								No account found
 							</div>
 						</>

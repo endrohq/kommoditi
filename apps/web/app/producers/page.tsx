@@ -1,24 +1,18 @@
-"use client";
-
+import { loadCommodities } from "@/app/(main)/actions";
 import { SalesOverview } from "@/app/producers/components/SalesOverview";
-import { useAuth } from "@/providers/AuthProvider";
-import { useCommodities } from "@/providers/CommoditiesProvider";
 import { EthAddress } from "@/typings";
 
-export default function Page() {
-	const { account, isLoading } = useAuth();
-	const { commodities, isLoading: isLoadingCommodities } = useCommodities();
-
+export default async function Page() {
+	const commodities = await loadCommodities();
 	return (
 		<div className="">
 			<h1 className="text-2xl font-bold mb-4">Home</h1>
-			{!isLoading && !isLoadingCommodities && account?.address && (
+			{commodities && commodities?.length > 0 && (
 				<>
 					<SalesOverview
 						poolAddresses={commodities?.map(
 							(item) => item.poolAddress as EthAddress,
 						)}
-						address={account?.address}
 					/>
 				</>
 			)}

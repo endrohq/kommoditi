@@ -43,8 +43,7 @@ export type HederaToken = {
 		name: string;
 		symbol: string;
 		treasury: EthAddress;
-		memo: string;
-		tokenSupplyType: boolean;
+		maxSupply: number;
 	};
 	totalSupply: number;
 	pauseStatus: boolean;
@@ -62,9 +61,17 @@ export type GetAllPoolsResponse = {
 	tokenAddress: EthAddress;
 };
 
-export type CommodityToken = HederaToken & {
+export type CommodityToken = {
+	name: string;
+	symbol: string;
+	treasury: EthAddress;
+	maxSupply: number;
 	tokenAddress: EthAddress;
 	poolAddress?: EthAddress;
+	totalSupply: number;
+	pauseStatus?: boolean;
+	defaultKycStatus?: boolean;
+	deleted?: boolean;
 };
 
 export type PoolTransactionType =
@@ -83,6 +90,7 @@ export type PoolTransaction = {
 	value: string;
 	blockNumber: bigint;
 	blockHash: EthAddress;
+	args: Record<string, any>;
 };
 
 export interface CommodityPoolLiquidity {

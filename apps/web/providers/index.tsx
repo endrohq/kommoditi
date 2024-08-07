@@ -25,9 +25,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 			<QueryClientProvider client={queryClient}>
 				<WagmiProvider config={chainOptions}>
 					<NetworkManager>
-						<AuthProvider>
-							<CommoditiesProvider>{children}</CommoditiesProvider>
-						</AuthProvider>
+						<AuthProvider>{children}</AuthProvider>
 					</NetworkManager>
 				</WagmiProvider>
 			</QueryClientProvider>

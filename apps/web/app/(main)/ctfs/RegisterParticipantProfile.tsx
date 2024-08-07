@@ -83,8 +83,7 @@ export function RegisterParticipantProfile({
 	function handleSubmit() {
 		const contractType = typeToParticipantType(type);
 		try {
-			console.log(participant?.locations);
-			// register([participant?.name, 25, contractType, participant?.locations]);
+			register([participant?.name, 25, contractType, participant?.locations]);
 		} catch (e) {
 			console.error(e);
 		}

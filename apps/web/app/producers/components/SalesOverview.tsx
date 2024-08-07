@@ -1,34 +1,32 @@
 "use client";
 
 import { SaleItemModal } from "@/app/producers/components/SaleItemModal";
-import { MapToDisplay } from "@/components/input/MapToDisplay";
-import { MobileModal } from "@/components/modal/MobileModal";
-import { contracts } from "@/lib/constants";
-import { CommodityListing, EthAddress } from "@/typings";
-import { getShortenedFormat } from "@/utils/address.utils";
+import { usePoolTransactions } from "@/hooks/usePoolTransactions";
+import { useAuth } from "@/providers/AuthProvider";
+import { EthAddress, PoolTransaction } from "@/typings";
 import { getDistanceForDate } from "@/utils/date.utils";
-import { parseListings } from "@/utils/parser.utils";
 import { useState } from "react";
-import { useReadContracts } from "wagmi";
 
 interface SalesOverviewProps {
 	poolAddresses: EthAddress[];
-	address: EthAddress;
 }
 
-export function SalesOverview({ poolAddresses, address }: SalesOverviewProps) {
-	const [activeListing, setActiveListing] = useState<CommodityListing>();
-	const { data, isLoading } = useReadContracts({
-		contracts: poolAddresses.map((poolAddress) => ({
-			address: poolAddress,
-			abi: contracts.commodityPool.abi,
-			functionName: "getListingsByProducer",
-			args: [address],
-		})),
-	});
+export function SalesOverview({ poolAddresses }: SalesOverviewProps) {
+	const { account } = useAuth();
+	const [activeTx, setActiveTx] = useState<PoolTransaction>();
 
-	const listings = data?.flatMap((result: Record<string, any>) =>
-		parseListings(result.result),
+	const { transactions, isLoading } = usePoolTransactions(
+		poolAddresses,
+		[
+			"ListingAdded",
+			"ListingSold",
+			"LiquidityChanged",
+			"CTFPurchase",
+			"FPPurchase",
+		],
+		{
+			address: account?.address,
+		},
 	);
 
 	return (
@@ -51,9 +49,9 @@ export function SalesOverview({ poolAddresses, address }: SalesOverviewProps) {
 								<div className="w-16 h-4 bg-gray-200 rounded-full"></div>
 							</div>
 						))
-					: listings?.map((listing, i: number) => (
+					: transactions?.map((tx, i: number) => (
 							<div
-								onClick={() => setActiveListing(listing)}
+								onClick={() => setActiveTx(tx)}
 								key={i}
 								className="flex items-center justify-between my-6"
 							>
@@ -61,12 +59,12 @@ export function SalesOverview({ poolAddresses, address }: SalesOverviewProps) {
 									<div className="w-10 h-10 bg-gray-200 rounded-full mr-4"></div>
 									<div>
 										<div className="text-xs text-gray-500">
-											{getDistanceForDate(listing.dateOffered)}
+											{getDistanceForDate(tx.dateCreated)}
 										</div>
 										<div className="text-sm">
 											Quantity:{" "}
 											<span className="font-semibold">
-												{listing.serialNumbers?.length - 1}
+												{tx.args.serialNumbers?.length - 1}
 											</span>
 										</div>
 									</div>
@@ -75,10 +73,10 @@ export function SalesOverview({ poolAddresses, address }: SalesOverviewProps) {
 							</div>
 						))}
 			</div>
-			{activeListing && (
+			{activeTx && (
 				<SaleItemModal
-					handleClose={() => setActiveListing(undefined)}
-					listing={activeListing}
+					handleClose={() => setActiveTx(undefined)}
+					tx={activeTx}
 				/>
 			)}
 		</>

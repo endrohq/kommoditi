@@ -18,19 +18,17 @@ import {
 import Link from "next/link";
 import React from "react";
 
-const eventNames = [
-	"ListingAdded",
-	"ListingSold",
-	"LiquidityChanged",
-	"CTFPurchase",
-	"FPPurchase",
-];
-
 export function TransactionList() {
 	const { commodity } = useTokenPage();
 	const { transactions, isLoading } = usePoolTransactions(
-		commodity?.poolAddress as EthAddress,
-		eventNames,
+		[commodity?.poolAddress as EthAddress],
+		[
+			"ListingAdded",
+			"ListingSold",
+			"LiquidityChanged",
+			"CTFPurchase",
+			"FPPurchase",
+		],
 	);
 
 	return (
@@ -45,7 +43,8 @@ export function TransactionList() {
 								<>
 									<TableHeader colSpan={4}>Type</TableHeader>
 									<TableHeader>HBAR</TableHeader>
-									<TableHeader>Wallet</TableHeader>
+									<TableHeader>From</TableHeader>
+									<TableHeader>Tx Hash</TableHeader>
 								</>
 							)}
 						</TableRow>
@@ -59,7 +58,7 @@ export function TransactionList() {
 							</TableRow>
 						) : transactions?.length > 0 ? (
 							transactions?.map((tx, index) => (
-								<TableRow>
+								<TableRow className="!text-sm">
 									<TableCell className="capitalize" colSpan={4}>
 										{getDistanceForDate(tx.dateCreated)}
 									</TableCell>
@@ -74,6 +73,9 @@ export function TransactionList() {
 										>
 											{getShortenedFormat(tx.from)}
 										</Link>
+									</TableCell>
+									<TableCell className="text-gray-500 !text-sm">
+										{getShortenedFormat(tx.transactionHash)}
 									</TableCell>
 								</TableRow>
 							))

@@ -8,7 +8,7 @@ import commodityFactoryAbi from "./abis/factory.abi.json";
 import participantsAbi from "./abis/participants.abi.json";
 import tokenAuthorityAbi from "./abis/token-authority.abi.json";
 
-const isLocal = process.env.NEXT_PUBLIC_IS_LOCAL === "true";
+export const isLocalNetwork = process.env.NEXT_PUBLIC_IS_LOCAL === "true";
 
 const localOnlyOptions = [hardhat];
 const testnetOptions = [hederaTestnet];
@@ -27,8 +27,10 @@ const localOnlyConfig = createConfig({
 	},
 });
 
-export const optionConfig = isLocal ? localOnlyOptions : testnetOptions;
-export const chainOptions = isLocal ? localOnlyConfig : testnetOnlyConfig;
+export const optionConfig = isLocalNetwork ? localOnlyOptions : testnetOptions;
+export const chainOptions = isLocalNetwork
+	? localOnlyConfig
+	: testnetOnlyConfig;
 
 type ContractNames =
 	| "participantRegistry"
@@ -48,7 +50,7 @@ const localContracts: Record<ContractNames, ContractInfo> = {
 		abi: participantsAbi as Abi,
 	},
 	commodityExchange: {
-		address: "0x5e06fC9925536348d0c2184Da3e628A079409Cc3",
+		address: "0xa72429A4e6b56E7ec0BD505de6635e54011Bc98d",
 		abi: exchangeAbi as Abi,
 	},
 	tokenAuthority: {
@@ -56,7 +58,7 @@ const localContracts: Record<ContractNames, ContractInfo> = {
 		abi: tokenAuthorityAbi as Abi,
 	},
 	commodityFactory: {
-		address: "0x7952A2d5fA150c78C1FFD0434175ee3D59b628B7",
+		address: "0x5e06fC9925536348d0c2184Da3e628A079409Cc3",
 		abi: commodityFactoryAbi as Abi,
 	},
 	commodityPool: {
@@ -88,4 +90,4 @@ const testnetContracts: Record<ContractNames, ContractInfo> = {
 	},
 };
 
-export const contracts = isLocal ? localContracts : testnetContracts;
+export const contracts = isLocalNetwork ? localContracts : testnetContracts;

@@ -42,8 +42,6 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 		enabled: ready,
 	});
 
-	console.log(account);
-
 	const isLoading = !ready || isLoadingAccount;
 
 	const values = useMemo(

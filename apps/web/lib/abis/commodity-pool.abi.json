@@ -15,6 +15,16 @@
 				"internalType": "address",
 				"name": "_commodityExchange",
 				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_participantRegistry",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "isHedera",
+				"type": "bool"
 			}
 		],
 		"stateMutability": "nonpayable",
@@ -57,7 +67,7 @@
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "fp",
+				"name": "buyer",
 				"type": "address"
 			},
 			{
@@ -68,24 +78,30 @@
 			},
 			{
 				"indexed": false,
-				"internalType": "int64",
-				"name": "serialNumber",
-				"type": "int64"
+				"internalType": "int64[]",
+				"name": "serialNumbers",
+				"type": "int64[]"
 			},
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "price",
+				"name": "quantity",
 				"type": "uint256"
 			},
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "fee",
+				"name": "basePrice",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "ctfFee",
 				"type": "uint256"
 			}
 		],
-		"name": "FPPurchase",
+		"name": "CommodityPurchased",
 		"type": "event"
 	},
 	{
@@ -145,6 +161,12 @@
 				"internalType": "int64[]",
 				"name": "serialNumbers",
 				"type": "int64[]"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
+				"type": "uint256"
 			}
 		],
 		"name": "ListingAdded",
@@ -175,6 +197,12 @@
 				"indexed": false,
 				"internalType": "uint256",
 				"name": "price",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "timestamp",
 				"type": "uint256"
 			}
 		],
@@ -233,7 +261,20 @@
 	},
 	{
 		"inputs": [],
-		"name": "BASE_PRICE",
+		"name": "ETHEREUM_BASE_PRICE",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "HEDERA_BASE_PRICE",
 		"outputs": [
 			{
 				"internalType": "uint256",
@@ -299,6 +340,30 @@
 				"internalType": "uint256",
 				"name": "maxPrice",
 				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "ctfOwnedSerialNumbers",
+		"outputs": [
+			{
+				"internalType": "int64",
+				"name": "",
+				"type": "int64"
 			}
 		],
 		"stateMutability": "view",
@@ -552,6 +617,19 @@
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "participantRegistry",
+		"outputs": [
+			{
+				"internalType": "contract ParticipantRegistry",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
 			{
 				"internalType": "address",
@@ -601,9 +679,9 @@
 				"type": "address"
 			},
 			{
-				"internalType": "int64",
-				"name": "serialNumber",
-				"type": "int64"
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
 			}
 		],
 		"name": "purchaseCommodity",
@@ -658,6 +736,25 @@
 	{
 		"inputs": [],
 		"name": "totalLiquidity",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "unmatchedListings",
 		"outputs": [
 			{
 				"internalType": "uint256",
