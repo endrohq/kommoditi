@@ -12,6 +12,7 @@ import { fetchWrapper } from "@/utils/fetch.utils";
 import { formatNumber } from "@/utils/number.utils";
 import {
 	parseCommodities,
+	parseSmCommodityPoolEvent,
 	smParticipantTypeToParticipantType,
 } from "@/utils/parser.utils";
 import { getPublicClient, readContract, readContracts } from "@wagmi/core";
@@ -92,6 +93,12 @@ export async function getPoolTransactions(
 					hash: hash as EthAddress,
 				});
 
+				console.log({
+					fullTx,
+					txEvents,
+					commodities,
+				});
+
 				return {
 					id: hash,
 					from: fullTx.from,
@@ -99,15 +106,20 @@ export async function getPoolTransactions(
 					value: formatNumber(formatEther(fullTx.value)),
 					blockNumber: Number(txEvents[0].blockNumber),
 					createdAt: block ? new Date(Number(block.timestamp) * 1000) : 0,
-					events: txEvents.map((event) => ({
-						type: event.eventName ?? "unknown",
-						//logArgs: event.args,
-					})),
+					events: txEvents.map((event) =>
+						parseSmCommodityPoolEvent(
+							event,
+							commodities?.find(
+								(c) =>
+									c.poolAddress?.toLowerCase() === event.address?.toLowerCase(),
+							),
+						),
+					),
 				} as PoolTransaction;
 			}),
 		);
-		console.log(transactions);
-		await fetchWrapper<any>("/api/transactions", {
+
+		await fetchWrapper("/api/transactions", {
 			method: "POST",
 			body: JSON.stringify(transactions),
 		});

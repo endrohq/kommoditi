@@ -36,9 +36,7 @@ export default function Page({ params }: Props) {
 			<div className="w-10/12 mx-auto">
 				<TokenPageHeader />
 				<PoolStatistics />
-				<div className="gap-10 flex flex-col mt-10">
-					<TransactionList />
-				</div>
+				<div className="gap-10 flex flex-col mt-10"></div>
 			</div>
 			<div className="w-2/12">
 				<Link href={`${getTokenPage(params.address)}/liquidity`}>

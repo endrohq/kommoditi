@@ -98,20 +98,6 @@ export const poolTransactionTypes: PoolTransactionType[] = [
 	"PriceUpdated",
 ];
 
-export type PoolTransaction = {
-	id: EthAddress;
-	createdAt: Date;
-	from: EthAddress;
-	to: EthAddress;
-	value: string;
-	blockNumber: number;
-	blockHash: EthAddress;
-	events: Array<{
-		type: string;
-		logArgs: any;
-	}>;
-};
-
 export interface CommodityPoolLiquidity {
 	ctf: string;
 	minPrice: number;
@@ -135,3 +121,87 @@ export interface BlockchainConfig {
 	id: number;
 	blockNumber: number;
 }
+
+export type BasePoolEvent = {
+	tokenAddress?: EthAddress;
+	type?: string;
+	transactionHash: string;
+};
+
+export type ListingAdded = BasePoolEvent & {
+	id?: number;
+	listingId: number;
+	producer: string;
+	serialNumbers: number[];
+	timestamp: Date;
+};
+
+export type ListingSold = BasePoolEvent & {
+	id?: number;
+	listingId: number;
+	buyer: string;
+	serialNumber: number;
+	price: number;
+	timestamp: Date;
+};
+
+export type LiquidityChanged = BasePoolEvent & {
+	id?: number;
+	ctf: string;
+	amount: number;
+	minPrice: number;
+	maxPrice: number;
+	isAdding: boolean;
+};
+
+export type CTFPurchase = BasePoolEvent & {
+	id?: number;
+	ctf: string;
+	listingId: number;
+	producer: string;
+	serialNumbers: number[];
+	price: number;
+};
+
+export type CommodityPurchased = BasePoolEvent & {
+	id?: number;
+	buyer: string;
+	ctf: string;
+	serialNumbers: number[];
+	quantity: number;
+	basePrice: number;
+	ctfFee: string;
+};
+
+export type PriceUpdated = BasePoolEvent & {
+	id?: number;
+	newPrice: number;
+};
+
+export type SerialNumberStatusChanged = BasePoolEvent & {
+	id?: number;
+	serialNumber: number;
+	previousOwner: string;
+	newOwner: string;
+	status: string;
+	timestamp: Date;
+};
+
+export type PoolEvent =
+	| ListingAdded
+	| ListingSold
+	| LiquidityChanged
+	| CTFPurchase
+	| CommodityPurchased
+	| PriceUpdated
+	| SerialNumberStatusChanged;
+
+export type PoolTransaction = {
+	id: EthAddress;
+	createdAt: Date;
+	from: EthAddress;
+	to: EthAddress;
+	value: string;
+	blockNumber: number;
+	events?: PoolEvent[];
+};

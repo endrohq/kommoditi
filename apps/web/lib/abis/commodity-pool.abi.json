@@ -47,6 +47,12 @@
 			},
 			{
 				"indexed": false,
+				"internalType": "uint256",
+				"name": "listingId",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
 				"internalType": "int64[]",
 				"name": "serialNumber",
 				"type": "int64[]"

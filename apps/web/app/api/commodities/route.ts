@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET() {
 	try {
 		const { data: commodities, error } = await supabase
-			.from("commodities")
+			.from("commodityToken")
 			.select("*");
 
 		if (error) {
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 		}));
 
 		const { data, error } = await supabase
-			.from("commodities")
+			.from("commodityToken")
 			.upsert(commodities, {
 				onConflict: "tokenAddress", // Assuming 'id' is the unique identifier for commodities
 				ignoreDuplicates: false, // Set to true if you want to ignore duplicates

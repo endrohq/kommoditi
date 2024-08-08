@@ -58,9 +58,8 @@ contract CommodityPool {
     // Not in sync with frontend
 
     event ListingAdded(uint256 indexed listingId, address indexed producer, int64[] serialNumbers, uint256 timestamp);
-    event ListingSold(uint256 indexed listingId, address indexed buyer, int64 serialNumber, uint256 price, uint256 timestamp);
     event LiquidityChanged(address ctf, uint256 amount, uint256 minPrice, uint256 maxPrice, bool isAdding);
-    event CTFPurchase(address indexed ctf, address indexed producer, int64[] serialNumber, uint256 price);
+    event CTFPurchase(address indexed ctf, address indexed producer, uint256 listingId, int64[] serialNumber, uint256 price);
     event CommodityPurchased(
         address indexed buyer,
         address indexed ctf,
@@ -262,7 +261,7 @@ contract CommodityPool {
         totalLiquidity -= totalPrice;
         payable(listing.producer).transfer(totalPrice);
 
-        emit CTFPurchase(ctf, listing.producer, listing.serialNumbers, currentPrice);
+        emit CTFPurchase(ctf, listing.producer, listingId, listing.serialNumbers, currentPrice);
         listing.active = false;
 
         adjustPrice(true);

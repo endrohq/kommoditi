@@ -1,7 +1,6 @@
 "use client";
 
 import { SaleItemModal } from "@/app/producers/components/SaleItemModal";
-import { usePoolTransactions } from "@/hooks/usePoolTransactions";
 import { useAuth } from "@/providers/AuthProvider";
 import { EthAddress, PoolTransaction } from "@/typings";
 import { getDistanceForDate } from "@/utils/date.utils";
@@ -15,13 +14,9 @@ export function SalesOverview({ poolAddresses }: SalesOverviewProps) {
 	const { account } = useAuth();
 	const [activeTx, setActiveTx] = useState<PoolTransaction>();
 
-	const { transactions, isLoading } = usePoolTransactions(poolAddresses, {
-		address: account?.address,
-	});
-
 	return (
 		<>
-			<div className="my-6">
+			{/*<div className="my-6">
 				<h2 className="font-bold mb-2">Sales</h2>
 				{isLoading
 					? ["", "", "", "", ""].map((_, i) => (
@@ -62,7 +57,7 @@ export function SalesOverview({ poolAddresses }: SalesOverviewProps) {
 								<div className="w-16 h-4 bg-gray-200 rounded-full"></div>
 							</div>
 						))}
-			</div>
+			</div>*/}
 			{activeTx && (
 				<SaleItemModal
 					handleClose={() => setActiveTx(undefined)}
