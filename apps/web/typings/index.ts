@@ -133,7 +133,7 @@ export type ListingAdded = BasePoolEvent & {
 	listingId: number;
 	producer: string;
 	serialNumbers: number[];
-	timestamp: Date;
+	createdAt: Date;
 };
 
 export type ListingSold = BasePoolEvent & {
@@ -184,7 +184,7 @@ export type SerialNumberStatusChanged = BasePoolEvent & {
 	previousOwner: string;
 	newOwner: string;
 	status: string;
-	timestamp: Date;
+	createdAt: Date;
 };
 
 export type PoolEvent =
@@ -205,3 +205,24 @@ export type PoolTransaction = {
 	blockNumber: number;
 	events?: PoolEvent[];
 };
+
+/* TIMELINE */
+
+export type GroupedByDateTimeline = {
+	dateGroup: string;
+	events: TimelineEvent[];
+};
+
+export type ListingAddedEvent = {
+	id?: number;
+	producer: Participant;
+	createdAt: Date;
+	quantity: number;
+	commodityToken: CommodityToken;
+	transactionHash: string;
+};
+
+export type TimelineEvent = {
+	type: "listing" | "purchase";
+} & ListingAddedEvent &
+	CTFPurchase;

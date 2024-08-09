@@ -68,7 +68,7 @@ async function handleListingAdded(event: ListingAdded) {
 		.insert({
 			id: event.listingId,
 			producerId: event.producer,
-			createdAt: event.timestamp,
+			createdAt: event.createdAt,
 			transactionHash: event.transactionHash,
 			tokenAddress: event.tokenAddress,
 		})

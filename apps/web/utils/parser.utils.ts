@@ -99,7 +99,7 @@ export function parseSmCommodityPoolEvent(
 				listingId: Number(event.listingId),
 				producer: event.producer,
 				serialNumbers: event.serialNumbers.map((sn: any) => Number(sn)),
-				timestamp: parseSmartContractDate(event.timestamp),
+				createdAt: parseSmartContractDate(event.timestamp),
 			} as ListingAdded;
 
 		case "LiquidityChanged":
@@ -146,7 +146,7 @@ export function parseSmCommodityPoolEvent(
 				previousOwner: event.previousOwner,
 				newOwner: event.newOwner,
 				status: event.status,
-				timestamp: parseSmartContractDate(event.timestamp),
+				createdAt: parseSmartContractDate(event.timestamp),
 			} as SerialNumberStatusChanged;
 		default:
 			throw new Error(`Unsupported event type: ${baseEvent.type}`);
