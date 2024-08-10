@@ -59,7 +59,7 @@ contract CommodityPool {
 
     event ListingAdded(uint256 indexed listingId, address indexed producer, int64[] serialNumbers, uint256 timestamp);
     event LiquidityChanged(address ctf, uint256 amount, uint256 minPrice, uint256 maxPrice, bool isAdding);
-    event CTFPurchase(address indexed ctf, address indexed producer, uint256 listingId, int64[] serialNumber, uint256 price);
+    event CTFPurchase(address indexed ctf, address indexed producer, uint256 listingId, int64[] serialNumbers, uint256 price, uint256 totalPrice);
     event CommodityPurchased(
         address indexed buyer,
         address indexed ctf,
@@ -261,7 +261,7 @@ contract CommodityPool {
         totalLiquidity -= totalPrice;
         payable(listing.producer).transfer(totalPrice);
 
-        emit CTFPurchase(ctf, listing.producer, listingId, listing.serialNumbers, currentPrice);
+        emit CTFPurchase(ctf, listing.producer, listingId, listing.serialNumbers, currentPrice, totalPrice);
         listing.active = false;
 
         adjustPrice(true);

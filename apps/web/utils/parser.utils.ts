@@ -118,8 +118,9 @@ export function parseSmCommodityPoolEvent(
 				ctf: event.ctf,
 				producer: event.producer,
 				listingId: Number(event.listingId),
-				serialNumbers: event.serialNumber.map((sn: any) => Number(sn)),
+				serialNumbers: event.serialNumbers.map((sn: any) => Number(sn)),
 				price: parseSmToNumberFormat(Number(event.price)),
+				totalPrice: parseSmToNumberFormat(Number(event.totalPrice)),
 			} as CTFPurchase;
 
 		case "CommodityPurchased":

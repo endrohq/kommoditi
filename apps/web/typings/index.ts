@@ -161,6 +161,7 @@ export type CTFPurchase = BasePoolEvent & {
 	producer: string;
 	serialNumbers: number[];
 	price: number;
+	totalPrice: number;
 };
 
 export type CommodityPurchased = BasePoolEvent & {
@@ -214,15 +215,23 @@ export type GroupedByDateTimeline = {
 };
 
 export type ListingAddedEvent = {
-	id?: number;
 	producer: Participant;
 	createdAt: Date;
 	quantity: number;
 	commodityToken: CommodityToken;
-	transactionHash: string;
+};
+
+export type CTFPurchaseEvent = {
+	ctf: Participant;
+	price: number;
+	totalPrice: number;
 };
 
 export type TimelineEvent = {
+	id?: number;
 	type: "listing" | "purchase";
+	createdAt: Date;
+	commodityToken: CommodityToken;
+	transaction: PoolTransaction;
 } & ListingAddedEvent &
-	CTFPurchase;
+	CTFPurchaseEvent;

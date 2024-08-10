@@ -3,7 +3,6 @@
 import {
 	CommodityToken,
 	GroupedByDateTimeline,
-	ListingAdded,
 	TimelineEvent,
 } from "@/typings";
 import supabase from "@/utils/supabase.utils";
@@ -16,16 +15,6 @@ export async function loadCommodities() {
 		.returns<CommodityToken[]>();
 
 	return commodities;
-}
-
-interface PurchaseEvent {
-	id: string;
-	type: "purchase";
-	createdAt: string;
-	tokenAddress: string;
-	listingId: number;
-	price: number;
-	quantity: number;
 }
 
 export async function fetchProducerTimeline(
@@ -49,7 +38,7 @@ export async function fetchProducerTimeline(
 	// Fetch purchases
 	const { data: purchases, error: purchaseError } = await supabase
 		.from("ctfPurchase")
-		.select("*,commodityToken(*),transaction:transactionHash(*)")
+		.select("*,commodityToken(*),transaction:transactionHash(*),ctf(*)")
 		.in("listingId", listingIds);
 
 	if (purchaseError) {
@@ -69,7 +58,6 @@ export async function fetchProducerTimeline(
 		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 	);
 
-	console.log(allEvents);
 	// Group events by date
 	const groupedEvents: { [key: string]: TimelineEvent[] } = {};
 

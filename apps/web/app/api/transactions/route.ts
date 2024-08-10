@@ -127,6 +127,7 @@ async function handleCTFPurchase(event: CTFPurchase) {
 		ctf: event.ctf,
 		listingId: event.listingId,
 		price: event.price,
+		totalPrice: event.totalPrice,
 	});
 
 	if (ctfError) throw ctfError;

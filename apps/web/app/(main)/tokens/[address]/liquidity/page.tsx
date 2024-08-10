@@ -99,7 +99,7 @@ export default function Page() {
 					crumbs={[
 						{ label: "Commodities" },
 						{
-							label: commodity.token.name,
+							label: commodity.name,
 							href: `/tokens/${commodity.tokenAddress}`,
 						},
 						{
