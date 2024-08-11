@@ -1,9 +1,13 @@
-import React, { useEffect, useRef } from "react";
-import Map, { Source, Layer, MapRef } from "react-map-gl";
+"use client";
+
+import React, { useEffect, useRef, useMemo } from "react";
+import Map, { Source, Layer, MapRef, Marker } from "react-map-gl";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { MapPinOutlined } from "@/components/icons/MapPinOutlined";
 import { MapBoxViewState, Region } from "@/typings";
-import { cellToBoundary } from "h3-js";
+import { getGeometryForRegion } from "@/utils/location.utils";
+import mapboxgl from "mapbox-gl";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
 
@@ -24,55 +28,34 @@ export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
 }) => {
 	const mapRef = useRef<MapRef>(null);
 
-	const fitMapToRegions = (regions: Region[]) => {
-		if (!mapRef.current) return;
-
-		let minLng = Infinity;
-		let minLat = Infinity;
-		let maxLng = -Infinity;
-		let maxLat = -Infinity;
-
-		regions.forEach((region) => {
-			region.h3Indexes.forEach((h3Index) => {
-				const boundary = cellToBoundary(h3Index);
-				boundary.forEach(([lat, lng]) => {
-					minLng = Math.min(minLng, lng);
-					minLat = Math.min(minLat, lat);
-					maxLng = Math.max(maxLng, lng);
-					maxLat = Math.max(maxLat, lat);
-				});
-			});
-		});
-
-		mapRef.current.fitBounds(
-			[
-				[minLng, minLat],
-				[maxLng, maxLat],
-			],
-			{ padding: 40, duration: 1000 },
-		);
-	};
-
-	useEffect(() => {
-		if (mapRef.current && regions.length > 0) {
-			fitMapToRegions(regions);
-		}
+	const regionsData = useMemo(() => {
+		return regions.map((region) => ({
+			region,
+			geometry: getGeometryForRegion(region),
+		}));
 	}, [regions]);
 
-	const regionsGeoJSON: GeoJSON.FeatureCollection = {
-		type: "FeatureCollection",
-		features: regions?.map((region) => ({
-			type: "Feature",
-			geometry: {
-				type: "MultiPolygon",
-				coordinates: region.h3Indexes.map((h3Index) => {
-					const boundary = cellToBoundary(h3Index);
-					return [boundary.map(([lat, lng]) => [lng, lat])];
-				}),
-			},
-			properties: { id: region.id },
-		})),
-	};
+	useEffect(() => {
+		if (mapRef.current && regionsData.length > 0) {
+			const bounds = new mapboxgl.LngLatBounds();
+			regionsData.forEach(({ geometry }) => {
+				if (geometry.geometry.type === "Point") {
+					bounds.extend(geometry.geometry.coordinates as [number, number]);
+				} else if (geometry.geometry.type === "Polygon") {
+					geometry.geometry.coordinates[0].forEach((coord) =>
+						bounds.extend(coord as [number, number]),
+					);
+				} else if (geometry.geometry.type === "MultiPolygon") {
+					geometry.geometry.coordinates.forEach((polygon) => {
+						polygon[0].forEach((coord) =>
+							bounds.extend(coord as [number, number]),
+						);
+					});
+				}
+			});
+			mapRef.current.fitBounds(bounds, { padding: 40, duration: 1000 });
+		}
+	}, [regionsData]);
 
 	return (
 		<Map
@@ -83,43 +66,62 @@ export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
 				height: mapHeight || "calc(100vh - 47px)",
 				zIndex: "-1 !important",
 			}}
-			mapStyle="mapbox://styles/mapbox/light-v10"
+			mapStyle="mapbox://styles/mapbox/light-v11"
 			mapboxAccessToken={MAPBOX_TOKEN}
 			interactiveLayerIds={["region-fills"]}
 		>
-			<Source id="regions" type="geojson" data={regionsGeoJSON}>
-				<Layer
-					id="region-fills"
-					type="fill"
-					paint={{
-						"fill-color": "#088",
-						"fill-opacity": 0.5,
-					}}
-				/>
-				<Layer
-					id="region-borders"
-					type="line"
-					paint={{
-						"line-color": "#088",
-						"line-width": 2,
-					}}
-				/>
-				<Layer
-					id="region-labels"
-					type="symbol"
-					layout={{
-						"text-field": ["get", "name"],
-						"text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
-						"text-size": 12,
-						"text-anchor": "center",
-					}}
-					paint={{
-						"text-color": "#ffffff",
-						"text-halo-color": "#000000",
-						"text-halo-width": 1,
-					}}
-				/>
-			</Source>
+			{regionsData.map(({ region, geometry }) =>
+				geometry.geometry.type === "Point" ? (
+					<Marker
+						key={region.id}
+						longitude={region.centerLng}
+						latitude={region.centerLat}
+					>
+						<div title={region.name}>
+							<MapPinOutlined className="text-3xl" />
+						</div>
+					</Marker>
+				) : (
+					<Source
+						key={region.id}
+						id={`region-${region.id}`}
+						type="geojson"
+						data={geometry}
+					>
+						<Layer
+							id={`region-fills-${region.id}`}
+							type="fill"
+							paint={{
+								"fill-color": "#088",
+								"fill-opacity": 0.5,
+							}}
+						/>
+						<Layer
+							id={`region-borders-${region.id}`}
+							type="line"
+							paint={{
+								"line-color": "#088",
+								"line-width": 2,
+							}}
+						/>
+						<Layer
+							id={`region-labels-${region.id}`}
+							type="symbol"
+							layout={{
+								"text-field": ["get", "name"],
+								"text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
+								"text-size": 12,
+								"text-anchor": "center",
+							}}
+							paint={{
+								"text-color": "#ffffff",
+								"text-halo-color": "#000000",
+								"text-halo-width": 1,
+							}}
+						/>
+					</Source>
+				),
+			)}
 		</Map>
 	);
 };

@@ -161,7 +161,8 @@ export function RegisterParticipantProfile({
 													{region.id}
 												</TableCell>
 												<TableCell className="font-medium !text-black">
-													{region.name} ({region.h3Indexes?.length})
+													{region.name} (Lat:{region.centerLat}, Lng:
+													{region.centerLng})
 												</TableCell>
 												<TableCell>
 													<CloseOutlined

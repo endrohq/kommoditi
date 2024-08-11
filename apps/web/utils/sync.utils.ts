@@ -163,7 +163,13 @@ export async function getParticipants(fromBlock: bigint, toBlock: bigint) {
 				name,
 				overheadPercentage: Number(participant.overheadPercentage),
 				type,
-				locations: participant.locations,
+				locations: participant.locations?.map((l) => ({
+					id: l.id,
+					name: l.name,
+					centerLat: Number(l.centerLat),
+					centerLng: Number(l.centerLng),
+					locationType: l.locationType,
+				})),
 			} as Participant;
 		}),
 	);

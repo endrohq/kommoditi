@@ -133,9 +133,19 @@
 								"type": "string"
 							},
 							{
-								"internalType": "string[]",
-								"name": "h3Indexes",
-								"type": "string[]"
+								"internalType": "string",
+								"name": "locationType",
+								"type": "string"
+							},
+							{
+								"internalType": "int256",
+								"name": "centerLat",
+								"type": "int256"
+							},
+							{
+								"internalType": "int256",
+								"name": "centerLng",
+								"type": "int256"
 							}
 						],
 						"internalType": "struct ParticipantRegistry.Location[]",
@@ -151,6 +161,68 @@
 				"internalType": "struct ParticipantRegistry.ParticipantView",
 				"name": "",
 				"type": "tuple"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getParticipants",
+		"outputs": [
+			{
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "overheadPercentage",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "name",
+						"type": "string"
+					},
+					{
+						"components": [
+							{
+								"internalType": "string",
+								"name": "id",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "name",
+								"type": "string"
+							},
+							{
+								"internalType": "string",
+								"name": "locationType",
+								"type": "string"
+							},
+							{
+								"internalType": "int256",
+								"name": "centerLat",
+								"type": "int256"
+							},
+							{
+								"internalType": "int256",
+								"name": "centerLng",
+								"type": "int256"
+							}
+						],
+						"internalType": "struct ParticipantRegistry.Location[]",
+						"name": "locations",
+						"type": "tuple[]"
+					},
+					{
+						"internalType": "enum ParticipantRegistry.ParticipantType",
+						"name": "participantType",
+						"type": "uint8"
+					}
+				],
+				"internalType": "struct ParticipantRegistry.ParticipantView[]",
+				"name": "",
+				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",
@@ -223,9 +295,19 @@
 						"type": "string"
 					},
 					{
-						"internalType": "string[]",
-						"name": "h3Indexes",
-						"type": "string[]"
+						"internalType": "string",
+						"name": "locationType",
+						"type": "string"
+					},
+					{
+						"internalType": "int256",
+						"name": "centerLat",
+						"type": "int256"
+					},
+					{
+						"internalType": "int256",
+						"name": "centerLng",
+						"type": "int256"
 					}
 				],
 				"internalType": "struct ParticipantRegistry.Location[]",

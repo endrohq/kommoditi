@@ -74,64 +74,24 @@ async function upsertParticipant(item: Participant) {
 	}
 
 	for (const location of item.locations) {
-		// Check if location already exists
-		const { data: existingLocation, error: checkLocationError } = await supabase
-			.from("location")
-			.select("id")
-			.eq("name", location.name)
-			.single();
-
-		if (checkLocationError && checkLocationError.code !== "PGRST116") {
-			console.error("Error checking location:", checkLocationError);
-			return false;
-		}
-
 		let locationId: string;
 
-		if (existingLocation) {
-			locationId = existingLocation.id;
-		} else {
-			// Insert new location
-			const { data: newLocation, error: insertLocationError } = await supabase
-				.from("location")
-				.insert({ name: location.name })
-				.select()
-				.single();
+		// Insert new location
+		const { data: newLocation, error: insertLocationError } = await supabase
+			.from("location")
+			.insert({
+				id: location.id,
+				name: location.name,
+				locationType: location.locationType,
+				centerLng: location.centerLng / 1000000,
+				centerLat: location.centerLat / 1000000,
+				participant_id: item.id,
+			})
+			.select()
+			.single();
 
-			if (insertLocationError) {
-				console.error("Error inserting location:", insertLocationError);
-				return false;
-			}
-
-			locationId = newLocation.id;
-
-			// Upsert h3Indexes
-			for (const h3Index of location.h3Indexes) {
-				const { error: h3IndexError } = await supabase.from("h3Index").upsert({
-					locationId: locationId,
-					h3Index: h3Index,
-				});
-
-				if (h3IndexError) {
-					console.error("Error upserting h3Index:", h3IndexError);
-					return false;
-				}
-			}
-		}
-
-		// Upsert participant_location relation
-		const { error: relationError } = await supabase
-			.from("participant_location")
-			.upsert({
-				participantId: item.id,
-				locationId: locationId,
-			});
-
-		if (relationError) {
-			console.error(
-				"Error upserting participant_location relation:",
-				relationError,
-			);
+		if (insertLocationError) {
+			console.error("Error inserting location:", insertLocationError);
 			return false;
 		}
 	}

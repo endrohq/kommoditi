@@ -7,10 +7,8 @@ import {
 	GetCommodityResponse,
 	LiquidityChanged,
 	ListingAdded,
-	ListingSold,
 	ParticipantType,
 	PoolEvent,
-	PoolTransactionType,
 	PriceUpdated,
 	SerialNumberStatusChanged,
 } from "@/typings";

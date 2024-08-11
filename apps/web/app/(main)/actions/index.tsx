@@ -3,10 +3,12 @@
 import {
 	CommodityToken,
 	GroupedByDateTimeline,
+	Participant,
+	ParticipantUserView,
 	TimelineEvent,
 } from "@/typings";
 import supabase from "@/utils/supabase.utils";
-import { format, isToday, isYesterday, parseISO } from "date-fns";
+import { format, isToday, isYesterday } from "date-fns";
 
 export async function loadCommodities() {
 	const { data: commodities, error } = await supabase
@@ -89,4 +91,16 @@ export async function fetchProducerTimeline(
 			if (b.dateGroup === "Yesterday") return 1;
 			return new Date(b.dateGroup).getTime() - new Date(a.dateGroup).getTime();
 		});
+}
+
+export async function fetchParticipantsWithLocations(): Promise<
+	ParticipantUserView[]
+> {
+	const { data, error } = await supabase
+		.from("participant")
+		.select("*,locations:location(*)")
+		.returns<ParticipantUserView[]>();
+
+	console.log(data);
+	return data || ([] as ParticipantUserView[]);
 }
