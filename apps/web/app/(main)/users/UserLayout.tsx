@@ -35,15 +35,14 @@ export function UserLayout({ participants }: UserLayoutPageProps) {
 	console.log({ activeParticipant, participantsToShow });
 
 	return (
-		<div className="">
-			<div className="p4 rounded overflow-hidden">
+		<div className="flex items-start h-full">
+			<div className="w-1/2 rounded overflow-hidden">
 				<MapToDisplay
 					regions={participantsToShow?.flatMap((p) => p.locations) || []}
-					mapHeight={700}
 				/>
 			</div>
-			<div className="layout my-8 sm:my-14">
-				<div className="flex items-start mb-14 space-x-10">
+			<div className="w-1/2 px-20 my-8 sm:my-14">
+				<div className="flex flex-col mb-14 space-y-10">
 					<div
 						onClick={() => setActiveParticipant(undefined)}
 						className="flex items-center space-x-2"

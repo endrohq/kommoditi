@@ -104,21 +104,6 @@ export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
 								"line-width": 2,
 							}}
 						/>
-						<Layer
-							id={`region-labels-${region.id}`}
-							type="symbol"
-							layout={{
-								"text-field": ["get", "name"],
-								"text-font": ["Open Sans Bold", "Arial Unicode MS Bold"],
-								"text-size": 12,
-								"text-anchor": "center",
-							}}
-							paint={{
-								"text-color": "#ffffff",
-								"text-halo-color": "#000000",
-								"text-halo-width": 1,
-							}}
-						/>
 					</Source>
 				),
 			)}
