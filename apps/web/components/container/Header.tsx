@@ -24,7 +24,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import {
 	ROUTE_ADMIN_PAGE,
 	ROUTE_HOME,
-	ROUTE_REGISTER_PAGE,
+	ROUTE_USERS_PAGE,
 	getProfileRoute,
 } from "@/utils/route.utils";
 import Link from "next/link";
@@ -61,8 +61,8 @@ export function ContainerHeader() {
 						</Link>
 						<HeaderNavigation aria-label="Hello Future Navigation">
 							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
-								<Link className="h-full" href={ROUTE_REGISTER_PAGE}>
-									Register
+								<Link className="h-full" href={ROUTE_USERS_PAGE}>
+									Users
 								</Link>
 							</HeaderMenuItem>
 							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
@@ -79,7 +79,7 @@ export function ContainerHeader() {
 							<SideNavItems>
 								<HeaderSideNavItems>
 									<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
-										<Link href={ROUTE_REGISTER_PAGE}>Register</Link>
+										<Link href={ROUTE_USERS_PAGE}>Users</Link>
 									</HeaderMenuItem>
 									<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
 										<Link href={ROUTE_ADMIN_PAGE}>Admin</Link>
@@ -88,14 +88,6 @@ export function ContainerHeader() {
 							</SideNavItems>
 						</SideNav>
 						<HeaderGlobalBar>
-							<HeaderGlobalAction
-								aria-label="Notifications"
-								tooltipAlignment="center"
-								className="action-icons"
-							>
-								<Notification size={20} />
-							</HeaderGlobalAction>
-
 							<HeaderGlobalAction
 								onClick={!isAuthenticated ? login : togglePanel}
 								className="action-icons relative"

@@ -2,7 +2,6 @@
 
 import { CommodityToken } from "@/typings";
 import { fetchWrapper } from "@/utils/fetch.utils";
-import { formatNumber } from "@/utils/number.utils";
 import { getTokenPage } from "@/utils/route.utils";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -17,6 +16,7 @@ export function CommodityBanner() {
 		queryKey: ["commodity-banner"],
 		queryFn: () => fetchWrapper<CommodityTokenWithPrice[]>(`/api/tokens`),
 		enabled: true,
+		refetchInterval: 10000, // 10 seconds
 	});
 
 	if (isLoading) {
@@ -27,7 +27,7 @@ export function CommodityBanner() {
 		<div className="bg-orange-500 flex items-center py-1.5 px-5 w-full space-x-4">
 			{data?.map((i) => (
 				<>
-					<div key={i.symbol} className="text-sm text-center text-orange-900">
+					<div key={i.symbol} className="text-sm text-center text-orange-950">
 						<Link
 							className="font-bold underline"
 							href={getTokenPage(i.tokenAddress)}
@@ -36,7 +36,7 @@ export function CommodityBanner() {
 						</Link>
 						:{" "}
 						{i.price ? (
-							<span className="font-medium">`${i.price} HBAR`</span>
+							<span className="font-medium">{i.price} HBAR</span>
 						) : (
 							"N/A"
 						)}

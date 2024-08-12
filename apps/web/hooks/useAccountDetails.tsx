@@ -31,8 +31,6 @@ export function useAccountDetails({
 	});
 
 	const participant = data as Participant;
-	console.log(participant);
-
 	const account = useMemo(() => {
 		return {
 			id: participant?.id,

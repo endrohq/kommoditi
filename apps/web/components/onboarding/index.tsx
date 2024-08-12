@@ -68,8 +68,6 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 	function handleSubmit() {
 		if (!type) return;
 
-		// TODO: NOT ENOUGH TEST ETH !!!
-
 		const contractType = participantTypeToSmParticipantType(type);
 		try {
 			// Normalise the locations to a smart contract compatible format

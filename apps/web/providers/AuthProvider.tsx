@@ -2,9 +2,19 @@
 
 import { OnboardingModal } from "@/components/onboarding";
 import { useAccountDetails } from "@/hooks/useAccountDetails";
-import { Account, EthAddress } from "@/typings";
+import { Account, EthAddress, Participant } from "@/typings";
 import { usePrivy } from "@privy-io/react-auth";
-import React, { ReactNode, createContext, useContext, useMemo } from "react";
+import React, {
+	ReactNode,
+	createContext,
+	useContext,
+	useMemo,
+	useState,
+	useEffect,
+} from "react";
+
+import { fetchWrapper } from "@/utils/fetch.utils";
+import { formatEther } from "viem";
 
 export interface AuthContextProps {
 	account?: Account;
@@ -37,6 +47,7 @@ type AuthProviderProps = {
 };
 
 export default function AuthProvider({ children }: AuthProviderProps) {
+	// const [participant, setParticipant] = useState<Participant>();
 	const { authenticated, user, login, ready, logout } = usePrivy();
 	const {
 		account,
@@ -47,8 +58,19 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 		enabled: ready,
 	});
 
-	const isLoading = !ready || isLoadingAccount;
+	/*useEffect(() => {
+		async function fetchParticipant() {
+			const response = await fetchWrapper<Participant>(
+				`/api/participants/${user?.wallet?.address}`,
+			);
+			setParticipant(response);
+		}
+		if (ready && authenticated) {
+			fetchParticipant();
+		}
+	}, [authenticated, ready]);*/
 
+	const isLoading = !ready || isLoadingAccount;
 	const isOnboarded = !account?.name || account?.locations.length === 0;
 
 	const values = useMemo(

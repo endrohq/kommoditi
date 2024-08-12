@@ -6,8 +6,10 @@ import {
 	EthAddress,
 	GroupedByDateTimeline,
 	ParticipantUserView,
+	Region,
 	TimelineEvent,
 } from "@/typings";
+import { labelCommodity } from "@/utils/commodity.utils";
 import { findTradingPartners } from "@/utils/overlap.utils";
 import supabase from "@/utils/supabase.utils";
 import { format, isToday, isYesterday } from "date-fns";
@@ -31,13 +33,14 @@ export async function fetchCommoditiesForSale(
 		currentParticipant,
 	);
 
+	console.log(participantIds);
+
 	const { data: commodities, error } = await supabase
 		.from("commodity")
 		.select(`
       *,
       commodityToken(*),
-      participant:producerId(*),
-      listing(*)
+      participant:producerId(*)
     `)
 		.in("currentOwnerId", participantIds);
 
@@ -45,6 +48,8 @@ export async function fetchCommoditiesForSale(
 		console.error("Error fetching commodities for sale:", error);
 		throw new Error("Failed to fetch commodities for sale");
 	}
+
+	console.log(commodities);
 
 	// Group and enhance commodities
 	const groupedCommodities = commodities.reduce(
@@ -54,13 +59,15 @@ export async function fetchCommoditiesForSale(
 				const producer = participantUserViews.find(
 					(p) => p.id === commodity.producerId,
 				);
-				const location = producer?.locations?.[0]; // Assuming the first location is the primary one
-
+				const location = producer?.locations?.[0] as Region; // Assuming the first location is the primary one
+				console.log(
+					labelCommodity(location.name, commodity.commodityToken?.name),
+				);
 				acc[key] = {
 					tokenAddress: commodity.tokenAddress,
 					listingId: commodity.listingId,
 					quantity: 0,
-					label: `${location?.name || "Unknown"} ${commodity.commodityToken?.name || "Commodity"}`,
+					label: labelCommodity(location.name, commodity.commodityToken?.name),
 					producer,
 					ctf: commodity.currentOwnerId,
 					producerLocation: location?.name || "Unknown Location",
@@ -160,6 +167,5 @@ export async function fetchParticipantsWithLocations(): Promise<
 		.select("*,locations:location(*)")
 		.returns<ParticipantUserView[]>();
 
-	console.log(data);
 	return data || ([] as ParticipantUserView[]);
 }
