@@ -1,8 +1,10 @@
-import { useParticipant } from "@/hooks/useParticipant";
-import { Account, EthAddress } from "@/typings";
-import { useMemo } from "react";
+import { Account, EthAddress, Participant } from "@/typings";
+import { fetchWrapper } from "@/utils/fetch.utils";
+import { useWallets } from "@privy-io/react-auth";
+import { useEffect, useMemo } from "react";
 import { formatEther } from "viem";
 import { useBalance } from "wagmi";
+import { useQuery } from "wagmi/query";
 
 interface UseAccountDetailsArgs {
 	address: EthAddress;
@@ -12,6 +14,7 @@ interface UseAccountDetailsArgs {
 interface UseAccountDetailsProps {
 	account?: Account;
 	isLoading: boolean;
+	refetch?: () => void;
 }
 
 export function useAccountDetails({
@@ -22,10 +25,18 @@ export function useAccountDetails({
 		address,
 	});
 
-	const participant = useParticipant({ address, enabled });
+	const { data, isLoading } = useQuery({
+		queryKey: [`participant-${address}`],
+		queryFn: () => fetchWrapper<Participant>(`/api/participants/${address}`),
+		enabled,
+	});
+
+	const participant = data as Participant;
+	console.log(participant);
 
 	const account = useMemo(() => {
 		return {
+			id: participant?.id,
 			address,
 			balance: balance?.value ? formatEther(balance?.value) : "0",
 			locations: participant?.locations || [],
@@ -38,9 +49,9 @@ export function useAccountDetails({
 	return useMemo(
 		() => ({
 			account,
-			isLoading: false,
+			isLoading,
 			refetch: () => {},
 		}),
-		[account],
+		[account, isLoading],
 	);
 }

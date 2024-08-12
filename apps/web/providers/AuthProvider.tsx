@@ -49,7 +49,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 
 	const isLoading = !ready || isLoadingAccount;
 
-	const isOnboarded = account?.name && account?.locations.length > 0;
+	const isOnboarded = !account?.name || account?.locations.length === 0;
 
 	const values = useMemo(
 		() => ({

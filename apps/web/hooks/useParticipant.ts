@@ -1,6 +1,8 @@
 import { contracts } from "@/lib/constants";
 import { EthAddress, Participant } from "@/typings";
+import { fetchWrapper } from "@/utils/fetch.utils";
 import { useReadContract } from "wagmi";
+import { useQuery } from "wagmi/query";
 
 interface UseParticipantArgs {
 	address: EthAddress;
@@ -8,14 +10,10 @@ interface UseParticipantArgs {
 }
 
 export function useParticipant({ address, enabled }: UseParticipantArgs) {
-	const { data } = useReadContract({
-		address: contracts.participantRegistry.address,
-		abi: contracts.participantRegistry.abi,
-		functionName: "getParticipantByAddress",
-		args: [address],
-		query: {
-			enabled,
-		},
+	const { data } = useQuery({
+		queryKey: ["participant", address],
+		queryFn: () => fetchWrapper<Participant>(address),
+		enabled,
 	});
-	return data as Participant;
+	return da;
 }
