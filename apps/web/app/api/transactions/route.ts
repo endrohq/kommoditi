@@ -93,15 +93,17 @@ async function handleListingAdded(event: ListingAdded) {
 	if (commoditiesError) throw commoditiesError;
 }
 
-/*async function handlePriceUpdated(event: PriceUpdated) {
-	const { error } = await supabase
-		.from("ctfs")
-		.update({ currentPrice: event.newPrice })
-		.eq("id", event.ctfId);
+async function handlePriceUpdated(event: PriceUpdated) {
+	const { error } = await supabase.from("commodityPrice").insert({
+		tokenAddress: event.tokenAddress,
+		transactionHash: event.transactionHash,
+		price: event.price,
+	});
 
 	if (error) throw error;
 }
 
+/*
 async function handleLiquidityChanged(event: LiquidityChanged) {
 	const { error } = await supabase.from("liquidity_pools").upsert(
 		{
@@ -174,10 +176,10 @@ async function upsertTransaction(item: PoolTransaction) {
 			case "ListingAdded":
 				await handleListingAdded(event as ListingAdded);
 				break;
-			/*case "PriceUpdated":
+			case "PriceUpdated":
 				await handlePriceUpdated(event as PriceUpdated);
 				break;
-			case "LiquidityChanged":
+			/*case "LiquidityChanged":
 				await handleLiquidityChanged(event as LiquidityChanged);
 				break;
 			*/

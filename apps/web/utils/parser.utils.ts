@@ -135,7 +135,8 @@ export function parseSmCommodityPoolEvent(
 		case "PriceUpdated":
 			return {
 				...baseEvent,
-				newPrice: parseSmToNumberFormat(Number(event.newPrice)),
+				price: parseSmToNumberFormat(Number(event.newPrice)),
+				tokenAddress: token?.tokenAddress,
 			} as PriceUpdated;
 
 		case "SerialNumberStatusChanged":

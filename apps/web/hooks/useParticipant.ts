@@ -1,8 +1,7 @@
 import { contracts } from "@/lib/constants";
 import { EthAddress, Participant } from "@/typings";
 import { fetchWrapper } from "@/utils/fetch.utils";
-import { useReadContract } from "wagmi";
-import { useQuery } from "wagmi/query";
+import { useQuery } from "@tanstack/react-query";
 
 interface UseParticipantArgs {
 	address: EthAddress;

@@ -74,7 +74,13 @@ async function upsertParticipant(item: Participant) {
 	}
 
 	for (const location of item.locations) {
-		let locationId: string;
+		// Find the location in the database
+		const { data: existingLocation } = await supabase
+			.from("location")
+			.select("*")
+			.eq("id", location.id)
+			.single();
+		if (existingLocation) continue;
 
 		// Insert new location
 		const { data: newLocation, error: insertLocationError } = await supabase

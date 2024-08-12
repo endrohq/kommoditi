@@ -6,7 +6,6 @@ import {
 	HeaderContainer,
 	HeaderGlobalAction,
 	HeaderGlobalBar,
-	HeaderMenu,
 	HeaderMenuButton,
 	HeaderMenuItem,
 	HeaderNavigation,
@@ -20,11 +19,11 @@ import {
 
 import { EthAvatar } from "@/components/EthAvatar";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
+import { appTitle } from "@/lib/constants";
 import { useAuth } from "@/providers/AuthProvider";
 import {
 	ROUTE_ADMIN_PAGE,
 	ROUTE_HOME,
-	ROUTE_MINT_PAGE,
 	ROUTE_REGISTER_PAGE,
 	getProfileRoute,
 } from "@/utils/route.utils";
@@ -58,7 +57,7 @@ export function ContainerHeader() {
 							isActive={isSideNavExpanded}
 						/>
 						<Link className="cds--header__name" href={ROUTE_HOME} passHref>
-							Hello Future {account?.type ? `(As ${account?.type})` : ""}
+							{appTitle} {account?.type ? `(As ${account?.type})` : ""}
 						</Link>
 						<HeaderNavigation aria-label="Hello Future Navigation">
 							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>

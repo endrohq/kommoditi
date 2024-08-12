@@ -171,7 +171,7 @@ export type CommodityPurchased = BasePoolEvent & {
 
 export type PriceUpdated = BasePoolEvent & {
 	id?: number;
-	newPrice: number;
+	price: number;
 };
 
 export type SerialNumberStatusChanged = BasePoolEvent & {

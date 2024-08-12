@@ -1,10 +1,9 @@
 import { Account, EthAddress, Participant } from "@/typings";
 import { fetchWrapper } from "@/utils/fetch.utils";
-import { useWallets } from "@privy-io/react-auth";
-import { useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { formatEther } from "viem";
 import { useBalance } from "wagmi";
-import { useQuery } from "wagmi/query";
 
 interface UseAccountDetailsArgs {
 	address: EthAddress;
@@ -14,7 +13,7 @@ interface UseAccountDetailsArgs {
 interface UseAccountDetailsProps {
 	account?: Account;
 	isLoading: boolean;
-	refetch?: () => void;
+	refetch(): void;
 }
 
 export function useAccountDetails({
