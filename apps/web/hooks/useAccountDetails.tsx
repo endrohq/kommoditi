@@ -1,9 +1,8 @@
 import { useParticipant } from "@/hooks/useParticipant";
-import { contracts } from "@/lib/constants";
-import { Account, EthAddress, Participant } from "@/typings";
+import { Account, EthAddress } from "@/typings";
 import { useMemo } from "react";
 import { formatEther } from "viem";
-import { useBalance, useReadContract } from "wagmi";
+import { useBalance } from "wagmi";
 
 interface UseAccountDetailsArgs {
 	address: EthAddress;
@@ -40,6 +39,7 @@ export function useAccountDetails({
 		() => ({
 			account,
 			isLoading: false,
+			refetch: () => {},
 		}),
 		[account],
 	);

@@ -297,3 +297,14 @@ export enum PlaceType {
 	ADDRESS = "address",
 	POI = "poi",
 }
+
+export interface EnhancedCommodity {
+	ctf: EthAddress;
+	tokenAddress: EthAddress;
+	listingId: number;
+	quantity: number;
+	label: string;
+	producerName: string;
+	producerLocation: string;
+	price: number; // Assuming there's a price field, add it if not present
+}

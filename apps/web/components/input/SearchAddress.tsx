@@ -4,14 +4,15 @@ import {
 	PlaceType,
 	Region,
 } from "@/typings";
-import { parseMapBoxResultToRegion } from "@/utils/location.utils";
-import { ContainedList, ContainedListItem, Search } from "@carbon/react";
 import debounce from "lodash.debounce";
 import React, { useState, useCallback } from "react";
+
+import Select, { SingleValue } from "react-select";
 
 interface SearchAddressProps {
 	onRegionSelect: (region: Region) => void;
 	placeholder?: string;
+	allowTypes?: PlaceType[];
 }
 
 const mapboxAccessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
@@ -19,12 +20,13 @@ const mapboxAccessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
 export function SearchAddress({
 	onRegionSelect,
 	placeholder = "Search for an address",
+	allowTypes = Object.values(PlaceType),
 }: SearchAddressProps) {
 	const [query, setQuery] = useState("");
 	const [searchResults, setSearchResults] = useState<IGeocoderFeature[]>([]);
 
 	const handleAddressSearch = useCallback(async (query: string) => {
-		if (!query) {
+		if (!query || query?.length < 2) {
 			setSearchResults([]);
 			return;
 		}
@@ -32,7 +34,7 @@ export function SearchAddress({
 		const response = await fetch(
 			`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
 				query,
-			)}.json?access_token=${mapboxAccessToken}`,
+			)}.json?access_token=${mapboxAccessToken}&types=${allowTypes.join(",")}`,
 		);
 
 		const data: IGeocoderResult = await response.json();
@@ -62,26 +64,36 @@ export function SearchAddress({
 
 	const debouncedHandleAddressSearch = debounce(handleAddressSearch, 300);
 
+	const options = searchResults.map((result) => ({
+		label: result.place_name,
+		value: result.id,
+	}));
+
 	return (
-		<ContainedList label="Search Address" kind="on-page" action={""}>
-			<Search
-				labelText="Location"
+		<>
+			<Select
+				options={options}
+				value={query as any}
 				placeholder={placeholder}
-				onChange={(e) => {
-					setQuery(e.target.value);
-					debouncedHandleAddressSearch(e.target.value);
+				isSearchable
+				onChange={(
+					selectedOption: SingleValue<{ value: string; label: string }>,
+				) => {
+					if (!selectedOption?.value) return;
+
+					const result = searchResults.find(
+						(result) => result.id === selectedOption?.value,
+					);
+					if (result) {
+						handleResultSelect(result);
+						setQuery("");
+					}
 				}}
-				value={query}
+				isMulti={false}
+				onInputChange={(inputValue) => debouncedHandleAddressSearch(inputValue)}
+				noOptionsMessage={() => "No results found"}
+				className="!text-sm !border-gray-200 !z-[100]"
 			/>
-			{searchResults.map((result, key) => (
-				<ContainedListItem
-					key={key}
-					onClick={() => handleResultSelect(result)}
-					className="cursor-pointer hover:bg-gray-100 transition-colors duration-150"
-				>
-					{result.place_name}
-				</ContainedListItem>
-			))}
-		</ContainedList>
+		</>
 	);
 }

@@ -32,8 +32,6 @@ export function UserLayout({ participants }: UserLayoutPageProps) {
 		participantsToShow = participants?.filter((p) => partners.includes(p.id));
 	}
 
-	console.log({ activeParticipant, participantsToShow });
-
 	return (
 		<div className="flex items-start h-full">
 			<div className="w-1/2 rounded overflow-hidden">

@@ -12,9 +12,18 @@ export function parseMapBoxResultToRegion(result: IGeocoderFeature): Region {
 	};
 }
 
+function checkForFallback(countryName: string) {
+	if (countryName === "united_states") {
+		return "usa";
+	}
+	return countryName;
+}
+
 export function getGeometryForRegion(region: Region): Feature<Geometry> {
 	if (region.locationType === PlaceType.COUNTRY) {
-		const countryName = region.name.toLowerCase().replace(/\s/g, "_");
+		const countryName = checkForFallback(
+			region.name.toLowerCase().replace(/\s/g, "_"),
+		);
 		const countryData = geoJson.forCountry(countryName);
 		return {
 			type: "Feature",

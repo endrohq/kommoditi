@@ -1,5 +1,6 @@
 "use client";
 
+import { OnboardingModal } from "@/components/onboarding";
 import { useAccountDetails } from "@/hooks/useAccountDetails";
 import { Account, EthAddress } from "@/typings";
 import { usePrivy } from "@privy-io/react-auth";
@@ -37,12 +38,18 @@ type AuthProviderProps = {
 
 export default function AuthProvider({ children }: AuthProviderProps) {
 	const { authenticated, user, login, ready, logout } = usePrivy();
-	const { account, isLoading: isLoadingAccount } = useAccountDetails({
+	const {
+		account,
+		isLoading: isLoadingAccount,
+		refetch,
+	} = useAccountDetails({
 		address: user?.wallet?.address as EthAddress,
 		enabled: ready,
 	});
 
 	const isLoading = !ready || isLoadingAccount;
+
+	const isOnboarded = account?.name && account?.locations.length > 0;
 
 	const values = useMemo(
 		() => ({
@@ -56,5 +63,10 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 		[isLoading, account, authenticated],
 	);
 
-	return <AuthContext.Provider value={values}>{children}</AuthContext.Provider>;
+	return (
+		<AuthContext.Provider value={values}>
+			{children}
+			{!isOnboarded && authenticated && <OnboardingModal refetch={refetch} />}
+		</AuthContext.Provider>
+	);
 }

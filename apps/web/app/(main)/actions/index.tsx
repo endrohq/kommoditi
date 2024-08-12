@@ -2,11 +2,13 @@
 
 import {
 	CommodityToken,
+	EnhancedCommodity,
+	EthAddress,
 	GroupedByDateTimeline,
-	Participant,
 	ParticipantUserView,
 	TimelineEvent,
 } from "@/typings";
+import { findTradingPartners } from "@/utils/overlap.utils";
 import supabase from "@/utils/supabase.utils";
 import { format, isToday, isYesterday } from "date-fns";
 
@@ -17,6 +19,63 @@ export async function loadCommodities() {
 		.returns<CommodityToken[]>();
 
 	return commodities;
+}
+
+export async function fetchCommoditiesForSale(
+	address: string,
+): Promise<EnhancedCommodity[]> {
+	const participantUserViews = await fetchParticipantsWithLocations();
+	const currentParticipant = participantUserViews.find((p) => p.id === address);
+	const participantIds = findTradingPartners(
+		participantUserViews,
+		currentParticipant,
+	);
+
+	const { data: commodities, error } = await supabase
+		.from("commodity")
+		.select(`
+      *,
+      commodityToken(*),
+      participant:producerId(*),
+      listing(*)
+    `)
+		.in("currentOwnerId", participantIds);
+
+	if (error) {
+		console.error("Error fetching commodities for sale:", error);
+		throw new Error("Failed to fetch commodities for sale");
+	}
+
+	// Group and enhance commodities
+	const groupedCommodities = commodities.reduce(
+		(acc, commodity) => {
+			const key = `${commodity.tokenAddress}-${commodity.listingId}`;
+			if (!acc[key]) {
+				const producer = participantUserViews.find(
+					(p) => p.id === commodity.producerId,
+				);
+				const location = producer?.locations?.[0]; // Assuming the first location is the primary one
+
+				acc[key] = {
+					tokenAddress: commodity.tokenAddress,
+					listingId: commodity.listingId,
+					quantity: 0,
+					label: `${location?.name || "Unknown"} ${commodity.commodityToken?.name || "Commodity"}`,
+					producer,
+					ctf: commodity.currentOwnerId,
+					producerLocation: location?.name || "Unknown Location",
+					price: commodity.listing?.price || 0, // Assuming there's a price field in the listing
+				};
+			}
+			acc[key].quantity += 1;
+			return acc;
+		},
+		{} as Record<string, EnhancedCommodity>,
+	);
+
+	console.log(groupedCommodities);
+
+	return Object.values(groupedCommodities);
 }
 
 export async function fetchProducerTimeline(

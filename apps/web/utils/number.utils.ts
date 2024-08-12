@@ -36,3 +36,8 @@ export function parseNumberToSmFormat(value: number) {
 export function parseSmToNumberFormat(value: number) {
 	return value / PRICE_RANGE_PRECISION;
 }
+
+export function normalizeCoordinate(coordinate: number) {
+	// Multiply by 1e9 to preserve 9 decimal places
+	return BigInt(Math.round(coordinate * 1e9));
+}

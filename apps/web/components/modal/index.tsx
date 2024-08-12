@@ -14,9 +14,11 @@ type ModalProps = {
 		| "max-w-2xl"
 		| "max-w-3xl"
 		| "max-w-4xl"
-		| "max-w-5xl";
+		| "max-w-5xl"
+		| "max-w-6xl";
 	open: boolean;
 	position?: "top" | "center" | "bottom" | "left" | "right";
+	withPadding?: boolean;
 };
 
 export function Modal({
@@ -27,6 +29,7 @@ export function Modal({
 	position = "bottom",
 	wrapperWidth = "max-w-lg",
 	bodyClassName,
+	withPadding = true,
 }: ModalProps) {
 	if (!open) return <></>;
 
@@ -51,12 +54,13 @@ export function Modal({
 						onClick={(e) => e.stopPropagation()}
 						onKeyDown={(e) => e.stopPropagation()}
 						className={clsx(
-							"mx-auto w-full overflow-scroll bg-white p-6",
+							"mx-auto w-full overflow-y-visible bg-white ",
 							{
 								"absolute inset-0 z-10 rounded": !position,
 								"absolute m-auto left-0 right-0 rounded top-32":
 									position === "bottom",
 								"fixed inset-0 left-auto": position === "right",
+								"p-6": withPadding,
 							},
 							wrapperWidth,
 						)}
