@@ -58,7 +58,6 @@ export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
 
 	return (
 		<Map
-			fi
 			ref={mapRef}
 			initialViewState={initialViewState}
 			style={{

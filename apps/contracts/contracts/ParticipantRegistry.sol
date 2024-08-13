@@ -12,7 +12,9 @@ contract ParticipantRegistry {
     struct Location {
         string id;
         string name;
-        string[] h3Indexes;
+        string locationType;
+        int256 centerLat;
+        int256 centerLng;
     }
 
     struct Participant {

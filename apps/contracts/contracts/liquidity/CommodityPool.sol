@@ -156,6 +156,17 @@ contract CommodityPool {
         address ctf = findMatchingCTF(quantity);
         require(ctf != address(0), "No matching CTF found");
 
+        _handlePurchase(buyer, ctf, quantity);
+    }
+
+    function purchaseFromCTF(address buyer, address ctf, uint256 quantity) external payable onlyCommodityExchange {
+        _handlePurchase(buyer, ctf, quantity);
+    }
+
+    function _handlePurchase (address buyer, address ctf, uint256 quantity) internal {
+        require(quantity > 0, "Quantity must be greater than 0");
+        require(ctfOwnedSerialNumbers[ctf].length >= quantity, "CTF does not have enough commodities");
+
         uint256 basePrice = currentPrice * quantity;
 
         // Get CTF's overhead percentage
@@ -232,11 +243,6 @@ contract CommodityPool {
             Listing storage listing = listings[listingId];
             uint256 totalPrice = currentPrice * listing.serialNumbers.length;
 
-            console.log("Amount: %s", amount);
-            console.log("totalPrice: %s", totalPrice);
-            console.log("ctfLiquidity[ctf].minPrice: %s", ctfLiquidity[ctf].minPrice);
-            console.log("ctfLiquidity[ctf].maxPrice: %s", ctfLiquidity[ctf].maxPrice);
-            console.log("currentPrice: %s", currentPrice);
             if (amount >= totalPrice &&
             currentPrice >= ctfLiquidity[ctf].minPrice &&
                 currentPrice <= ctfLiquidity[ctf].maxPrice) {

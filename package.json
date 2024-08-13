@@ -13,10 +13,5 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "dependencies": {
-    "h3-js": "^4.1.0",
-    "mapbox-gl": "^3.5.2",
-    "react-map-gl": "^7.1.7"
-  }
+  ]
 }

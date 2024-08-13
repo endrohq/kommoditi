@@ -9,9 +9,9 @@ import { useReadContract } from "wagmi";
 
 function Statistic({ value, label }: { label: string; value: string }) {
 	return (
-		<div>
+		<div className="text-right">
 			<div className="text-xs text-gray-500 font-medium">{label}</div>
-			<div className="font-bold text-base">{value}</div>
+			<div className="font-bold text-sm ">{value}</div>
 		</div>
 	);
 }
@@ -25,7 +25,7 @@ export function PoolStatistics() {
 		functionName: "getTotalLiquidity",
 	});
 	return (
-		<div className="mt-6 py-4 mb-4 bg-gray-50 rounded px-4 !border-gray-200 grid grid-cols-5">
+		<div className="flex items-center space-x-12 mr-4">
 			<Statistic
 				label="TVL"
 				value={`${

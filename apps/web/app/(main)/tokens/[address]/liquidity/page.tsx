@@ -28,7 +28,7 @@ import { useRouter } from "next/navigation";
 export default function Page() {
 	const { account } = useAuth();
 	const router = useRouter();
-	const { commodity, isLoading: isLoadingCommodity } = useTokenPage();
+	const { commodity } = useTokenPage();
 	const [amount, setAmount] = React.useState<number>(0);
 	const [minPrice, setMinPrice] = React.useState<number>(0);
 	const [maxPrice, setMaxPrice] = React.useState<number>(0);
@@ -85,7 +85,7 @@ export default function Page() {
 		);
 	}
 
-	if (isLoadingCtfDetails || isLoadingCommodity || priceIsLoading) {
+	if (isLoadingCtfDetails || priceIsLoading) {
 		return <LoadingTokenPage />;
 	}
 	if (!commodity || !commodity?.poolAddress) {

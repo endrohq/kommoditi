@@ -15,6 +15,7 @@ contract CommodityExchange {
     event CommodityLPCreated(address indexed poolAddress);
     event CommodityLPAdded(address indexed poolAddress);
     event CommodityListed(address indexed poolAddress, int64[] indexed serialNumber, address indexed producer);
+    event CommodityListed(address indexed poolAddress, int64[] indexed serialNumber, address indexed producer);
 
     CommodityFactory public factory;
     TokenAuthority public tokenAuthority;
@@ -60,6 +61,13 @@ contract CommodityExchange {
         require(poolAddress != address(0), "No pool exists for this commodity");
 
         CommodityPool(poolAddress).purchaseCommodity{value: msg.value}(msg.sender, quantity);
+    }
+
+    function purchaseCommodityFromCTF(address tokenAddress, address ctf, uint256 quantity) external payable {
+        address poolAddress = factory.commodityPoolsByToken(tokenAddress);
+        require(poolAddress != address(0), "No pool exists for this commodity");
+
+        CommodityPool(poolAddress).purchaseFromCTF{value: msg.value}(msg.sender, ctf, quantity);
     }
 
     function provideLiquidity(address tokenAddress, uint256 minPrice, uint256 maxPrice) external payable {
