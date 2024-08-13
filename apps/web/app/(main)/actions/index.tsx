@@ -3,13 +3,13 @@
 import {
 	CommodityToken,
 	EnhancedCommodity,
-	EthAddress,
 	GroupedByDateTimeline,
+	ParticipantType,
 	ParticipantUserView,
 	Region,
 	TimelineEvent,
 } from "@/typings";
-import { labelCommodity } from "@/utils/commodity.utils";
+import { extractCountryName, labelCommodity } from "@/utils/commodity.utils";
 import { findTradingPartners } from "@/utils/overlap.utils";
 import supabase from "@/utils/supabase.utils";
 import { format, isToday, isYesterday } from "date-fns";
@@ -23,19 +23,40 @@ export async function loadCommodities() {
 	return commodities;
 }
 
-export async function fetchCommoditiesForSale(
-	address: string,
-): Promise<EnhancedCommodity[]> {
+export async function fetchCommodity(tokenAddress: string) {
+	const { data: commodity, error } = await supabase
+		.from("commodityToken")
+		.select("*")
+		.eq("tokenAddress", tokenAddress)
+		.single<CommodityToken>();
+
+	return commodity;
+}
+
+type FetchCommoditiesOptions = {
+	tokenAddress?: string;
+	address?: string;
+};
+
+export async function fetchCommoditiesGroupedByCountry({
+	tokenAddress,
+	address,
+}: FetchCommoditiesOptions): Promise<EnhancedCommodity[]> {
 	const participantUserViews = await fetchParticipantsWithLocations();
 	const currentParticipant = participantUserViews.find((p) => p.id === address);
-	const participantIds = findTradingPartners(
-		participantUserViews,
-		currentParticipant,
-	);
+	let participantIds: string[] = [];
+	if (currentParticipant) {
+		participantIds = findTradingPartners(
+			participantUserViews,
+			currentParticipant,
+		);
+	} else {
+		participantIds = participantUserViews
+			.filter((p) => p.type === ParticipantType.CTF)
+			.map((p) => p.id);
+	}
 
-	console.log(participantIds);
-
-	const { data: commodities, error } = await supabase
+	const query = supabase
 		.from("commodity")
 		.select(`
       *,
@@ -44,43 +65,51 @@ export async function fetchCommoditiesForSale(
     `)
 		.in("currentOwnerId", participantIds);
 
+	if (tokenAddress) {
+		query.eq("tokenAddress", tokenAddress);
+	}
+
+	const { data: commodities, error } = await query;
+
 	if (error) {
 		console.error("Error fetching commodities for sale:", error);
 		throw new Error("Failed to fetch commodities for sale");
 	}
 
-	console.log(commodities);
-
 	// Group and enhance commodities
 	const groupedCommodities = commodities.reduce(
 		(acc, commodity) => {
-			const key = `${commodity.tokenAddress}-${commodity.listingId}`;
-			if (!acc[key]) {
-				const producer = participantUserViews.find(
-					(p) => p.id === commodity.producerId,
-				);
-				const location = producer?.locations?.[0] as Region; // Assuming the first location is the primary one
-				console.log(
-					labelCommodity(location.name, commodity.commodityToken?.name),
-				);
-				acc[key] = {
-					tokenAddress: commodity.tokenAddress,
-					listingId: commodity.listingId,
+			const producer = participantUserViews.find(
+				(p) => p.id === commodity.producerId,
+			);
+			if (!producer) {
+				return acc;
+			}
+			const location = producer?.locations?.[0] as Region; // Assuming the first location is the primary one
+			const groupLabel = labelCommodity(
+				location.name,
+				commodity.commodityToken?.name,
+			);
+
+			if (!acc[groupLabel]) {
+				acc[groupLabel] = {
+					token: commodity.commodityToken,
 					quantity: 0,
 					label: labelCommodity(location.name, commodity.commodityToken?.name),
-					producer,
-					ctf: commodity.currentOwnerId,
-					producerLocation: location?.name || "Unknown Location",
-					price: commodity.listing?.price || 0, // Assuming there's a price field in the listing
+					currentOwnerId: commodity.currentOwnerId,
+					producers: new Set([producer.id]),
+					country: extractCountryName(location.name),
 				};
 			}
-			acc[key].quantity += 1;
+			if (!acc[groupLabel].producers.has(producer.id)) {
+				acc[groupLabel].producers.add(producer.id);
+			}
+
+			acc[groupLabel].quantity += 1;
 			return acc;
 		},
 		{} as Record<string, EnhancedCommodity>,
 	);
-
-	console.log(groupedCommodities);
 
 	return Object.values(groupedCommodities);
 }

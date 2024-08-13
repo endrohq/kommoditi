@@ -1,3 +1,4 @@
+import { fetchCommodity } from "@/app/(main)/actions";
 import { TokenPageProvider } from "@/providers/TokenPageProvider";
 import React from "react";
 
@@ -8,8 +9,7 @@ interface LayoutProps {
 	children: React.ReactNode;
 }
 
-export default function Layout({ params, children }: LayoutProps) {
-	return (
-		<TokenPageProvider address={params.address}>{children}</TokenPageProvider>
-	);
+export default async function Layout({ params, children }: LayoutProps) {
+	const token = await fetchCommodity(params.address);
+	return <TokenPageProvider token={token}>{children}</TokenPageProvider>;
 }

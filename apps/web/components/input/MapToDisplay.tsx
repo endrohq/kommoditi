@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useEffect, useRef, useMemo } from "react";
 import Map, { Source, Layer, MapRef, Marker } from "react-map-gl";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
@@ -59,6 +58,7 @@ export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
 
 	return (
 		<Map
+			fi
 			ref={mapRef}
 			initialViewState={initialViewState}
 			style={{

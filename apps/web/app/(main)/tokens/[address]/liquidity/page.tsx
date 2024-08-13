@@ -13,7 +13,7 @@ import { Content, Form, TextInput } from "@carbon/react";
 import React, { useEffect } from "react";
 import toast from "react-hot-toast";
 import { useReadContract } from "wagmi";
-import "@carbon/charts/styles.css";
+
 import { CurrentLpDistributions } from "@/app/(main)/tokens/[address]/liquidity/CurrentLpDistributions";
 import { useCommodityPrice } from "@/hooks/useCommodityPrice";
 import { useAuth } from "@/providers/AuthProvider";

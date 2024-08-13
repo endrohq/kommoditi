@@ -1,7 +1,18 @@
 import lookup from "country-code-lookup";
 import nationalities from "i18n-nationality";
 
-function getCountryFromAddress(address: string): string | null {
+export function extractCountryName(address: string): string | null {
+	const words = address.split(",").map((word) => word.trim());
+	for (let i = words.length - 1; i >= 0; i--) {
+		const country = lookup.byCountry(words[i]);
+		if (country) {
+			return country.country;
+		}
+	}
+	return null;
+}
+
+export function getCountryFromAddress(address: string): string | null {
 	const words = address.split(",").map((word) => word.trim());
 	for (let i = words.length - 1; i >= 0; i--) {
 		const country = lookup.byCountry(words[i]);

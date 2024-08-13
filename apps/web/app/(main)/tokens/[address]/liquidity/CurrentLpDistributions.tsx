@@ -8,6 +8,7 @@ import { formatLpLiquidities } from "@/utils/transaction.utils";
 import { AreaChart, AreaChartOptions, ScaleTypes } from "@carbon/charts-react";
 import React, { useMemo } from "react";
 import { useReadContract } from "wagmi";
+import "@carbon/charts/styles.css";
 
 interface CurrentLpDistributionsProps {
 	setMinPrice: (min: number) => void;

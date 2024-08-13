@@ -299,12 +299,15 @@ export enum PlaceType {
 }
 
 export interface EnhancedCommodity {
-	ctf: EthAddress;
-	tokenAddress: EthAddress;
-	listingId: number;
+	currentOwnerId: EthAddress;
+	token: CommodityToken;
 	quantity: number;
 	label: string;
-	producerName: string;
-	producerLocation: string;
-	price: number; // Assuming there's a price field, add it if not present
+	producers: Set<EthAddress>;
+	country: string;
 }
+
+export type CommodityPricePoint = {
+	price: number;
+	timestamp: Date;
+};

@@ -1,3 +1,5 @@
+"use client";
+
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { useTokenPage } from "@/providers/TokenPageProvider";
 import { EthAddress } from "@/typings";

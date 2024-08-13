@@ -1,3 +1,5 @@
+"use client";
+
 import { contracts } from "@/lib/constants";
 import { useTokenPage } from "@/providers/TokenPageProvider";
 import { formatNumber } from "@/utils/number.utils";

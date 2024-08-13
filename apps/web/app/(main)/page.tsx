@@ -1,7 +1,6 @@
-import { fetchCommoditiesForSale, loadCommodities } from "@/app/(main)/actions";
-import { CommoditiesTable } from "@/components/screens/home/CommoditiesTable";
+import { fetchCommoditiesGroupedByCountry } from "@/app/(main)/actions";
 
-import { ItemForPurchase } from "@/app/(main)/marketplace/ItemForPurchase";
+import { ItemForPurchase } from "@/components/commodity/ItemForPurchase";
 import { Metadata } from "next";
 import Link from "next/link";
 import React from "react";
@@ -11,9 +10,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-	const commodities = await fetchCommoditiesForSale(
-		"0x71bE63f3384f5fb98995898A86B02Fb2426c5788",
-	);
+	const commodities = await fetchCommoditiesGroupedByCountry({
+		address: "0x71bE63f3384f5fb98995898A86B02Fb2426c5788",
+	});
 
 	return (
 		<div className="layout mt-14 mb-20">
@@ -34,7 +33,8 @@ export default async function Home() {
 			</div>
 
 			<div className="my-8 sm:my-14 mx-auto">
-				<div className="grid grid-cols-3 gap-6">
+				<div className="font-boldt text-xl mb-4">For Sale</div>
+				<div className="grid grid-cols-3 gap-2">
 					{commodities?.map((item) => (
 						<ItemForPurchase item={item} />
 					))}

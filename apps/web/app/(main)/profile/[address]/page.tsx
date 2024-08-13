@@ -81,7 +81,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 					) : (
 						<>
 							<ProfileHeader />
-							<div className="mt-10">
+							{/*<div className="mt-10">
 								<div>
 									<h2 className="font-bold text-lg mb-2">
 										Operating in regions
@@ -93,7 +93,7 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 										<p>{location.h3Indexes?.length}</p>
 									</div>
 								))}
-							</div>
+							</div>*/}
 						</>
 					)}
 				</div>
