@@ -19,7 +19,6 @@ import { formatEther } from "viem";
 export interface AuthContextProps {
 	account?: Account;
 	isAuthenticated: boolean;
-	hasBalance: boolean;
 	login: () => void;
 	logout: () => void;
 	isLoading: boolean;
@@ -28,7 +27,6 @@ export interface AuthContextProps {
 export const AuthContext = createContext<AuthContextProps>({
 	account: undefined,
 	isAuthenticated: false,
-	hasBalance: false,
 	isLoading: true,
 	login: () => {},
 	logout: () => {},
@@ -47,48 +45,59 @@ type AuthProviderProps = {
 };
 
 export default function AuthProvider({ children }: AuthProviderProps) {
-	// const [participant, setParticipant] = useState<Participant>();
+	const [isLoading, setIsLoading] = useState(false);
+	const [participant, setParticipant] = useState<Participant>();
 	const { authenticated, user, login, ready, logout } = usePrivy();
-	const {
-		account,
-		isLoading: isLoadingAccount,
-		refetch,
-	} = useAccountDetails({
-		address: user?.wallet?.address as EthAddress,
-		enabled: ready,
-	});
 
-	/*useEffect(() => {
-		async function fetchParticipant() {
-			const response = await fetchWrapper<Participant>(
-				`/api/participants/${user?.wallet?.address}`,
-			);
-			setParticipant(response);
+	useEffect(() => {
+		async function fetchParticipant(address: EthAddress) {
+			try {
+				const response = await fetchWrapper<Participant>(
+					`/api/participants/${address}`,
+				);
+				console.log({ response });
+				setParticipant(response);
+			} catch (error) {
+				console.error(error);
+			} finally {
+				setIsLoading(false);
+			}
 		}
-		if (ready && authenticated) {
-			fetchParticipant();
+		if (ready && authenticated && !isLoading) {
+			setIsLoading(true);
+			fetchParticipant(user?.wallet?.address as EthAddress);
 		}
-	}, [authenticated, ready]);*/
+	}, [authenticated, ready]);
 
-	const isLoading = !ready || isLoadingAccount;
-	const isOnboarded = !account?.name || account?.locations.length === 0;
+	const isOnboarded =
+		!!participant?.name &&
+		participant?.name?.length > 0 &&
+		participant?.locations.length > 0;
 
 	const values = useMemo(
 		() => ({
-			account,
+			account: {
+				id: participant?.id,
+				address: user?.wallet?.address as EthAddress,
+				locations: participant?.locations || [],
+				name: participant?.name || "",
+				type: participant?.type,
+				overheadPercentage: participant?.overheadPercentage,
+			} as Account,
 			isAuthenticated: authenticated,
-			hasBalance: account?.balance !== "0",
 			login: () => login(),
 			logout: () => logout(),
-			isLoading,
+			isLoading: !ready || isLoading,
 		}),
-		[isLoading, account, authenticated],
+		[isLoading, participant, authenticated],
 	);
 
 	return (
 		<AuthContext.Provider value={values}>
 			{children}
-			{!isOnboarded && authenticated && <OnboardingModal refetch={refetch} />}
+			{!isOnboarded && authenticated && !isLoading && ready && (
+				<OnboardingModal refetch={() => ""} />
+			)}
 		</AuthContext.Provider>
 	);
 }

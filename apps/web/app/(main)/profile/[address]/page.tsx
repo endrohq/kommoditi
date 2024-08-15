@@ -50,17 +50,11 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 		address: params?.address as EthAddress,
 	});
 
+	console.log(account);
+
 	return (
 		<div className="relative">
-			<MapToDisplay
-				initialViewState={{
-					latitude: 37.7749,
-					longitude: -122.4194,
-					zoom: 11,
-				}}
-				regions={account?.locations || []}
-				mapHeight={250}
-			/>
+			<MapToDisplay regions={account?.locations || []} mapHeight={250} />
 			<div className="!z-[9999] flex flex-col">
 				<div className="bg-white shadow rounded py-8 px-10 layout -mt-14 mb-6">
 					{isLoading ? (

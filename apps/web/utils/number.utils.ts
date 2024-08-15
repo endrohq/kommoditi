@@ -1,5 +1,31 @@
 import { isLocalNetwork } from "@/lib/constants";
 
+export function calculateRoundedNumberDigits(num: number): number {
+	const significantFigures = num < 2 ? 4 : 1;
+	const decimalPlaces = Math.ceil(
+		-Math.log10(Math.abs(num)) + significantFigures - 1,
+	);
+	return decimalPlaces;
+}
+
+export function nFormatter(num: number, roundedNumberDigits = 7): string {
+	if (!num || num === 0) return "0";
+	let digits = roundedNumberDigits ?? calculateRoundedNumberDigits(num);
+
+	// Convert to string with fixed decimal places
+	let formattedNum = num.toFixed(digits);
+
+	// Remove trailing zeros after the decimal point
+	formattedNum = formattedNum.replace(/\.?0+$/, "");
+
+	// If the number ends with a decimal point, remove it
+	if (formattedNum.endsWith(".")) {
+		formattedNum = formattedNum.slice(0, -1);
+	}
+
+	return formattedNum;
+}
+
 export function formatNumber(num: number | string | bigint) {
 	return commafy(roundNumber(Number(num) || 0));
 }

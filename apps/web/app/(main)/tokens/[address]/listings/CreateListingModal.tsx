@@ -75,7 +75,7 @@ export default function CreateListingModal({
 	}
 
 	return (
-		<Modal open close={handleClose}>
+		<Modal open onClose={handleClose}>
 			<div className="flex justify-between mb-4">
 				<h2 className="font-bold text-base">Add Listing</h2>
 			</div>

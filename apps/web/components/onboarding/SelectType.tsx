@@ -32,7 +32,7 @@ export function SelectType({ setType }: SelectTypeProps) {
 		<div className="p-10">
 			<div className=" ">
 				<h2 className="font-bold text-2xl mb-1">Welcome to {appTitle} 👋</h2>
-				<p className="text-sm text-gray-800 leading-relaxed w-7/12">
+				<p className="text-sm text-gray-800 leading-relaxed w-8/12">
 					Our platform has three main roles: Producers, Logistics, and
 					Consumers. Each role has a unique set of features and capabilities.
 					Please select the role that best describes you.

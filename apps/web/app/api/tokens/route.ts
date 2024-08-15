@@ -20,7 +20,7 @@ export async function GET() {
 			.from("commodityPrice")
 			.select("*")
 			.eq("tokenAddress", token.tokenAddress)
-			.order("created_at", { ascending: false })
+			.order("createdAt", { ascending: false })
 			.limit(1);
 
 		mergedData.push({ ...token, price: latestPrice?.[0]?.price || 0 });

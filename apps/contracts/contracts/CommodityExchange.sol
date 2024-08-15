@@ -15,7 +15,6 @@ contract CommodityExchange {
     event CommodityLPCreated(address indexed poolAddress);
     event CommodityLPAdded(address indexed poolAddress);
     event CommodityListed(address indexed poolAddress, int64[] indexed serialNumber, address indexed producer);
-    event CommodityListed(address indexed poolAddress, int64[] indexed serialNumber, address indexed producer);
 
     CommodityFactory public factory;
     TokenAuthority public tokenAuthority;

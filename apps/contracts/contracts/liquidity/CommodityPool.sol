@@ -263,6 +263,8 @@ contract CommodityPool {
             tokenAuthority.transferNFT(tokenAddress, listing.producer, ctf, listing.serialNumbers[i]);
         }
 
+        updateCTFHoldings(ctf, listing.serialNumbers);
+
         ctfLiquidity[ctf].amount -= totalPrice;
         totalLiquidity -= totalPrice;
         payable(listing.producer).transfer(totalPrice);

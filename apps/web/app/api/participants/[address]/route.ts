@@ -8,7 +8,7 @@ export async function GET(
 	try {
 		const { data: participant, error } = await supabase
 			.from("participant")
-			.select("*")
+			.select("*,locations:location(*)")
 			.eq("id", params.address)
 			.single<Participant>();
 

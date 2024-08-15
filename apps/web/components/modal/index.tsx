@@ -5,7 +5,7 @@ import { ReactNode } from "react";
 
 type ModalProps = {
 	children: ReactNode;
-	close?(): void;
+	onClose?(): void;
 	showClose?: boolean;
 	bodyClassName?: string;
 	wrapperWidth?:
@@ -23,7 +23,7 @@ type ModalProps = {
 
 export function Modal({
 	children,
-	close,
+	onClose,
 	showClose = true,
 	open,
 	position = "bottom",
@@ -35,8 +35,8 @@ export function Modal({
 
 	return (
 		<div
-			onClick={() => close?.()}
-			className="fixed bg-black/25 inset-0 z-50 m-0 h-full p-0"
+			onClick={() => onClose?.()}
+			className="fixed bg-black/25 inset-0 z-[9999] m-0 h-full p-0"
 		>
 			<AnimatePresence>
 				<motion.div
@@ -70,7 +70,7 @@ export function Modal({
 								<div className="hover:bg-gray-100 rounded px-1 group">
 									<CloseOutlined
 										className="text-base cursor-pointer group-hover:text-black transition-colors text-gray-400"
-										onClick={() => close?.()}
+										onClick={() => onClose?.()}
 									/>
 								</div>
 							</div>

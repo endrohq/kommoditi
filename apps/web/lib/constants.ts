@@ -9,6 +9,8 @@ import participantsAbi from "./abis/participants.abi.json";
 import tokenAuthorityAbi from "./abis/token-authority.abi.json";
 
 export const appTitle = "Commodity Exchange";
+export const baseCommodityUnit = "KG";
+
 export const isLocalNetwork = process.env.NEXT_PUBLIC_IS_LOCAL === "true";
 
 export const networkId = isLocalNetwork ? hardhat.id : hederaTestnet.id;

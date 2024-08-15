@@ -10,9 +10,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-	const commodities = await fetchCommoditiesGroupedByCountry({
-		address: "0x71bE63f3384f5fb98995898A86B02Fb2426c5788",
-	});
+	const commodities = await fetchCommoditiesGroupedByCountry({});
 
 	return (
 		<div className="layout mt-14 mb-20">
@@ -34,7 +32,7 @@ export default async function Home() {
 
 			<div className="my-8 sm:my-14 mx-auto">
 				<div className="font-boldt text-xl mb-4">For Sale</div>
-				<div className="grid grid-cols-3 gap-2">
+				<div className="grid grid-cols-4 gap-2">
 					{commodities?.map((item) => (
 						<ItemForPurchase item={item} />
 					))}

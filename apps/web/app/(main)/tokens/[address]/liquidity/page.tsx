@@ -46,10 +46,9 @@ export default function Page() {
 		});
 
 	useEffect(() => {
-		if (!ctfLiquidityDetails) return;
-
 		const [onChainAmount, onChainMinPrice, onChainMaxPrice] =
-			ctfLiquidityDetails as [bigint, bigint, bigint];
+			(ctfLiquidityDetails as [bigint, bigint, bigint]) || [BigInt(0)];
+
 		if (onChainAmount > 0) {
 			// TODO: Find a way to manage active liquidity instead of any adding LP
 			// setAmount(Number(formatEther(onChainAmount)));

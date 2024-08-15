@@ -1,7 +1,7 @@
 import lookup from "country-code-lookup";
 import nationalities from "i18n-nationality";
 
-export function extractCountryName(address: string): string | null {
+export function getCountryNameFromAddress(address: string): string | null {
 	const words = address.split(",").map((word) => word.trim());
 	for (let i = words.length - 1; i >= 0; i--) {
 		const country = lookup.byCountry(words[i]);
@@ -12,7 +12,7 @@ export function extractCountryName(address: string): string | null {
 	return null;
 }
 
-export function getCountryFromAddress(address: string): string | null {
+export function getCountryCodeFromAddress(address: string): string | null {
 	const words = address.split(",").map((word) => word.trim());
 	for (let i = words.length - 1; i >= 0; i--) {
 		const country = lookup.byCountry(words[i]);
@@ -24,7 +24,7 @@ export function getCountryFromAddress(address: string): string | null {
 }
 
 export function labelCommodity(address: string, commodity: string): string {
-	const countryCode = getCountryFromAddress(address);
+	const countryCode = getCountryCodeFromAddress(address);
 	if (!countryCode) {
 		return `${commodity} (Unknown origin)`;
 	}

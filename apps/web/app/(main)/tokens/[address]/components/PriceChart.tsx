@@ -7,23 +7,28 @@ import { AreaChart, AreaChartOptions, ScaleTypes } from "@carbon/charts-react";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import "@carbon/charts/styles.css";
-import { useCommodityPrice } from "@/hooks/useCommodityPrice";
+import { nFormatter } from "@/utils/number.utils";
 import { format } from "date-fns";
-import debounce from "lodash.debounce";
+
+type PriceEndpointResult = {
+	currentPrice: number;
+	history: CommodityPricePoint[];
+};
 
 export function PriceChart() {
 	const { commodity } = useTokenPage();
 	const [displayedPrice, setDisplayedPrice] = React.useState<number>();
+
 	const { data, isLoading } = useQuery({
 		queryKey: [`priceChart-${commodity?.tokenAddress}`],
 		queryFn: async () =>
-			fetchWrapper<CommodityPricePoint[]>(
+			fetchWrapper<PriceEndpointResult>(
 				`/api/tokens/${commodity?.tokenAddress}/price`,
 			),
 	});
-	const { currentPrice, priceIsLoading } = useCommodityPrice(
-		commodity?.poolAddress,
-	);
+
+	const currentPrice = data?.currentPrice;
+	const history = data?.history || [];
 
 	const chartOptions: AreaChartOptions = {
 		experimental: true,
@@ -72,6 +77,7 @@ export function PriceChart() {
 		},
 		tooltip: {
 			enabled: true,
+			// @ts-ignore
 			customHTML: (datapoint: any[]) => {
 				if (
 					datapoint[0] &&
@@ -80,7 +86,7 @@ export function PriceChart() {
 				) {
 					setDisplayedPrice(datapoint[0].price);
 				}
-				return ""; // Return an empty string to hide the default tooltip
+				return null; // Return an empty string to hide the default tooltip
 			},
 		},
 		legend: {
@@ -93,15 +99,20 @@ export function PriceChart() {
 		},
 	};
 
-	const currentDisplayedPrice =
-		displayedPrice !== null ? displayedPrice : currentPrice;
+	const currentDisplayedPrice = displayedPrice ? displayedPrice : currentPrice;
+
+	const formattedPrice = currentDisplayedPrice
+		? nFormatter(currentDisplayedPrice, 7)
+		: currentDisplayedPrice;
 
 	return (
 		<>
 			<div className="mb-4">
-				<div className="text-xs text-gray-600">Price in HBAR</div>
-				<div className="text-lg font-black text-black">
-					{priceIsLoading ? "-" : currentDisplayedPrice}
+				<div className="text-xs text-gray-600">
+					Price in <span className="font-semibold">HBAR</span>
+				</div>
+				<div className="text-2xl font-black text-black">
+					{isLoading ? "-" : formattedPrice}
 				</div>
 			</div>
 			{isLoading ? (
@@ -109,7 +120,7 @@ export function PriceChart() {
 					<span className="text-xs text-gray-500">LOADING</span>
 				</div>
 			) : (
-				<AreaChart data={data || []} options={chartOptions} />
+				<AreaChart data={history} options={chartOptions} />
 			)}
 		</>
 	);

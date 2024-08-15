@@ -1,24 +1,9 @@
 "use client";
 
-import { CloseOutlined } from "@/components/icons/CloseOutlined";
-import { MapToDisplay } from "@/components/input/MapToDisplay";
 import { MobileModal } from "@/components/modal/MobileModal";
-import { useParticipant } from "@/hooks/useParticipant";
-import { contracts } from "@/lib/constants";
-import {
-	CommodityListing,
-	EthAddress,
-	PoolTransaction,
-	ProducerListingView,
-} from "@/typings";
-import { getShortenedFormat } from "@/utils/address.utils";
-import { getDistanceForDate } from "@/utils/date.utils";
-import { parseListings } from "@/utils/parser.utils";
-import { useState } from "react";
-import { useReadContracts } from "wagmi";
 
 interface SaleItemModalProps {
-	listing: ProducerListingView;
+	listing: any;
 	handleClose(): void;
 }
 
@@ -31,6 +16,7 @@ export function SaleItemModal({ listing, handleClose }: SaleItemModalProps) {
 			open
 			close={handleClose}
 		>
+			sdfs
 			{/*<MapToDisplay regions={participant.locations} mapHeight={125} />
 			<div className="absolute right-4 top-4">
 				<div

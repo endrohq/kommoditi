@@ -58,7 +58,7 @@ export function CreateCommodityModal({
 	}
 
 	return (
-		<Modal open close={handleCancel}>
+		<Modal open onClose={handleCancel}>
 			<Form
 				className="space-y-4"
 				onSubmit={(e) => {

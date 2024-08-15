@@ -9,31 +9,66 @@ export async function GET(
 	now.setMinutes(now.getMinutes() - (now.getMinutes() % 5), 0, 0); // Round to nearest 5-minute interval
 	const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-	const { data, error } = await supabase
+	// First, get the last known price before the 24-hour window
+	const { data: lastKnownPriceData, error: lastKnownPriceError } =
+		await supabase
+			.from("commodityPrice")
+			.select("createdAt, price")
+			.eq("tokenAddress", params.tokenAddress)
+			.lt("createdAt", twentyFourHoursAgo.toISOString())
+			.order("createdAt", { ascending: false })
+			.limit(1);
+
+	const currentPrice =
+		lastKnownPriceData && lastKnownPriceData.length > 0
+			? lastKnownPriceData[0].price
+			: null;
+
+	if (lastKnownPriceError) {
+		return NextResponse.json(
+			{ error: lastKnownPriceError.message },
+			{ status: 500 },
+		);
+	}
+
+	// Then, get the data for the last 24 hours
+	const { data: recentData, error: recentDataError } = await supabase
 		.from("commodityPrice")
 		.select("createdAt, price")
 		.eq("tokenAddress", params.tokenAddress)
 		.gte("createdAt", twentyFourHoursAgo.toISOString())
 		.order("createdAt", { ascending: true });
 
-	if (error) {
-		return NextResponse.json({ error: error.message }, { status: 500 });
+	if (recentDataError) {
+		return NextResponse.json(
+			{ error: recentDataError.message },
+			{ status: 500 },
+		);
 	}
 
-	const processedData = processDataWithGapFilling(
-		data || [],
+	const history = processDataWithGapFilling(
+		recentData,
 		twentyFourHoursAgo,
 		now,
+		currentPrice,
 	);
 
-	return NextResponse.json(processedData);
+	return NextResponse.json({
+		currentPrice,
+		history,
+	});
 }
 
-function processDataWithGapFilling(data: any[], start: Date, end: Date) {
+function processDataWithGapFilling(
+	data: any[],
+	start: Date,
+	end: Date,
+	initialPrice: number | null,
+) {
 	const processedData = [];
 	const interval = 5 * 60 * 1000; // 5 minutes in milliseconds
 	let currentTime = new Date(start);
-	let lastKnownPrice = null;
+	let lastKnownPrice = initialPrice;
 
 	let dataIndex = 0;
 

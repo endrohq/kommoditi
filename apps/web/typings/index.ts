@@ -298,16 +298,31 @@ export enum PlaceType {
 	POI = "poi",
 }
 
-export interface EnhancedCommodity {
-	currentOwnerId: EthAddress;
+export interface OwnerQuantity {
+	ownerId: string;
+	quantity: number;
+}
+
+export interface CommodityGroup {
 	token: CommodityToken;
 	quantity: number;
 	label: string;
-	producers: Set<EthAddress>;
 	country: string;
+	owners: OwnerQuantity[];
 }
 
 export type CommodityPricePoint = {
 	price: number;
 	timestamp: Date;
+};
+
+export type TradeRoute = {
+	ctfs: Participant[];
+	destination: string;
+};
+
+export type BuyModuleArgs = {
+	quantity: number;
+	country?: Region;
+	tradingRoute?: TradeRoute;
 };

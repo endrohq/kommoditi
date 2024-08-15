@@ -90,7 +90,7 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 		<Modal
 			wrapperWidth={!type ? "max-w-4xl" : !canSubmit ? "max-w-4xl" : "max-w-lg"}
 			open
-			close={() => ""}
+			onClose={() => ""}
 			withPadding={false}
 			showClose={false}
 		>

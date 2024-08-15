@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useRef, useMemo } from "react";
+
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import Map, { Source, Layer, MapRef, Marker } from "react-map-gl";
 import "@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -26,6 +27,7 @@ export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
 	mapHeight,
 }) => {
 	const mapRef = useRef<MapRef>(null);
+	const [mapLoaded, setMapLoaded] = useState(false);
 
 	const regionsData = useMemo(() => {
 		return regions.map((region) => ({
@@ -35,7 +37,7 @@ export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
 	}, [regions]);
 
 	useEffect(() => {
-		if (mapRef.current && regionsData.length > 0) {
+		if (mapRef.current && regionsData.length > 0 && mapLoaded) {
 			const bounds = new mapboxgl.LngLatBounds();
 			regionsData.forEach(({ geometry }) => {
 				if (geometry.geometry.type === "Point") {
@@ -54,7 +56,7 @@ export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
 			});
 			mapRef.current.fitBounds(bounds, { padding: 40, duration: 1000 });
 		}
-	}, [regionsData]);
+	}, [regionsData, mapLoaded]);
 
 	return (
 		<Map
@@ -64,10 +66,12 @@ export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
 				width: "100%",
 				height: mapHeight || "calc(100vh - 47px)",
 				zIndex: "-1 !important",
+				backgroundColor: "#FFFAF0",
 			}}
 			mapStyle="mapbox://styles/mapbox/light-v11"
 			mapboxAccessToken={MAPBOX_TOKEN}
 			interactiveLayerIds={["region-fills"]}
+			onLoad={() => setMapLoaded(true)}
 		>
 			{regionsData.map(({ region, geometry }) =>
 				geometry.geometry.type === "Point" ? (

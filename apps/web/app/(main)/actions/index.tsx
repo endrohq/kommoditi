@@ -1,16 +1,19 @@
 "use server";
 
 import {
+	CommodityGroup,
 	CommodityToken,
-	EnhancedCommodity,
 	GroupedByDateTimeline,
+	OwnerQuantity,
 	ParticipantType,
 	ParticipantUserView,
 	Region,
 	TimelineEvent,
 } from "@/typings";
-import { extractCountryName, labelCommodity } from "@/utils/commodity.utils";
-import { findTradingPartners } from "@/utils/overlap.utils";
+import {
+	getCountryNameFromAddress,
+	labelCommodity,
+} from "@/utils/commodity.utils";
 import supabase from "@/utils/supabase.utils";
 import { format, isToday, isYesterday } from "date-fns";
 
@@ -35,35 +38,20 @@ export async function fetchCommodity(tokenAddress: string) {
 
 type FetchCommoditiesOptions = {
 	tokenAddress?: string;
-	address?: string;
 };
 
 export async function fetchCommoditiesGroupedByCountry({
 	tokenAddress,
-	address,
-}: FetchCommoditiesOptions): Promise<EnhancedCommodity[]> {
-	const participantUserViews = await fetchParticipantsWithLocations();
-	const currentParticipant = participantUserViews.find((p) => p.id === address);
-	let participantIds: string[] = [];
-	if (currentParticipant) {
-		participantIds = findTradingPartners(
-			participantUserViews,
-			currentParticipant,
-		);
-	} else {
-		participantIds = participantUserViews
-			.filter((p) => p.type === ParticipantType.CTF)
-			.map((p) => p.id);
-	}
+}: FetchCommoditiesOptions): Promise<CommodityGroup[]> {
+	const producers = await fetchParticipantsWithLocations(
+		ParticipantType.PRODUCER,
+	);
 
-	const query = supabase
-		.from("commodity")
-		.select(`
+	const query = supabase.from("commodity").select(`
       *,
       commodityToken(*),
       participant:producerId(*)
-    `)
-		.in("currentOwnerId", participantIds);
+    `);
 
 	if (tokenAddress) {
 		query.eq("tokenAddress", tokenAddress);
@@ -72,20 +60,19 @@ export async function fetchCommoditiesGroupedByCountry({
 	const { data: commodities, error } = await query;
 
 	if (error) {
-		console.error("Error fetching commodities for sale:", error);
-		throw new Error("Failed to fetch commodities for sale");
+		console.error("Error fetching commodities:", error);
+		throw new Error("Failed to fetch commodities");
 	}
 
-	// Group and enhance commodities
+	// Group commodities by country and token
 	const groupedCommodities = commodities.reduce(
 		(acc, commodity) => {
-			const producer = participantUserViews.find(
-				(p) => p.id === commodity.producerId,
-			);
+			const producer = producers.find((p) => p.id === commodity.producerId);
 			if (!producer) {
 				return acc;
 			}
 			const location = producer?.locations?.[0] as Region; // Assuming the first location is the primary one
+			const country = getCountryNameFromAddress(location.name) || "";
 			const groupLabel = labelCommodity(
 				location.name,
 				commodity.commodityToken?.name,
@@ -94,21 +81,30 @@ export async function fetchCommoditiesGroupedByCountry({
 			if (!acc[groupLabel]) {
 				acc[groupLabel] = {
 					token: commodity.commodityToken,
+					label: groupLabel,
+					country: country,
 					quantity: 0,
-					label: labelCommodity(location.name, commodity.commodityToken?.name),
-					currentOwnerId: commodity.currentOwnerId,
-					producers: new Set([producer.id]),
-					country: extractCountryName(location.name),
-				};
+					owners: [],
+				} as CommodityGroup;
 			}
-			if (!acc[groupLabel].producers.has(producer.id)) {
-				acc[groupLabel].producers.add(producer.id);
+			acc[groupLabel].quantity += 1;
+
+			// Update owner quantities
+			const ownerIndex = acc[groupLabel].owners.findIndex(
+				(oq: OwnerQuantity) => oq.ownerId === commodity.currentOwnerId,
+			);
+			if (ownerIndex === -1) {
+				acc[groupLabel].owners.push({
+					ownerId: commodity.currentOwnerId,
+					quantity: 1,
+				});
+			} else {
+				acc[groupLabel].owners[ownerIndex].quantity += 1;
 			}
 
-			acc[groupLabel].quantity += 1;
 			return acc;
 		},
-		{} as Record<string, EnhancedCommodity>,
+		{} as Record<string, CommodityGroup>,
 	);
 
 	return Object.values(groupedCommodities);
@@ -188,13 +184,16 @@ export async function fetchProducerTimeline(
 		});
 }
 
-export async function fetchParticipantsWithLocations(): Promise<
-	ParticipantUserView[]
-> {
-	const { data, error } = await supabase
-		.from("participant")
-		.select("*,locations:location(*)")
-		.returns<ParticipantUserView[]>();
+export async function fetchParticipantsWithLocations(
+	type?: ParticipantType,
+): Promise<ParticipantUserView[]> {
+	const query = supabase.from("participant").select("*,locations:location(*)");
+
+	if (type) {
+		query.eq("type", type);
+	}
+
+	const { data, error } = await query;
 
 	return data || ([] as ParticipantUserView[]);
 }
