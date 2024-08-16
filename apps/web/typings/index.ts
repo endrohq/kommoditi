@@ -2,7 +2,7 @@ import { Point } from "geojson";
 
 export enum ParticipantType {
 	PRODUCER = "PRODUCER",
-	CTF = "CTF",
+	DISTRIBUTOR = "DISTRIBUTOR",
 	CONSUMER = "CONSUMER",
 }
 
@@ -75,7 +75,7 @@ export type CommodityToken = {
 
 export type PoolTransactionType =
 	| "LiquidityChanged"
-	| "CTFPurchased"
+	| "DistributorPurchased"
 	| "ConsumerPurchased"
 	| "PriceUpdated"
 	| "ListingAdded"
@@ -85,19 +85,19 @@ export const poolTransactionTypes: PoolTransactionType[] = [
 	"ListingAdded",
 	"ListingSold",
 	"LiquidityChanged",
-	"CTFPurchased",
+	"DistributorPurchased",
 	"ConsumerPurchased",
 	"PriceUpdated",
 ];
 
 export enum CommodityStatus {
 	LISTED = "LISTED",
-	PURCHASED_BY_CTF = "PURCHASED_BY_CTF",
+	PURCHASED_BY_DISTRIBUTOR = "PURCHASED_BY_DISTRIBUTOR",
 	PURCHASED_BY_CONSUMER = "PURCHASED_BY_CONSUMER",
 }
 
 export interface CommodityPoolLiquidity {
-	ctf: string;
+	distributor: string;
 	minPrice: number;
 	maxPrice: number;
 	amount: number;
@@ -145,15 +145,15 @@ export type ListingSold = BasePoolEvent & {
 };
 
 export type LiquidityChanged = BasePoolEvent & {
-	ctf: string;
+	distributor: string;
 	amount: number;
 	minPrice: number;
 	maxPrice: number;
 	isAdding: boolean;
 };
 
-export type CTFPurchased = BasePoolEvent & {
-	ctfId: string;
+export type DistributorPurchased = BasePoolEvent & {
+	distributorId: string;
 	listingId: number;
 	producerId: string;
 	serialNumbers: number[];
@@ -163,7 +163,7 @@ export type CTFPurchased = BasePoolEvent & {
 
 export type ConsumerPurchased = BasePoolEvent & {
 	consumerId: string;
-	ctfId: string;
+	distributorId: string;
 	serialNumbers: number[];
 	price: number;
 	totalPrice: number;
@@ -177,7 +177,7 @@ export type PoolEvent =
 	| ListingAdded
 	| ListingSold
 	| LiquidityChanged
-	| CTFPurchased
+	| DistributorPurchased
 	| ConsumerPurchased
 	| PriceUpdated;
 
@@ -205,8 +205,8 @@ export type ListingAddedEvent = {
 	commodityToken: CommodityToken;
 };
 
-export type CTFPurchaseEvent = {
-	ctf: Participant;
+export type DistributorPurchaseEvent = {
+	distributor: Participant;
 	price: number;
 	totalPrice: number;
 };
@@ -218,7 +218,7 @@ export type TimelineEvent = {
 	commodityToken: CommodityToken;
 	transaction: PoolTransaction;
 } & ListingAddedEvent &
-	CTFPurchaseEvent;
+	DistributorPurchaseEvent;
 
 export type ParticipantUserView = {
 	id: string; // EthAddress

@@ -13,7 +13,7 @@ const participants = [
 		name: "Logistics",
 		description:
 			"Take a more holistic view of the supply chain. Where your main responsibility is to move commodities from one location to another.",
-		type: ParticipantType.CTF,
+		type: ParticipantType.DISTRIBUTOR,
 	},
 	{
 		name: "Consumer",

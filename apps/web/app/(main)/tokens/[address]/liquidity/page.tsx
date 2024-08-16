@@ -37,17 +37,19 @@ export default function Page() {
 		commodity?.poolAddress,
 	);
 
-	const { data: ctfLiquidityDetails, isLoading: isLoadingCtfDetails } =
-		useReadContract({
-			address: commodity?.poolAddress,
-			abi: contracts.commodityPool.abi,
-			functionName: "getCTFLiquidityDetails",
-			args: [account?.address],
-		});
+	const {
+		data: distributorLiquidityDetails,
+		isLoading: isLoadingDistributorDetails,
+	} = useReadContract({
+		address: commodity?.poolAddress,
+		abi: contracts.commodityPool.abi,
+		functionName: "getDistributorLiquidityDetails",
+		args: [account?.address],
+	});
 
 	useEffect(() => {
 		const [onChainAmount, onChainMinPrice, onChainMaxPrice] =
-			(ctfLiquidityDetails as [bigint, bigint, bigint]) || [BigInt(0)];
+			(distributorLiquidityDetails as [bigint, bigint, bigint]) || [BigInt(0)];
 
 		if (onChainAmount > 0) {
 			// TODO: Find a way to manage active liquidity instead of any adding LP
@@ -59,7 +61,7 @@ export default function Page() {
 			setMinPrice(price * 0.5);
 			setMaxPrice(price * 2);
 		}
-	}, [ctfLiquidityDetails, currentPrice]);
+	}, [distributorLiquidityDetails, currentPrice]);
 
 	const { writeToContract, isSuccessFullPurchase, isSubmitting } = usePublishTx(
 		{
@@ -86,7 +88,7 @@ export default function Page() {
 		);
 	}
 
-	if (isLoadingCtfDetails || priceIsLoading) {
+	if (isLoadingDistributorDetails || priceIsLoading) {
 		return <LoadingTokenPage />;
 	}
 	if (!commodity || !commodity?.poolAddress) {

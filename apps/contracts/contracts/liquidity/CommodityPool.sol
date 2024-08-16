@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "./TokenAuthority.sol";
 import "../HederaResponseCodes.sol";
 import "../ParticipantRegistry.sol";
-import "hardhat/console.sol";
 
 contract CommodityPool {
     struct Listing {
@@ -14,7 +13,7 @@ contract CommodityPool {
         bool active;
     }
 
-    struct CTFLiquidity {
+    struct DistributorLiquidity {
         uint256 amount;
         uint256 minPrice;
         uint256 maxPrice;
@@ -26,47 +25,34 @@ contract CommodityPool {
     address public commodityExchange;
 
     uint256 public totalLiquidity;
-
-    uint256 public constant ETHEREUM_BASE_PRICE = 1e18; // 18 decimal places
-    uint256 public constant HEDERA_BASE_PRICE = 1e8;   // 8 decimal places
-
     uint256 public currentPrice;
-
-    mapping(address => uint256[]) private producerListings;
-    mapping(address => uint256) public producerListingCount;
 
     mapping(uint256 => Listing) public listings;
     uint256 public listingCount;
 
-    mapping(address => CTFLiquidity) public ctfLiquidity;
-    address[] public ctfs;
+    mapping(address => DistributorLiquidity) public distributorLiquidity;
+    address[] public distributors;
 
-    // Add these as state variables
-    uint256[] public unmatchedListings;
+    mapping(address => uint256) public consumerFunds;
+
+    // Correct implementation of Distributor inventory tracking
+    mapping(address => int64[]) public distributorOwnedSerialNumbers;
 
     // Price adjustment factors
-    uint256 constant PRICE_ADJUSTMENT_FACTOR = 1000; // 0.1% adjustment
-    uint256 constant PRICE_ADJUSTMENT_PRECISION = 1000000;
+    uint256 constant private PRICE_ADJUSTMENT_FACTOR = 1000; // 0.1% adjustment
+    uint256 constant private PRICE_ADJUSTMENT_PRECISION = 1000000;
 
     // Fee percentage for facilitating trades
-    uint256 constant FEE_PERCENTAGE = 500;  // 5% fee (500 basis points)
-    uint256 constant FEE_PRECISION = 10000;  // 100% = 10000
+    uint256 constant private FEE_PERCENTAGE = 500;  // 5% fee (500 basis points)
+    uint256 constant private FEE_PRECISION = 10000;  // 100% = 10000
 
-    // Mapping to store which CTF owns which serial numbers
-    mapping(address => int64[]) public ctfOwnedSerialNumbers;
-
-    // Not in sync with frontend
+    uint256 public constant ETHEREUM_BASE_PRICE = 1e18; // 18 decimal places
+    uint256 public constant HEDERA_BASE_PRICE = 1e8;   // 8 decimal places
 
     event ListingAdded(uint256 indexed listingId, address indexed producerId, int64[] serialNumbers, uint256 timestamp);
-    event LiquidityChanged(address ctf, uint256 amount, uint256 minPrice, uint256 maxPrice, bool isAdding);
-    event CTFPurchased(address indexed from, address indexed to, uint256 listingId, int64[] serialNumbers, uint256 price, uint256 totalPrice);
-    event ConsumerPurchased(
-        address indexed from,
-        address indexed to,
-        int64[] serialNumbers,
-        uint256 price,
-        uint256 totalPrice
-    );
+    event LiquidityChanged(address distributor, uint256 amount, uint256 minPrice, uint256 maxPrice, bool isAdding);
+    event DistributorPurchased(address indexed from, address indexed to, uint256 listingId, int64[] serialNumbers, uint256 price, uint256 totalPrice);
+    event ConsumerPurchased(address indexed from, address indexed to, int64[] serialNumbers, uint256 price, uint256 totalPrice);
     event PriceUpdated(uint256 newPrice);
 
     constructor(address _tokenAddress, address _tokenAuthority, address _commodityExchange, address _participantRegistry, bool isHedera) {
@@ -75,6 +61,7 @@ contract CommodityPool {
         commodityExchange = _commodityExchange;
         participantRegistry = ParticipantRegistry(_participantRegistry);
         currentPrice = isHedera ? HEDERA_BASE_PRICE : ETHEREUM_BASE_PRICE;
+
         emit PriceUpdated(currentPrice);
     }
 
@@ -86,122 +73,131 @@ contract CommodityPool {
     function addListing(address producer, int64[] memory serialNumbers) external onlyCommodityExchange {
         uint256 listingId = listingCount++;
         listings[listingId] = Listing(producer, serialNumbers, block.timestamp, true);
-
-        producerListings[producer].push(listingId);
-        producerListingCount[producer]++;
-
         emit ListingAdded(listingId, producer, serialNumbers, block.timestamp);
+        _tryDistributorAutoBuy(listingId);
 
         adjustPrice(false);
-
-        if (!_tryMatch(listingId)) {
-            unmatchedListings.push(listingId);
-        }
     }
 
-    function getListingDetails(uint256 listingId) external view returns (address, int64[] memory, bool) {
-        Listing storage listing = listings[listingId];
-        return (listing.producer, listing.serialNumbers, listing.active);
-    }
-
-    function getOffers() external view returns (Listing[] memory) {
-        Listing[] memory listingToReturn = new Listing[](listingCount);
-        for (uint256 i = 0; i < listingCount; i++) {
-            listingToReturn[i] = listings[i];
-        }
-        return listingToReturn;
-    }
-
-    function provideLiquidity(address ctf, uint256 minPrice, uint256 maxPrice) external payable onlyCommodityExchange {
+    function provideLiquidity(address distributor, uint256 minPrice, uint256 maxPrice) external payable onlyCommodityExchange {
         require(msg.value > 0, "Must provide liquidity");
         require(minPrice < maxPrice, "Invalid price range");
 
-        if (ctfLiquidity[ctf].amount == 0) {
-            ctfs.push(ctf);
+        if (distributorLiquidity[distributor].amount == 0) {
+            distributors.push(distributor);
         }
 
-        ctfLiquidity[ctf].amount += msg.value;
-        ctfLiquidity[ctf].minPrice = minPrice;
-        ctfLiquidity[ctf].maxPrice = maxPrice;
+        distributorLiquidity[distributor].amount += msg.value;
+        distributorLiquidity[distributor].minPrice = minPrice;
+        distributorLiquidity[distributor].maxPrice = maxPrice;
 
         totalLiquidity += msg.value;
 
-        emit LiquidityChanged(ctf, msg.value, minPrice, maxPrice, true);
+        emit LiquidityChanged(distributor, msg.value, minPrice, maxPrice, true);
 
-        _tryMatchLiquidity(ctf, msg.value);
+        _tryDistributorAutoBuyAll(distributor);
     }
 
-    function removeLiquidity(address ctf, uint256 amount) external onlyCommodityExchange {
-        require(ctfLiquidity[ctf].amount >= amount, "Insufficient liquidity");
+    function distributorManualBuy(address distributor, uint256 listingId, uint256 quantity) external onlyCommodityExchange {
+        require(listings[listingId].active, "Listing is not active");
+        require(listings[listingId].serialNumbers.length >= quantity, "Not enough commodities in listing");
 
-        ctfLiquidity[ctf].amount -= amount;
-        totalLiquidity -= amount;
+        uint256 totalPrice = currentPrice * quantity;
+        require(distributorLiquidity[distributor].amount >= totalPrice, "Insufficient Distributor liquidity");
 
-        payable(ctf).transfer(amount);
-
-        emit LiquidityChanged(ctf, amount, ctfLiquidity[ctf].minPrice, ctfLiquidity[ctf].maxPrice, false);
+        _executeDistributorPurchase(distributor, listingId, quantity);
     }
 
-    function purchaseCommodity(address buyer, uint256 quantity) external payable onlyCommodityExchange {
-        require(quantity > 0, "Quantity must be greater than 0");
-
-        address ctf = findMatchingCTF(quantity);
-        require(ctf != address(0), "No matching CTF found");
-
-        _handlePurchase(buyer, ctf, quantity);
+    function consumerProvideFunds(address consumer) external payable onlyCommodityExchange {
+        consumerFunds[consumer] += msg.value;
+        _tryConsumerAutoBuyAll(consumer);
     }
 
-    function purchaseFromCTF(address buyer, address ctf, uint256 quantity) external payable onlyCommodityExchange {
-        _handlePurchase(buyer, ctf, quantity);
+    function consumerBuyFromDistributor(address consumer, address distributor, uint256 quantity) external onlyCommodityExchange {
+        _consumerBuyFromDistributor(consumer, distributor, quantity);
     }
 
-    function _handlePurchase (address buyer, address ctf, uint256 quantity) internal {
-        require(quantity > 0, "Quantity must be greater than 0");
-        require(ctfOwnedSerialNumbers[ctf].length >= quantity, "CTF does not have enough commodities");
+    function _consumerBuyFromDistributor(address consumer, address distributor, uint256 quantity) internal {
+        uint256 totalPrice = currentPrice * quantity;
+        require(consumerFunds[consumer] >= totalPrice, "Insufficient Consumer funds");
+        require(distributorOwnedSerialNumbers[distributor].length >= quantity, "Not enough commodities in Distributor inventory");
 
-        uint256 basePrice = currentPrice * quantity;
+        int64[] memory serialNumbers = new int64[](quantity);
+        for (uint256 i = 0; i < quantity; i++) {
+            serialNumbers[i] = distributorOwnedSerialNumbers[distributor][distributorOwnedSerialNumbers[distributor].length - 1];
+            distributorOwnedSerialNumbers[distributor].pop();
+            tokenAuthority.transferNFT(tokenAddress, distributor, consumer, serialNumbers[i]);
+        }
 
-        // Get CTF's overhead percentage
-        ParticipantRegistry.ParticipantView memory participant = participantRegistry.getParticipantByAddress(ctf);
+        consumerFunds[consumer] -= totalPrice;
+        distributorLiquidity[distributor].amount += totalPrice;
 
-        uint256 ctfFee = (basePrice * participant.overheadPercentage) / 10000; // Assuming overhead is in basis points
-        uint256 totalPrice = basePrice + ctfFee;
-
-        require(msg.value >= totalPrice, "Insufficient payment");
-
-        // Transfer commodities
-        int64[] memory purchasedSerialNumbers = transferCommodities(ctf, buyer, quantity);
-
-        // Transfer payment
-        payable(ctf).transfer(totalPrice);
-
-        emit ConsumerPurchased(ctf, buyer, purchasedSerialNumbers, currentPrice, totalPrice);
-
-        adjustPrice(true);
+        emit ConsumerPurchased(distributor, consumer, serialNumbers, currentPrice, totalPrice);
     }
 
-    function findMatchingCTF(uint256 quantity) internal view returns (address) {
-        for (uint i = 0; i < ctfs.length; i++) {
-            address ctf = ctfs[i];
-            if (ctfOwnedSerialNumbers[ctf].length >= quantity) {
-                return ctf;
+    function _tryDistributorAutoBuy(uint256 listingId) internal {
+        Listing storage listing = listings[listingId];
+        uint256 totalPrice = currentPrice * listing.serialNumbers.length;
+
+        for (uint i = 0; i < distributors.length; i++) {
+            address distributor = distributors[i];
+            if (distributorLiquidity[distributor].amount >= totalPrice &&
+            currentPrice >= distributorLiquidity[distributor].minPrice &&
+            currentPrice <= distributorLiquidity[distributor].maxPrice &&
+                participantRegistry.isInAddressBook(distributor, listing.producer)) {
+                _executeDistributorPurchase(distributor, listingId, listing.serialNumbers.length);
+                break;
             }
         }
-        return address(0);
     }
 
-    function transferCommodities(address ctf, address buyer, uint256 quantity) internal returns (int64[] memory) {
-        require(ctfOwnedSerialNumbers[ctf].length >= quantity, "Insufficient CTF holdings");
+    function _tryDistributorAutoBuyAll(address distributor) internal {
+        for (uint256 i = 0; i < listingCount; i++) {
+            if (listings[i].active && participantRegistry.isInAddressBook(distributor, listings[i].producer)) {
+                uint256 totalPrice = currentPrice * listings[i].serialNumbers.length;
+                if (distributorLiquidity[distributor].amount >= totalPrice &&
+                currentPrice >= distributorLiquidity[distributor].minPrice &&
+                    currentPrice <= distributorLiquidity[distributor].maxPrice) {
+                    _executeDistributorPurchase(distributor, i, listings[i].serialNumbers.length);
+                }
+            }
+        }
+    }
 
-        int64[] memory transferredSerialNumbers = new int64[](quantity);
-        for (uint i = 0; i < quantity; i++) {
-            int64 serialNumber = ctfOwnedSerialNumbers[ctf][ctfOwnedSerialNumbers[ctf].length - 1];
-            ctfOwnedSerialNumbers[ctf].pop();
-            transferredSerialNumbers[i] = serialNumber;
-            tokenAuthority.transferNFT(tokenAddress, ctf, buyer, serialNumber);
+    function _tryConsumerAutoBuyAll(address consumer) internal {
+        address[] memory approvedDistributors = participantRegistry.getAddressBook(consumer);
+        for (uint256 i = 0; i < approvedDistributors.length; i++) {
+            address distributor = approvedDistributors[i];
+            uint256 availableQuantity = distributorOwnedSerialNumbers[distributor].length;
+            uint256 affordableQuantity = consumerFunds[consumer] / currentPrice;
+            uint256 quantityToBuy = availableQuantity < affordableQuantity ? availableQuantity : affordableQuantity;
+
+            if (quantityToBuy > 0) {
+                _consumerBuyFromDistributor(consumer, distributor, quantityToBuy);
+            }
+        }
+    }
+
+    function _executeDistributorPurchase(address distributor, uint256 listingId, uint256 quantity) internal {
+        Listing storage listing = listings[listingId];
+        uint256 totalPrice = currentPrice * quantity;
+
+        distributorLiquidity[distributor].amount -= totalPrice;
+        payable(listing.producer).transfer(totalPrice);
+
+        for (uint256 i = 0; i < quantity; i++) {
+            int64 serialNumber = listing.serialNumbers[listing.serialNumbers.length - 1];
+            listing.serialNumbers.pop();
+            distributorOwnedSerialNumbers[distributor].push(serialNumber);
+            tokenAuthority.transferNFT(tokenAddress, listing.producer, distributor, serialNumber);
         }
 
-        return transferredSerialNumbers;
+        if (listing.serialNumbers.length == 0) {
+            listing.active = false;
+        }
+
+        emit DistributorPurchased(listing.producer, distributor, listingId, distributorOwnedSerialNumbers[distributor], currentPrice, totalPrice);
+        adjustPrice(true);
     }
 
     function adjustPrice(bool increase) internal {
@@ -211,108 +207,5 @@ contract CommodityPool {
             currentPrice = currentPrice * (PRICE_ADJUSTMENT_PRECISION - PRICE_ADJUSTMENT_FACTOR) / PRICE_ADJUSTMENT_PRECISION;
         }
         emit PriceUpdated(currentPrice);
-    }
-
-    function _tryMatch(uint256 listingId) internal returns (bool) {
-        Listing storage listing = listings[listingId];
-        uint256 totalPrice = currentPrice * listing.serialNumbers.length;
-
-        for (uint i = 0; i < ctfs.length; i++) {
-            address ctf = ctfs[i];
-            if (ctfLiquidity[ctf].amount >= totalPrice &&
-            currentPrice >= ctfLiquidity[ctf].minPrice &&
-                currentPrice <= ctfLiquidity[ctf].maxPrice) {
-                _executeTrade(listingId, ctf);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    function _tryMatchLiquidity(address ctf, uint256 amount) internal {
-        while (amount > 0 && unmatchedListings.length > 0) {
-            uint256 listingId = unmatchedListings[unmatchedListings.length - 1];
-            Listing storage listing = listings[listingId];
-            uint256 totalPrice = currentPrice * listing.serialNumbers.length;
-
-            if (amount >= totalPrice &&
-            currentPrice >= ctfLiquidity[ctf].minPrice &&
-                currentPrice <= ctfLiquidity[ctf].maxPrice) {
-                _executeTrade(listingId, ctf);
-                amount -= totalPrice;
-                unmatchedListings.pop();
-            } else {
-                break;
-            }
-        }
-    }
-
-    function _executeTrade(uint256 listingId, address ctf) internal {
-        Listing storage listing = listings[listingId];
-        uint256 totalPrice = currentPrice * listing.serialNumbers.length;
-
-        for (uint i = 0; i < listing.serialNumbers.length; i++) {
-            tokenAuthority.transferNFT(tokenAddress, listing.producer, ctf, listing.serialNumbers[i]);
-        }
-
-        updateCTFHoldings(ctf, listing.serialNumbers);
-
-        ctfLiquidity[ctf].amount -= totalPrice;
-        totalLiquidity -= totalPrice;
-        payable(listing.producer).transfer(totalPrice);
-
-        emit CTFPurchased(listing.producer, ctf, listingId, listing.serialNumbers, currentPrice, totalPrice);
-        listing.active = false;
-
-        adjustPrice(true);
-    }
-
-    function findListingBySerialNumber(int64 serialNumber) internal view returns (uint256) {
-        for (uint256 i = 0; i < listingCount; i++) {
-            if (listings[i].active) {
-                for (uint256 j = 0; j < listings[i].serialNumbers.length; j++) {
-                    if (listings[i].serialNumbers[j] == serialNumber) {
-                        return i;
-                    }
-                }
-            }
-        }
-        return listingCount;
-    }
-
-    function getCTFLiquidityDetails(address ctf) external view returns (uint256, uint256, uint256) {
-        CTFLiquidity storage liquidity = ctfLiquidity[ctf];
-        return (liquidity.amount, liquidity.minPrice, liquidity.maxPrice);
-    }
-
-    function getActiveCTFs() external view returns (address[] memory) {
-        return ctfs;
-    }
-
-    function getTotalLiquidity() external view returns (uint256) {
-        return totalLiquidity;
-    }
-
-    function getCurrentPrice() external view returns (uint256) {
-        return currentPrice;
-    }
-
-    function getListingsByProducer(address producer) external view returns (Listing[] memory) {
-        uint256 count = producerListingCount[producer];
-        Listing[] memory producerListingsToReturn = new Listing[](count);
-
-        for (uint256 i = 0; i < count; i++) {
-            uint256 listingId = producerListings[producer][i];
-            producerListingsToReturn[i] = listings[listingId];
-        }
-
-        return producerListingsToReturn;
-    }
-
-    // This function should be called when a CTF purchases from a producer
-    function updateCTFHoldings(address ctf, int64[] memory serialNumbers) internal {
-        for (uint i = 0; i < serialNumbers.length; i++) {
-            ctfOwnedSerialNumbers[ctf].push(serialNumbers[i]);
-        }
     }
 }

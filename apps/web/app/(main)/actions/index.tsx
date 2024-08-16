@@ -7,6 +7,7 @@ import {
 	OwnerQuantity,
 	ParticipantType,
 	ParticipantUserView,
+	PlaceType,
 	Region,
 	TimelineEvent,
 } from "@/typings";
@@ -34,6 +35,48 @@ export async function fetchCommodity(tokenAddress: string) {
 		.single<CommodityToken>();
 
 	return commodity;
+}
+
+export async function getCountriesWhereCommodityTokenIsActiveIn(
+	tokenAddress: string,
+) {
+	const { data: commodities, error } = await supabase
+		.from("listing")
+		.select("producerId")
+		.eq("tokenAddress", tokenAddress);
+
+	if (error) {
+		console.error("Error fetching commodities:", error);
+		throw new Error("Failed to fetch commodities");
+	}
+
+	const producerIds: string[] = Array.from(
+		new Set(commodities.map((c) => c.producerId)),
+	);
+
+	const { data: producers } = await supabase
+		.from("participant")
+		.select("*,locations:location(*)")
+		.in("id", producerIds)
+		.returns<ParticipantUserView[]>();
+
+	const countryNames = (producers || [])
+		.map((producer) => {
+			const location = producer?.locations?.[0] as Region; // Assuming the first location is the primary one
+			return getCountryNameFromAddress(location.name);
+		})
+		?.filter((c) => !!c || c !== null);
+
+	return Array.from(new Set(countryNames)).map(
+		(c) =>
+			({
+				id: c,
+				name: c,
+				locationType: PlaceType.COUNTRY,
+				centerLng: 0,
+				centerLat: 0,
+			}) as Region,
+	);
 }
 
 type FetchCommoditiesOptions = {
@@ -130,8 +173,8 @@ export async function fetchProducerTimeline(
 
 	// Fetch purchases
 	const { data: purchases, error: purchaseError } = await supabase
-		.from("ctfPurchase")
-		.select("*,commodityToken(*),transaction:transactionHash(*),ctf(*)")
+		.from("distributorPurchase")
+		.select("*,commodityToken(*),transaction:transactionHash(*),distributor(*)")
 		.in("listingId", listingIds);
 
 	if (purchaseError) {

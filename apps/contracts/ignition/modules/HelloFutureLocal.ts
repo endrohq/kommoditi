@@ -10,7 +10,7 @@ const HelloFutureModule = buildModule("HelloFutureModuleLocal", (m) => {
     after: [ParticipantRegistry]
   });
 
-  const CommodityExchange = m.contract("CommodityExchange",[CommodityFactory],{
+  const CommodityExchange = m.contract("CommodityExchange",[CommodityFactory, ParticipantRegistry],{
     after: [ParticipantRegistry, CommodityFactory]
   });
 

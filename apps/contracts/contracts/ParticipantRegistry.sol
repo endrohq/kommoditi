@@ -5,7 +5,7 @@ contract ParticipantRegistry {
 
     enum ParticipantType {
         Producer,
-        CTF,
+        Distributor,
         Consumer
     }
 
@@ -21,6 +21,7 @@ contract ParticipantRegistry {
         uint256 overheadPercentage;
         string name;
         Location[] locations;
+        address[] addressBook;
     }
 
     struct ParticipantView {
@@ -28,76 +29,74 @@ contract ParticipantRegistry {
         string name;
         Location[] locations;
         ParticipantType participantType;
+        address[] addressBook;
     }
 
-    mapping(address => Participant) public ctfs;
-    uint256 public ctfCount;
-
-    mapping(address => Participant) public consumers;
-    uint256 public consumerCount;
-
-    mapping(address => Participant) public producers;
-    uint256 public producerCount;
+    mapping(address => Participant) public participants;
+    uint256 public participantCount;
 
     event ParticipantRegistered(address indexed participantAddress, string name, ParticipantType participantType);
+    event AddressAdded(address indexed participant, address indexed addedAddress);
 
     function registerParticipant(string memory _name, uint256 _overheadPercentage, ParticipantType _participantType, Location[] memory _locations) public {
+        require(bytes(participants[msg.sender].name).length == 0, "Participant already registered");
 
-        if (_participantType == ParticipantType.Producer) {
-            producers[msg.sender].overheadPercentage = _overheadPercentage;
-            producers[msg.sender].name = _name;
-            delete producers[msg.sender].locations;
-            for (uint i = 0; i < _locations.length; i++) {
-                producers[msg.sender].locations.push(_locations[i]);
-            }
-            producerCount++;
-        } else if (_participantType == ParticipantType.CTF) {
-            ctfs[msg.sender].overheadPercentage = _overheadPercentage;
-            ctfs[msg.sender].name = _name;
-            delete ctfs[msg.sender].locations;
-            for (uint i = 0; i < _locations.length; i++) {
-                ctfs[msg.sender].locations.push(_locations[i]);
-            }
-            ctfCount++;
-        } else if (_participantType == ParticipantType.Consumer) {
-            consumers[msg.sender].overheadPercentage = _overheadPercentage;
-            consumers[msg.sender].name = _name;
-            delete consumers[msg.sender].locations;
-            for (uint i = 0; i < _locations.length; i++) {
-                consumers[msg.sender].locations.push(_locations[i]);
-            }
-            consumerCount++;
+        participants[msg.sender].overheadPercentage = _overheadPercentage;
+        participants[msg.sender].name = _name;
+        for (uint i = 0; i < _locations.length; i++) {
+            participants[msg.sender].locations.push(_locations[i]);
         }
+        participantCount++;
 
         emit ParticipantRegistered(msg.sender, _name, _participantType);
     }
 
-    function getParticipantByAddress(address _participantAddress) public view returns (ParticipantView memory) {
-        if (bytes(producers[_participantAddress].name).length != 0) {
-            return ParticipantView(producers[_participantAddress].overheadPercentage, producers[_participantAddress].name, producers[_participantAddress].locations, ParticipantType.Producer);
-        } else if (bytes(ctfs[_participantAddress].name).length != 0) {
-            return ParticipantView(ctfs[_participantAddress].overheadPercentage, ctfs[_participantAddress].name, ctfs[_participantAddress].locations, ParticipantType.CTF);
-        } else if (bytes(consumers[_participantAddress].name).length != 0) {
-            return ParticipantView(consumers[_participantAddress].overheadPercentage, consumers[_participantAddress].name, consumers[_participantAddress].locations, ParticipantType.Consumer);
+    function addToAddressBook(address _address) public {
+        require(bytes(participants[msg.sender].name).length != 0, "Participant not registered");
+        require(_address != msg.sender, "Cannot add self to address book");
+        require(bytes(participants[_address].name).length != 0, "Address to add is not a registered participant");
+
+        for (uint i = 0; i < participants[msg.sender].addressBook.length; i++) {
+            if (participants[msg.sender].addressBook[i] == _address) {
+                revert("Address already in address book");
+            }
         }
-        return ParticipantView(0, "", new Location[](0), ParticipantType.Producer);
+
+        participants[msg.sender].addressBook.push(_address);
+        emit AddressAdded(msg.sender, _address);
     }
 
-    function getParticipants() public view returns (ParticipantView[] memory) {
-        ParticipantView[] memory participants = new ParticipantView[](producerCount + ctfCount + consumerCount);
-        uint256 index = 0;
-        for (uint i = 0; i < producerCount; i++) {
-            participants[index] = ParticipantView(producers[address(uint160(i))].overheadPercentage, producers[address(uint160(i))].name, producers[address(uint160(i))].locations, ParticipantType.Producer);
-            index++;
-        }
-        for (uint i = 0; i < ctfCount; i++) {
-            participants[index] = ParticipantView(ctfs[address(uint160(i))].overheadPercentage, ctfs[address(uint160(i))].name, ctfs[address(uint160(i))].locations, ParticipantType.CTF);
-            index++;
-        }
-        for (uint i = 0; i < consumerCount; i++) {
-            participants[index] = ParticipantView(consumers[address(uint160(i))].overheadPercentage, consumers[address(uint160(i))].name, consumers[address(uint160(i))].locations, ParticipantType.Consumer);
-            index++;
-        }
-        return participants;
+    function getAddressBook(address _participant) public view returns (address[] memory) {
+        return participants[_participant].addressBook;
     }
+
+    function isInAddressBook(address _participant, address _address) public view returns (bool) {
+        for (uint i = 0; i < participants[_participant].addressBook.length; i++) {
+            if (participants[_participant].addressBook[i] == _address) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function getParticipantByAddress(address _participantAddress) public view returns (ParticipantView memory) {
+        Participant storage p = participants[_participantAddress];
+        ParticipantType pType;
+
+        if (bytes(p.name).length == 0) {
+            return ParticipantView(0, "", new Location[](0), ParticipantType.Producer, new address[](0));
+        }
+
+        // Determine participant type (you might want to store this explicitly in the Participant struct in a real-world scenario)
+        if (_participantAddress == address(uint160(participantCount - 1))) {
+            pType = ParticipantType.Consumer;
+        } else if (_participantAddress == address(uint160(participantCount - 2))) {
+            pType = ParticipantType.Distributor;
+        } else {
+            pType = ParticipantType.Producer;
+        }
+
+        return ParticipantView(p.overheadPercentage, p.name, p.locations, pType, p.addressBook);
+    }
+
 }

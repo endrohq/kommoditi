@@ -2,7 +2,7 @@ import { Point } from "geojson";
 
 export enum ParticipantType {
 	PRODUCER = "PRODUCER",
-	CTF = "CTF",
+	DISTRIBUTOR = "DISTRIBUTOR",
 	CONSUMER = "CONSUMER",
 }
 

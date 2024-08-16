@@ -1,8 +1,8 @@
 import {
-	CTFPurchased,
 	CommodityListing,
 	CommodityToken,
 	ConsumerPurchased,
+	DistributorPurchased,
 	GetAllPoolsResponse,
 	GetCommodityResponse,
 	LiquidityChanged,
@@ -60,7 +60,7 @@ export function participantTypeToSmParticipantType(type: ParticipantType) {
 	switch (type) {
 		case ParticipantType.PRODUCER:
 			return 0;
-		case ParticipantType.CTF:
+		case ParticipantType.DISTRIBUTOR:
 			return 1;
 		case ParticipantType.CONSUMER:
 			return 2;
@@ -72,7 +72,7 @@ export function smParticipantTypeToParticipantType(type: number) {
 		case 0:
 			return ParticipantType.PRODUCER;
 		case 1:
-			return ParticipantType.CTF;
+			return ParticipantType.DISTRIBUTOR;
 		case 2:
 			return ParticipantType.CONSUMER;
 	}
@@ -102,29 +102,29 @@ export function parseSmCommodityPoolEvent(
 		case "LiquidityChanged":
 			return {
 				...baseEvent,
-				ctf: event.ctf,
+				distributor: event.distributor,
 				amount: parseSmToNumberFormat(Number(event.amount)),
 				minPrice: parseSmToNumberFormat(Number(event.minPrice)),
 				maxPrice: parseSmToNumberFormat(Number(event.maxPrice)),
 				isAdding: event.isAdding,
 			} as LiquidityChanged;
 
-		case "CTFPurchased":
+		case "DistributorPurchased":
 			return {
 				...baseEvent,
-				ctfId: event.to,
+				distributorId: event.to,
 				producerId: event.from,
 				listingId: Number(event.listingId),
 				serialNumbers: event.serialNumbers.map((sn: any) => Number(sn)),
 				price: parseSmToNumberFormat(Number(event.price)),
 				totalPrice: parseSmToNumberFormat(Number(event.totalPrice)),
-			} as CTFPurchased;
+			} as DistributorPurchased;
 
 		case "ConsumerPurchased":
 			return {
 				...baseEvent,
 				consumerId: event.to,
-				ctfId: event.from,
+				distributorId: event.from,
 				serialNumbers: event.serialNumbers.map((sn: any) => Number(sn)),
 				price: parseSmToNumberFormat(Number(event.price)),
 				totalPrice: parseSmToNumberFormat(Number(event.totalPrice)),

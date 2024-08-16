@@ -1,6 +1,7 @@
 import {
 	fetchCommoditiesGroupedByCountry,
 	fetchCommodity,
+	getCountriesWhereCommodityTokenIsActiveIn,
 } from "@/app/(main)/actions";
 import { PriceChart } from "@/app/(main)/tokens/[address]/components/PriceChart";
 import { TokenPageHeader } from "@/app/(main)/tokens/[address]/components/TokenPageHeader";
@@ -25,19 +26,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-	const activeCommoditiesByRegion = await fetchCommoditiesGroupedByCountry({
-		tokenAddress: params.address,
-	});
-
-	const countries = activeCommoditiesByRegion?.map(
-		(c) =>
-			({
-				id: c.country,
-				name: c.country,
-				locationType: PlaceType.COUNTRY,
-				centerLng: 0,
-				centerLat: 0,
-			}) as Region,
+	const countries = await getCountriesWhereCommodityTokenIsActiveIn(
+		params.address,
 	);
 
 	return (
@@ -56,20 +46,9 @@ export default async function Page({ params }: Props) {
 			<div className="layout my-10 space-x-10 flex items-start px-6">
 				<div className="w-8/12">
 					<PriceChart />
-					<div className="gap-10 flex flex-col mt-10">
-						<div className="grid grid-cols-1 gap-2">
-							{activeCommoditiesByRegion?.map((item) => (
-								<ItemForPurchase item={item} />
-							))}
-						</div>
-					</div>
 				</div>
 				<div className="w-4/12">
-					<TransactWidget
-						activeCommoditiesByRegion={activeCommoditiesByRegion}
-						availableCountries={countries}
-						address={params.address}
-					/>
+					<TransactWidget countries={countries} address={params.address} />
 				</div>
 			</div>
 		</div>

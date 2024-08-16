@@ -37,17 +37,17 @@ export function findTradingPartners(
 
 		switch (activeParticipant.type) {
 			case ParticipantType.CONSUMER:
-				// Consumers can only find CTFs operating in their location
+				// Consumers can only find DISTRIBUTORs operating in their location
 				if (
-					participant.type === ParticipantType.CTF &&
+					participant.type === ParticipantType.DISTRIBUTOR &&
 					hasAnyOverlap(activeParticipantRegions, participantRegions)
 				) {
 					tradingPartners.push(participant.id);
 				}
 				break;
 
-			case ParticipantType.CTF:
-				// CTFs can see both producers and consumers
+			case ParticipantType.DISTRIBUTOR:
+				// DISTRIBUTORs can see both producers and consumers
 				if (
 					(participant.type === ParticipantType.PRODUCER ||
 						participant.type === ParticipantType.CONSUMER) &&
@@ -58,9 +58,9 @@ export function findTradingPartners(
 				break;
 
 			case ParticipantType.PRODUCER:
-				// Producers can find CTFs they can sell to
+				// Producers can find DISTRIBUTORs they can sell to
 				if (
-					participant.type === ParticipantType.CTF &&
+					participant.type === ParticipantType.DISTRIBUTOR &&
 					hasAnyOverlap(activeParticipantRegions, participantRegions)
 				) {
 					tradingPartners.push(participant.id);

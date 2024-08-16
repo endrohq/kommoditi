@@ -2,9 +2,9 @@ import supabase from "@/utils/supabase.utils";
 
 import { networkId } from "@/lib/constants";
 import {
-	CTFPurchased,
 	CommodityStatus,
 	ConsumerPurchased,
+	DistributorPurchased,
 	LiquidityChanged,
 	ListingAdded,
 	Participant,
@@ -103,25 +103,27 @@ async function handlePriceUpdated(event: PriceUpdated) {
 	if (error) throw error;
 }
 
-async function handleCTFPurchase(event: CTFPurchased) {
-	// Update CTF price
-	const { error: ctfError } = await supabase.from("ctfPurchase").insert({
-		tokenAddress: event.tokenAddress,
-		transactionHash: event.transactionHash,
-		ctf: event.ctfId,
-		listingId: event.listingId,
-		price: event.price,
-		totalPrice: event.totalPrice,
-	});
+async function handleDistributorPurchase(event: DistributorPurchased) {
+	// Update Distributor price
+	const { error: distributorError } = await supabase
+		.from("distributorPurchase")
+		.insert({
+			tokenAddress: event.tokenAddress,
+			transactionHash: event.transactionHash,
+			distributorId: event.distributorId,
+			listingId: event.listingId,
+			price: event.price,
+			totalPrice: event.totalPrice,
+		});
 
-	if (ctfError) throw ctfError;
+	if (distributorError) throw distributorError;
 
 	// Update commodities
 	const { error: commoditiesError } = await supabase
 		.from("commodity")
 		.update({
-			status: CommodityStatus.PURCHASED_BY_CTF,
-			currentOwnerId: event.ctfId,
+			status: CommodityStatus.PURCHASED_BY_DISTRIBUTOR,
+			currentOwnerId: event.distributorId,
 		})
 		.in("id", event.serialNumbers);
 
@@ -129,17 +131,19 @@ async function handleCTFPurchase(event: CTFPurchased) {
 }
 
 async function handleConsumerPurchase(event: ConsumerPurchased) {
-	// Update CTF price
-	const { error: ctfError } = await supabase.from("consumerPurchase").insert({
-		tokenAddress: event.tokenAddress,
-		transactionHash: event.transactionHash,
-		ctfId: event.ctfId,
-		consumerId: event.consumerId,
-		price: event.price,
-		totalPrice: event.totalPrice,
-	});
+	// Update Distributor price
+	const { error: consumerError } = await supabase
+		.from("consumerPurchase")
+		.insert({
+			tokenAddress: event.tokenAddress,
+			transactionHash: event.transactionHash,
+			distributorId: event.distributorId,
+			consumerId: event.consumerId,
+			price: event.price,
+			totalPrice: event.totalPrice,
+		});
 
-	if (ctfError) throw ctfError;
+	if (consumerError) throw consumerError;
 
 	// Update commodities
 	const { error: commoditiesError } = await supabase
@@ -193,8 +197,8 @@ async function upsertTransaction(item: PoolTransaction) {
 				await handleLiquidityChanged(event as LiquidityChanged);
 				break;
 			*/
-			case "CTFPurchased":
-				await handleCTFPurchase(event as CTFPurchased);
+			case "DistributorPurchased":
+				await handleDistributorPurchase(event as DistributorPurchased);
 				break;
 			case "ConsumerPurchased":
 				await handleConsumerPurchase(event as ConsumerPurchased);

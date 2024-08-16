@@ -6,7 +6,7 @@ import { ListingOutlined } from "@/components/icons/ListingOutlined";
 import { MinusOutlined } from "@/components/icons/MinusOutlined";
 import { useAuth } from "@/providers/AuthProvider";
 import {
-	CTFPurchaseEvent,
+	DistributorPurchaseEvent,
 	GroupedByDateTimeline,
 	TimelineEvent,
 } from "@/typings";
@@ -28,11 +28,11 @@ function TimelineItem({ event }: { event: TimelineEvent }) {
 				</>
 			);
 		} else if (event.type === "purchase") {
-			const purchase = event as CTFPurchaseEvent;
+			const purchase = event as DistributorPurchaseEvent;
 			return (
 				<>
 					Sold <span className="font-semibold">{event.quantity}KG</span>{" "}
-					{event?.commodityToken?.name} to {purchase?.ctf?.name || "-"}
+					{event?.commodityToken?.name} to {purchase?.distributor?.name || "-"}
 				</>
 			);
 		}

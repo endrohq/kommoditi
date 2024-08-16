@@ -13,21 +13,21 @@ interface ConfirmOrderForConsumerProps {
 	activeCommodityByRegion?: CommodityGroup;
 	onClose(): void;
 	quantity: number;
-	ctfs: Participant[];
+	distributors: Participant[];
 }
 
 export function ConfirmOrderForConsumer({
 	quantity,
 	activeCommodityByRegion,
 	onClose,
-	ctfs,
+	distributors,
 }: ConfirmOrderForConsumerProps) {
 	const { commodity, currentPrice } = useTokenPage();
 	const { writeToContract, isSubmitting, isSuccessFullPurchase } = usePublishTx(
 		{
 			address: contracts.commodityExchange.address,
 			abi: contracts.commodityExchange.abi,
-			functionName: "purchaseCommodityFromCTF",
+			functionName: "purchaseCommodityFromDistributor",
 			eventName: "CommodityPurchased",
 		},
 	);
@@ -48,10 +48,12 @@ export function ConfirmOrderForConsumer({
 
 	async function handlePurchase() {
 		try {
-			const activeCtf = ctfs?.[0];
-			const totalPrice = calculateTotalPrice(activeCtf?.overheadPercentage);
+			const activeDistributor = distributors?.[0];
+			const totalPrice = calculateTotalPrice(
+				activeDistributor?.overheadPercentage,
+			);
 			writeToContract(
-				[commodity?.tokenAddress, activeCtf?.id, quantity],
+				[commodity?.tokenAddress, activeDistributor?.id, quantity],
 				totalPrice?.toString(),
 			);
 		} catch (error) {

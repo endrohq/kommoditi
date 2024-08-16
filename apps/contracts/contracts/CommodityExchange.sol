@@ -4,29 +4,27 @@ pragma solidity ^0.8.24;
 import "./liquidity/TokenAuthority.sol";
 import "./liquidity/CommodityFactory.sol";
 import "./liquidity/CommodityPool.sol";
-import "hardhat/console.sol";
+import "./ParticipantRegistry.sol";
 
 contract CommodityExchange {
-
     address public admin;
-
-    event CommodityApproved(address indexed tokenAddress);
-    event CommodityRemoved(address indexed tokenAddress);
-    event CommodityLPCreated(address indexed poolAddress);
-    event CommodityLPAdded(address indexed poolAddress);
-    event CommodityListed(address indexed poolAddress, int64[] indexed serialNumber, address indexed producer);
-
     CommodityFactory public factory;
     TokenAuthority public tokenAuthority;
+    ParticipantRegistry public participantRegistry;
 
-    constructor(address _factory) {
+    event CommodityTokenCreated(address indexed tokenAddress, string name, string symbol);
+    event CommodityListed(address indexed tokenAddress, int64[] serialNumbers, address indexed producer);
+    event LiquidityProvided(address indexed tokenAddress, address indexed provider, uint256 amount, uint256 minPrice, uint256 maxPrice);
+    event LiquidityRemoved(address indexed tokenAddress, address indexed provider, uint256 amount);
+    event ConsumerFundsAdded(address indexed tokenAddress, address indexed consumer, uint256 amount);
+    event ConsumerFundsWithdrawn(address indexed tokenAddress, address indexed consumer, uint256 amount);
+    event DistributorPurchaseMade(address indexed tokenAddress, address indexed distributor, uint256 listingId, uint256 quantity);
+    event ConsumerPurchaseMade(address indexed tokenAddress, address indexed consumer, address indexed distributor, uint256 quantity);
+
+    constructor(address _factory, address _participantRegistry) {
         admin = msg.sender;
         factory = CommodityFactory(_factory);
-    }
-
-    function setTokenAuthority(address _tokenAuthority) external {
-        require(address(tokenAuthority) == address(0), "TokenAuthority already set");
-        tokenAuthority = TokenAuthority(_tokenAuthority);
+        participantRegistry = ParticipantRegistry(_participantRegistry);
     }
 
     modifier onlyAdmin() {
@@ -34,20 +32,21 @@ contract CommodityExchange {
         _;
     }
 
-    modifier onlyTokenAuthority() {
-        require(msg.sender == address(tokenAuthority), "Only TokenAuthority can perform this action");
-        _;
+    function setTokenAuthority(address _tokenAuthority) external onlyAdmin {
+        require(address(tokenAuthority) == address(0), "TokenAuthority already set");
+        tokenAuthority = TokenAuthority(_tokenAuthority);
     }
 
-    function createCommodityToken(string memory name, string memory symbol) external {
+    function createCommodityToken(string memory name, string memory symbol) external onlyAdmin {
         address tokenAddress = tokenAuthority.createToken(name, symbol);
         factory.createPool(tokenAddress);
+        emit CommodityTokenCreated(tokenAddress, name, symbol);
     }
 
     function listCommodity(address tokenAddress, int64 quantity) external {
         address poolAddress = factory.commodityPoolsByToken(tokenAddress);
         require(poolAddress != address(0), "No pool exists for this token");
-
+        require(participantRegistry.getParticipantByAddress(msg.sender).participantType == ParticipantRegistry.ParticipantType.Producer, "Only producers can list commodities");
 
         int64[] memory serialNumbers = tokenAuthority.mintNFT(tokenAddress, msg.sender, quantity);
         CommodityPool(poolAddress).addListing(msg.sender, serialNumbers);
@@ -55,35 +54,43 @@ contract CommodityExchange {
         emit CommodityListed(tokenAddress, serialNumbers, msg.sender);
     }
 
-    function purchaseCommodity(address tokenAddress, uint256 quantity) external payable {
-        address poolAddress = factory.commodityPoolsByToken(tokenAddress);
-        require(poolAddress != address(0), "No pool exists for this commodity");
-
-        CommodityPool(poolAddress).purchaseCommodity{value: msg.value}(msg.sender, quantity);
-    }
-
-    function purchaseCommodityFromCTF(address tokenAddress, address ctf, uint256 quantity) external payable {
-        address poolAddress = factory.commodityPoolsByToken(tokenAddress);
-        require(poolAddress != address(0), "No pool exists for this commodity");
-
-        CommodityPool(poolAddress).purchaseFromCTF{value: msg.value}(msg.sender, ctf, quantity);
-    }
-
     function provideLiquidity(address tokenAddress, uint256 minPrice, uint256 maxPrice) external payable {
         address poolAddress = factory.commodityPoolsByToken(tokenAddress);
         require(poolAddress != address(0), "No pool exists for this commodity");
+        require(participantRegistry.getParticipantByAddress(msg.sender).participantType == ParticipantRegistry.ParticipantType.Distributor, "Only Distributors can provide liquidity");
 
         CommodityPool(poolAddress).provideLiquidity{value: msg.value}(msg.sender, minPrice, maxPrice);
 
-        emit CommodityLPAdded(poolAddress);
+        emit LiquidityProvided(tokenAddress, msg.sender, msg.value, minPrice, maxPrice);
     }
 
-    function removeLiquidity(address tokenAddress, uint256 amount) external {
+    function addConsumerFunds(address tokenAddress) external payable {
         address poolAddress = factory.commodityPoolsByToken(tokenAddress);
         require(poolAddress != address(0), "No pool exists for this commodity");
+        require(participantRegistry.getParticipantByAddress(msg.sender).participantType == ParticipantRegistry.ParticipantType.Consumer, "Only consumers can add funds");
 
-        CommodityPool pool = CommodityPool(poolAddress);
-        pool.removeLiquidity(msg.sender, amount);
+        CommodityPool(poolAddress).consumerProvideFunds{value: msg.value}(msg.sender);
+
+        emit ConsumerFundsAdded(tokenAddress, msg.sender, msg.value);
     }
 
+    function distributorManualBuy(address tokenAddress, uint256 listingId, uint256 quantity) external {
+        address poolAddress = factory.commodityPoolsByToken(tokenAddress);
+        require(poolAddress != address(0), "No pool exists for this commodity");
+        require(participantRegistry.getParticipantByAddress(msg.sender).participantType == ParticipantRegistry.ParticipantType.Distributor, "Only Distributors can manually buy");
+
+        CommodityPool(poolAddress).distributorManualBuy(msg.sender, listingId, quantity);
+
+        emit DistributorPurchaseMade(tokenAddress, msg.sender, listingId, quantity);
+    }
+
+    function consumerBuyFromDistributor(address tokenAddress, address distributor, uint256 quantity) external {
+        address poolAddress = factory.commodityPoolsByToken(tokenAddress);
+        require(poolAddress != address(0), "No pool exists for this commodity");
+        require(participantRegistry.getParticipantByAddress(msg.sender).participantType == ParticipantRegistry.ParticipantType.Consumer, "Only consumers can buy from Distributors");
+
+        CommodityPool(poolAddress).consumerBuyFromDistributor(msg.sender, distributor, quantity);
+
+        emit ConsumerPurchaseMade(tokenAddress, msg.sender, distributor, quantity);
+    }
 }

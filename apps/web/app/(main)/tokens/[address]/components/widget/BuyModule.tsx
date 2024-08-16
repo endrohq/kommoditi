@@ -1,7 +1,5 @@
 "use client";
 
-import { ConfirmOrderForConsumer } from "@/app/(main)/tokens/[address]/components/widget/ConfirmOrderForConsumer";
-
 import { ButtonWithAuthentication } from "@/components/button/ButtonWithAuthentication";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { MinusOutlined } from "@/components/icons/MinusOutlined";
@@ -11,7 +9,7 @@ import { NumericInput } from "@/components/input/NumericInput";
 import { baseCommodityUnit, contracts } from "@/lib/constants";
 import { useAuth } from "@/providers/AuthProvider";
 import { useTokenPage } from "@/providers/TokenPageProvider";
-import { BuyModuleArgs, CommodityGroup, Region, TradeRoute } from "@/typings";
+import { BuyModuleArgs, Region, TradeRoute } from "@/typings";
 import { getCountryNameFromAddress } from "@/utils/commodity.utils";
 import { fetchWrapper } from "@/utils/fetch.utils";
 import { useQuery } from "@tanstack/react-query";
@@ -25,14 +23,10 @@ import toast from "react-hot-toast";
 import Select from "react-select";
 
 interface BuyModuleProps {
-	availableCountries?: Region[];
-	commodityGroup: CommodityGroup[];
+	countries?: Region[];
 }
 
-export function BuyModule({
-	availableCountries,
-	commodityGroup,
-}: BuyModuleProps) {
+export function BuyModule({ countries }: BuyModuleProps) {
 	const params = useSearchParams();
 	const { isAuthenticated, account } = useAuth();
 	const { commodity, currentPrice } = useTokenPage();
@@ -40,13 +34,13 @@ export function BuyModule({
 		{
 			address: contracts.commodityExchange.address,
 			abi: contracts.commodityExchange.abi,
-			functionName: "purchaseCommodityFromCTF",
+			functionName: "consumerBuyFromDistributor",
 			eventName: "CommodityPurchased",
 		},
 	);
 
 	const [form, setForm] = React.useState<Partial<BuyModuleArgs>>({
-		country: availableCountries?.find((c) => c.id === params.get("country")),
+		country: countries?.find((c) => c.id === params.get("country")),
 	});
 
 	const [hadCorrection, setHadCorrection] = React.useState(false);
@@ -59,7 +53,7 @@ export function BuyModule({
 		queryKey: [`trade-routes-${form?.country?.id}`],
 		queryFn: () =>
 			fetchWrapper<TradeRoute>(
-				`/api/intelligence/trade-routes?country=${form?.country?.id}&consumerId=${account?.address}&tokenAddress=${commodity?.tokenAddress}`,
+				`/api/intelligence/trade-routes?country=${form?.country?.id}&participantId=${account?.address}&tokenAddress=${commodity?.tokenAddress}`,
 			),
 		enabled: !!form?.country?.id,
 	});
@@ -151,7 +145,7 @@ export function BuyModule({
 						onChange={(option: any) =>
 							setForm({
 								...form,
-								country: availableCountries?.find(
+								country: countries?.find(
 									(country) => country.id === option?.value,
 								),
 							})
@@ -162,7 +156,7 @@ export function BuyModule({
 								value: form?.country?.id,
 							}
 						}
-						options={availableCountries?.map((country) => ({
+						options={countries?.map((country) => ({
 							label: country.name,
 							value: country.id,
 						}))}
@@ -176,8 +170,11 @@ export function BuyModule({
 							style={{ borderRight: "1px dashed #312E81" }}
 						/>
 
-						<div className="p-[1px] bg-indigo-950 rounded">
-							<div className="p-3 bg-white rounded-sm">
+						<div className=" rounded">
+							<div
+								style={{ border: "1px dashed #312E81" }}
+								className="p-3 bg-white rounded"
+							>
 								{tradeRouteLoading ? (
 									<div className="flex items-center space-x-2">
 										<LoadingOutlined className="text-sm text-gray-500" />
@@ -190,7 +187,7 @@ export function BuyModule({
 										<div className="p-2 pb-2.5 pt-1.5 bg-orange-50 rounded-full">
 											<PlaneOutlined className="text-xl leading-none text-orange-700" />
 										</div>
-										<div className="text-xs w-8/12">
+										<div className="text-sm w-8/12">
 											<span className="font-medium leading-normal text-black">
 												Trade routes found
 											</span>{" "}
@@ -207,7 +204,7 @@ export function BuyModule({
 										<div className="p-2 pb-2.5 pt-1.5 bg-red-50 rounded-full">
 											<MinusOutlined className="text-lg leading-none text-red-700" />
 										</div>
-										<div className="text-xs w-8/12">
+										<div className="text-sm w-8/12">
 											<span className="font-medium leading-normal text-black">
 												No trade routes found
 											</span>{" "}

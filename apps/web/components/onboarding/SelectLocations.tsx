@@ -55,7 +55,7 @@ export function SelectLocations({
 					stepIndex={4}
 					title="Define where your operating"
 					description={
-						type === ParticipantType.CTF ? (
+						type === ParticipantType.DISTRIBUTOR ? (
 							<>
 								As a <span className="font-semibold text-black">{type}</span>{" "}
 								you will define the{" "}
@@ -72,7 +72,7 @@ export function SelectLocations({
 					<SearchAddress
 						onRegionSelect={handleRegionSelect}
 						allowTypes={
-							type === ParticipantType.CTF
+							type === ParticipantType.DISTRIBUTOR
 								? [PlaceType.COUNTRY]
 								: [PlaceType.ADDRESS]
 						}

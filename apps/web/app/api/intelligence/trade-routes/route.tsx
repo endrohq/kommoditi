@@ -5,17 +5,17 @@ import { findTradingPartners } from "@/utils/overlap.utils";
 import supabase from "@/utils/supabase.utils";
 import { NextRequest, NextResponse } from "next/server";
 
-async function getConsumerDetails(
-	consumerId: string,
+async function getParticipantDetails(
+	participantId: string,
 ): Promise<ParticipantUserView | null> {
 	const { data, error } = await supabase
 		.from("participant")
 		.select("*,locations:location(*)")
-		.eq("id", consumerId)
+		.eq("id", participantId)
 		.single<ParticipantUserView>();
 
 	if (error) {
-		console.error("Error fetching consumer details:", error);
+		console.error("Error fetching participant details:", error);
 		return null;
 	}
 
@@ -51,34 +51,41 @@ async function getCommoditiesForParticipants(
 
 export async function GET(req: NextRequest) {
 	const { searchParams } = new URL(req.url);
-	const country = searchParams.get("country");
-	const consumerId = searchParams.get("consumerId");
+	const participantId = searchParams.get("participantId");
 	const tokenAddress = searchParams.get("tokenAddress");
+	const country = searchParams.get("country"); // Optional, only for consumers
 
-	if (!consumerId || !country || !tokenAddress) {
+	if (!participantId || !tokenAddress || !country) {
 		return NextResponse.json(
-			{ error: "consumerId, country and tokenAddress are required" },
+			{ error: "participantId and tokenAddress are required" },
 			{ status: 400 },
 		);
 	}
 
 	try {
-		const user = await getConsumerDetails(consumerId);
-		if (!user) {
-			return NextResponse.json({ error: "user not found" }, { status: 404 });
+		const participant = await getParticipantDetails(participantId);
+		if (!participant) {
+			return NextResponse.json(
+				{ error: "Participant not found" },
+				{ status: 404 },
+			);
 		}
 
-		const ctfs = await fetchParticipantsWithLocations(ParticipantType.CTF);
-		const eligibleCTFs = findTradingPartners(ctfs, user);
-
-		const filteredCTFs = ctfs?.filter(
-			(ctf) =>
-				eligibleCTFs.includes(ctf.id) && isParticipantInCountry(ctf, country),
+		const participants = await fetchParticipantsWithLocations(
+			participant.type === ParticipantType.CONSUMER
+				? ParticipantType.DISTRIBUTOR
+				: ParticipantType.PRODUCER,
+		);
+		const eligibleDistributors = findTradingPartners(participants, participant);
+		const partners = participants.filter(
+			(participant) =>
+				eligibleDistributors.includes(participant.id) &&
+				isParticipantInCountry(participant, country),
 		);
 
-		const filteredCTFIds = filteredCTFs.map((ctf) => ctf.id);
+		const filteredPartnerIds = partners.map((p) => p.id);
 		const allCommodities = await getCommoditiesForParticipants(
-			filteredCTFIds,
+			filteredPartnerIds,
 			tokenAddress,
 		);
 
@@ -92,14 +99,14 @@ export async function GET(req: NextRequest) {
 			{} as Record<string, number>,
 		);
 
-		const ctfsWithCommodities = filteredCTFs.map((partner) => ({
+		const partnersWithCommodities = partners.map((partner) => ({
 			partner,
 			quantity: commodityCounts[partner.id] || 0,
 		}));
 
 		return NextResponse.json({
-			options: ctfsWithCommodities,
-			destination: getCountryNameFromAddress(user.locations?.[0].name),
+			options: partnersWithCommodities,
+			destination: getCountryNameFromAddress(participant.locations?.[0].name),
 		});
 	} catch (error) {
 		console.error("Error processing trade route request:", error);

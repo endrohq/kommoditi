@@ -1,14 +1,14 @@
 import { CommodityPoolLiquidity } from "@/typings";
 
 export function processPriceDistribution(
-	ctfLiquidities: CommodityPoolLiquidity[] = [],
+	distributorLiquidities: CommodityPoolLiquidity[] = [],
 	steps: number = 50,
 ) {
-	if (ctfLiquidities.length === 0) return [];
-	const data = ctfLiquidities || [];
+	if (distributorLiquidities.length === 0) return [];
+	const data = distributorLiquidities || [];
 
-	const minPrice = Math.min(...data.map((ctf) => ctf.minPrice));
-	const maxPrice = Math.max(...data.map((ctf) => ctf.maxPrice));
+	const minPrice = Math.min(...data.map((distributor) => distributor.minPrice));
+	const maxPrice = Math.max(...data.map((distributor) => distributor.maxPrice));
 
 	const range = maxPrice - minPrice;
 	const stepSize = range / steps;
@@ -19,9 +19,10 @@ export function processPriceDistribution(
 		const price = minPrice + i * stepSize;
 		let totalLiquidity = 0;
 
-		for (const ctf of ctfLiquidities) {
-			if (price >= ctf.minPrice && price <= ctf.maxPrice) {
-				const liquidityAtPrice = ctf.amount / (ctf.maxPrice - ctf.minPrice);
+		for (const distributor of distributorLiquidities) {
+			if (price >= distributor.minPrice && price <= distributor.maxPrice) {
+				const liquidityAtPrice =
+					distributor.amount / (distributor.maxPrice - distributor.minPrice);
 				totalLiquidity += liquidityAtPrice;
 			}
 		}

@@ -27,28 +27,34 @@ export function CurrentLpDistributions({
 }: CurrentLpDistributionsProps) {
 	const { commodity } = useTokenPage();
 
-	const { data: ctfLiquidityData, isLoading } = useReadContract({
+	const { data: distributorLiquidityData, isLoading } = useReadContract({
 		address: commodity?.poolAddress,
 		abi: contracts.commodityPool.abi,
-		functionName: "getAllCTFLiquidity",
+		functionName: "getAllDistributorLiquidity",
 	});
 
-	const ctfLiquidity = useMemo(() => {
-		if (!ctfLiquidityData) return [];
-		return formatLpLiquidities(ctfLiquidityData as CommodityPoolLiquidity[]);
-	}, [ctfLiquidityData]);
+	const distributorLiquidity = useMemo(() => {
+		if (!distributorLiquidityData) return [];
+		return formatLpLiquidities(
+			distributorLiquidityData as CommodityPoolLiquidity[],
+		);
+	}, [distributorLiquidityData]);
 
-	const ctfPriceDistributionDataSet = useMemo(() => {
-		if (!ctfLiquidity) return [];
-		return processPriceDistribution(ctfLiquidity);
-	}, [ctfLiquidity]);
+	const distributorPriceDistributionDataSet = useMemo(() => {
+		if (!distributorLiquidity) return [];
+		return processPriceDistribution(distributorLiquidity);
+	}, [distributorLiquidity]);
 
 	const [globalMinPrice, globalMaxPrice] = useMemo(() => {
-		if (!ctfLiquidity) return [1, 2];
-		const min = Math.min(...ctfLiquidity.map((ctf) => ctf.minPrice));
-		const max = Math.max(...ctfLiquidity.map((ctf) => ctf.maxPrice));
+		if (!distributorLiquidity) return [1, 2];
+		const min = Math.min(
+			...distributorLiquidity.map((distributor) => distributor.minPrice),
+		);
+		const max = Math.max(
+			...distributorLiquidity.map((distributor) => distributor.maxPrice),
+		);
 		return [min === Infinity ? 0 : min, max === -Infinity ? 1 : max];
-	}, [ctfLiquidity]);
+	}, [distributorLiquidity]);
 
 	const chartOptions: AreaChartOptions = {
 		axes: {
@@ -107,7 +113,7 @@ export function CurrentLpDistributions({
 		);
 	}
 
-	if (!ctfPriceDistributionDataSet.length && !isLoading) {
+	if (!distributorPriceDistributionDataSet.length && !isLoading) {
 		return (
 			<div className="bg-gray-300 rounded h-[150px] w-full place-content-center text-center">
 				<span className="text-sm text-gray-400 w-7/12">
@@ -119,7 +125,10 @@ export function CurrentLpDistributions({
 
 	return (
 		<div className="!w-full relative">
-			<AreaChart data={ctfPriceDistributionDataSet} options={chartOptions} />
+			<AreaChart
+				data={distributorPriceDistributionDataSet}
+				options={chartOptions}
+			/>
 			<TimeWindowOverlay
 				minPrice={minPrice}
 				maxPrice={maxPrice}

@@ -79,10 +79,10 @@ export const participantsOnDevnet = [
     ]
   },
   {
-    id: 'createCtfOne',
-    name: 'CTF One',
-    account: process.env.CTF_ONE_ACCOUNT || '',
-    privateKey: process.env.CTF_ONE_PK || '',
+    id: 'createDistributorOne',
+    name: 'Distributor One',
+    account: process.env.DISTRIBUTOR_ONE_ACCOUNT || '',
+    privateKey: process.env.DISTRIBUTOR_ONE_PK || '',
     overheadPercentage: 2500,
     type: 1,
     locations: [
@@ -103,10 +103,10 @@ export const participantsOnDevnet = [
     ]
   },
   {
-    id: 'createCtfTwo',
-    name: 'CTF Two',
-    account: process.env.CTF_TWO_ACCOUNT || '',
-    privateKey: process.env.CTF_TWO_PK || '',
+    id: 'createDistributorTwo',
+    name: 'Distributor Two',
+    account: process.env.DISTRIBUTOR_TWO_ACCOUNT || '',
+    privateKey: process.env.DISTRIBUTOR_TWO_PK || '',
     overheadPercentage: 2500,
     type: 1,
     locations: [
@@ -127,10 +127,10 @@ export const participantsOnDevnet = [
     ]
   },
   {
-    id: 'createCtfThree',
-    name: 'CTF Three',
-    account: process.env.CTF_THREE_ACCOUNT || '',
-    privateKey: process.env.CTF_THREE_PK || '',
+    id: 'createDistributorThree',
+    name: 'Distributor Three',
+    account: process.env.DISTRIBUTOR_THREE_ACCOUNT || '',
+    privateKey: process.env.DISTRIBUTOR_THREE_PK || '',
     overheadPercentage: 2500,
     type: 1,
     locations: [

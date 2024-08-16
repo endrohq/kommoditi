@@ -1,12 +1,5 @@
 "use client";
 
-import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
-import { useTokenPage } from "@/providers/TokenPageProvider";
-import { EthAddress } from "@/typings";
-import { getShortenedFormat } from "@/utils/address.utils";
-import { getDistanceForDate } from "@/utils/date.utils";
-import { getProfileRoute } from "@/utils/route.utils";
-import { formatTransactionType } from "@/utils/transaction.utils";
 import {
 	Table,
 	TableBody,
@@ -16,7 +9,6 @@ import {
 	TableHeader,
 	TableRow,
 } from "@carbon/react";
-import Link from "next/link";
 import React from "react";
 
 export function TransactionList() {
