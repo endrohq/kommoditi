@@ -5,7 +5,7 @@ import { CommodityPricePoint } from "@/typings";
 import { fetchWrapper } from "@/utils/fetch.utils";
 import { AreaChart, AreaChartOptions, ScaleTypes } from "@carbon/charts-react";
 import { useQuery } from "@tanstack/react-query";
-import React from "react";
+import React, { useEffect } from "react";
 import "@carbon/charts/styles.css";
 import { nFormatter } from "@/utils/number.utils";
 import { format } from "date-fns";
@@ -16,7 +16,7 @@ type PriceEndpointResult = {
 };
 
 export function PriceChart() {
-	const { commodity } = useTokenPage();
+	const { commodity, setCurrentPrice } = useTokenPage();
 	const [displayedPrice, setDisplayedPrice] = React.useState<number>();
 
 	const { data, isLoading } = useQuery({
@@ -26,6 +26,13 @@ export function PriceChart() {
 				`/api/tokens/${commodity?.tokenAddress}/price`,
 			),
 	});
+
+	useEffect(() => {
+		console.log({ priceData: data });
+		if (data?.currentPrice) {
+			setCurrentPrice(data.currentPrice);
+		}
+	}, [data]);
 
 	const currentPrice = data?.currentPrice;
 	const history = data?.history || [];

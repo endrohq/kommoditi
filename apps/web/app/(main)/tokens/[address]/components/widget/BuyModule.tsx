@@ -45,7 +45,6 @@ export function BuyModule({
 		data: tradeRoute,
 		isLoading: tradeRouteLoading,
 		refetch,
-		error,
 	} = useQuery({
 		queryKey: [`trade-routes-${form?.country?.id}`],
 		queryFn: () =>
@@ -67,6 +66,10 @@ export function BuyModule({
 	);
 
 	const activeTradeRoutePartner = tradeRoute?.ctfs?.[0];
+
+	const quantityOfRoutePartner = activeCommodityByRegion?.owners?.find(
+		(owner) => owner.ownerId === activeTradeRoutePartner?.id,
+	)?.quantity;
 
 	const countryOfUser = getCountryNameFromAddress(
 		account?.locations?.[0]?.name || "",
@@ -166,7 +169,7 @@ export function BuyModule({
 							placeholder="0"
 							max={
 								activeCommodityByRegion && activeTradeRoutePartner?.id
-									? activeCommodityByRegion.quantity
+									? quantityOfRoutePartner || 0
 									: undefined
 							}
 							className="text-lg font-medium"
@@ -193,7 +196,7 @@ export function BuyModule({
 							<span className="font-medium">
 								{activeTradeRoutePartner?.name}
 							</span>
-							: {activeCommodityByRegion?.quantity}
+							: {quantityOfRoutePartner || 0}
 							{baseCommodityUnit}
 						</span>
 					)}

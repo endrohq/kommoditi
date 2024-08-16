@@ -1,3 +1,4 @@
+import { CommodityPricePoint, PriceUpdated } from "@/typings";
 import supabase from "@/utils/supabase.utils";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -9,35 +10,15 @@ export async function GET(
 	now.setMinutes(now.getMinutes() - (now.getMinutes() % 5), 0, 0); // Round to nearest 5-minute interval
 	const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-	// First, get the last known price before the 24-hour window
-	const { data: lastKnownPriceData, error: lastKnownPriceError } =
-		await supabase
-			.from("commodityPrice")
-			.select("createdAt, price")
-			.eq("tokenAddress", params.tokenAddress)
-			.lt("createdAt", twentyFourHoursAgo.toISOString())
-			.order("createdAt", { ascending: false })
-			.limit(1);
-
-	const currentPrice =
-		lastKnownPriceData && lastKnownPriceData.length > 0
-			? lastKnownPriceData[0].price
-			: null;
-
-	if (lastKnownPriceError) {
-		return NextResponse.json(
-			{ error: lastKnownPriceError.message },
-			{ status: 500 },
-		);
-	}
-
-	// Then, get the data for the last 24 hours
+	// Get all price entries for the last 24 hours
 	const { data: recentData, error: recentDataError } = await supabase
 		.from("commodityPrice")
 		.select("createdAt, price")
 		.eq("tokenAddress", params.tokenAddress)
 		.gte("createdAt", twentyFourHoursAgo.toISOString())
-		.order("createdAt", { ascending: true });
+		.lte("createdAt", now.toISOString())
+		.order("createdAt", { ascending: true })
+		.returns<PriceUpdated[]>();
 
 	if (recentDataError) {
 		return NextResponse.json(
@@ -46,12 +27,36 @@ export async function GET(
 		);
 	}
 
-	const history = processDataWithGapFilling(
-		recentData,
-		twentyFourHoursAgo,
-		now,
-		currentPrice,
-	);
+	let currentPrice: number | null = null;
+	let history: CommodityPricePoint[] = [];
+
+	if (recentData && recentData.length > 0) {
+		currentPrice = recentData[recentData.length - 1].price;
+		history = processDataWithGapFilling(recentData, twentyFourHoursAgo, now);
+	} else {
+		// If no data in the last 24 hours, check for the most recent price before that
+		const { data: lastKnownPriceData, error: lastKnownPriceError } =
+			await supabase
+				.from("commodityPrice")
+				.select("createdAt, price")
+				.eq("tokenAddress", params.tokenAddress)
+				.lt("createdAt", twentyFourHoursAgo.toISOString())
+				.order("createdAt", { ascending: false })
+				.limit(1)
+				.returns<PriceUpdated[]>();
+
+		if (lastKnownPriceError) {
+			return NextResponse.json(
+				{ error: lastKnownPriceError.message },
+				{ status: 500 },
+			);
+		}
+
+		if (lastKnownPriceData && lastKnownPriceData.length > 0) {
+			currentPrice = lastKnownPriceData[0].price;
+			history = generateStaticHistory(currentPrice, twentyFourHoursAgo, now);
+		}
+	}
 
 	return NextResponse.json({
 		currentPrice,
@@ -60,37 +65,62 @@ export async function GET(
 }
 
 function processDataWithGapFilling(
-	data: any[],
+	data: PriceUpdated[],
 	start: Date,
 	end: Date,
-	initialPrice: number | null,
-) {
-	const processedData = [];
+): CommodityPricePoint[] {
+	const processedData: CommodityPricePoint[] = [];
 	const interval = 5 * 60 * 1000; // 5 minutes in milliseconds
 	let currentTime = new Date(start);
-	let lastKnownPrice = initialPrice;
-
 	let dataIndex = 0;
+	let lastKnownPrice: number | null = null;
 
 	while (currentTime <= end) {
 		const timeString = currentTime.toISOString();
+		let price: number | null = null;
 
-		// Find the next data point that matches or exceeds the current time
+		// Find the latest data point that falls within or before this 5-minute interval
 		while (
 			dataIndex < data.length &&
 			new Date(data[dataIndex].createdAt) <= currentTime
 		) {
-			lastKnownPrice = data[dataIndex].price;
+			price = data[dataIndex].price;
+			lastKnownPrice = price;
 			dataIndex++;
+		}
+
+		// If no price found for this interval, use the last known price
+		if (price === null && lastKnownPrice !== null) {
+			price = lastKnownPrice;
 		}
 
 		processedData.push({
 			timestamp: timeString,
-			price: lastKnownPrice,
+			price: price,
 		});
 
 		currentTime = new Date(currentTime.getTime() + interval);
 	}
 
 	return processedData;
+}
+
+function generateStaticHistory(
+	price: number,
+	start: Date,
+	end: Date,
+): CommodityPricePoint[] {
+	const staticData: CommodityPricePoint[] = [];
+	const interval = 5 * 60 * 1000; // 5 minutes in milliseconds
+	let currentTime = new Date(start);
+
+	while (currentTime <= end) {
+		staticData.push({
+			timestamp: currentTime.toISOString(),
+			price: price,
+		});
+		currentTime = new Date(currentTime.getTime() + interval);
+	}
+
+	return staticData;
 }

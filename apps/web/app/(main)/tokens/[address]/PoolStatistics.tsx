@@ -31,7 +31,7 @@ export function PoolStatistics() {
 				value={`${
 					liquidityData
 						? formatNumber(formatEther(liquidityData as bigint))
-						: "-"
+						: "0"
 				} HBAR`}
 			/>
 			<Statistic

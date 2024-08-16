@@ -22,7 +22,7 @@ export function ConfirmOrderForConsumer({
 	onClose,
 	ctfs,
 }: ConfirmOrderForConsumerProps) {
-	const { commodity } = useTokenPage();
+	const { commodity, currentPrice } = useTokenPage();
 	const { writeToContract, isSubmitting, isSuccess } = usePublishTx({
 		address: contracts.commodityExchange.address,
 		abi: contracts.commodityExchange.abi,
@@ -37,7 +37,25 @@ export function ConfirmOrderForConsumer({
 		}
 	}, []);
 
-	const activeCtfAddress = ctfs?.[0]?.id;
+	function calculateTotalPrice() {
+		if (!currentPrice) return;
+		const basePrice = currentPrice * quantity;
+		const overheadFee = (basePrice / 100) * 25;
+		return basePrice + overheadFee;
+	}
+
+	async function handlePurchase() {
+		try {
+			const activeCtfAddress = ctfs?.[0]?.id;
+			const totalPrice = calculateTotalPrice();
+			writeToContract(
+				[commodity?.tokenAddress, activeCtfAddress, quantity],
+				totalPrice?.toString(),
+			);
+		} catch (error) {
+			console.error("Transaction failed:", error);
+		}
+	}
 
 	return (
 		<Modal open onClose={onClose}>
@@ -51,9 +69,7 @@ export function ConfirmOrderForConsumer({
 				</div>
 			</div>
 			<Button
-				onClick={() =>
-					writeToContract([commodity?.tokenAddress, activeCtfAddress, quantity])
-				}
+				onClick={handlePurchase}
 				loading={isSubmitting}
 				variant="secondary"
 				fullWidth

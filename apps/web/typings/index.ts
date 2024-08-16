@@ -75,10 +75,9 @@ export type CommodityToken = {
 
 export type PoolTransactionType =
 	| "LiquidityChanged"
-	| "CTFPurchase"
-	| "CommodityPurchased"
+	| "CTFPurchased"
+	| "ConsumerPurchased"
 	| "PriceUpdated"
-	| "SerialNumberStatusChanged"
 	| "ListingAdded"
 	| "ListingSold";
 
@@ -86,10 +85,16 @@ export const poolTransactionTypes: PoolTransactionType[] = [
 	"ListingAdded",
 	"ListingSold",
 	"LiquidityChanged",
-	"CTFPurchase",
-	"CommodityPurchased",
+	"CTFPurchased",
+	"ConsumerPurchased",
 	"PriceUpdated",
 ];
+
+export enum CommodityStatus {
+	LISTED = "LISTED",
+	PURCHASED_BY_CTF = "PURCHASED_BY_CTF",
+	PURCHASED_BY_CONSUMER = "PURCHASED_BY_CONSUMER",
+}
 
 export interface CommodityPoolLiquidity {
 	ctf: string;
@@ -118,21 +123,20 @@ export interface BlockchainConfig {
 }
 
 export type BasePoolEvent = {
-	tokenAddress?: EthAddress;
-	type?: string;
+	id?: number;
+	tokenAddress: EthAddress;
+	type: PoolTransactionType;
+	createdAt: Date;
 	transactionHash: string;
 };
 
 export type ListingAdded = BasePoolEvent & {
-	id?: number;
 	listingId: number;
-	producer: string;
+	producerId: string;
 	serialNumbers: number[];
-	createdAt: Date;
 };
 
 export type ListingSold = BasePoolEvent & {
-	id?: number;
 	listingId: number;
 	buyer: string;
 	serialNumber: number;
@@ -141,7 +145,6 @@ export type ListingSold = BasePoolEvent & {
 };
 
 export type LiquidityChanged = BasePoolEvent & {
-	id?: number;
 	ctf: string;
 	amount: number;
 	minPrice: number;
@@ -149,48 +152,34 @@ export type LiquidityChanged = BasePoolEvent & {
 	isAdding: boolean;
 };
 
-export type CTFPurchase = BasePoolEvent & {
-	id?: number;
-	ctf: string;
+export type CTFPurchased = BasePoolEvent & {
+	ctfId: string;
 	listingId: number;
-	producer: string;
+	producerId: string;
 	serialNumbers: number[];
 	price: number;
 	totalPrice: number;
 };
 
-export type CommodityPurchased = BasePoolEvent & {
-	id?: number;
-	buyer: string;
-	ctf: string;
+export type ConsumerPurchased = BasePoolEvent & {
+	consumerId: string;
+	ctfId: string;
 	serialNumbers: number[];
-	quantity: number;
-	basePrice: number;
-	ctfFee: string;
+	price: number;
+	totalPrice: number;
 };
 
 export type PriceUpdated = BasePoolEvent & {
-	id?: number;
 	price: number;
-};
-
-export type SerialNumberStatusChanged = BasePoolEvent & {
-	id?: number;
-	serialNumber: number;
-	previousOwner: string;
-	newOwner: string;
-	status: string;
-	createdAt: Date;
 };
 
 export type PoolEvent =
 	| ListingAdded
 	| ListingSold
 	| LiquidityChanged
-	| CTFPurchase
-	| CommodityPurchased
-	| PriceUpdated
-	| SerialNumberStatusChanged;
+	| CTFPurchased
+	| ConsumerPurchased
+	| PriceUpdated;
 
 export type PoolTransaction = {
 	id: EthAddress;
@@ -312,8 +301,8 @@ export interface CommodityGroup {
 }
 
 export type CommodityPricePoint = {
-	price: number;
-	timestamp: Date;
+	price: number | null;
+	timestamp: string;
 };
 
 export type TradeRoute = {

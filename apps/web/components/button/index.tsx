@@ -50,6 +50,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 			fullWidth,
 			children,
 			icon,
+			disabled,
 			...props
 		},
 		ref,
@@ -62,7 +63,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 					className,
 				)}
 				ref={ref}
-				disabled={props.disabled || loading}
+				disabled={disabled || loading}
 				{...props}
 			>
 				{loading ? (

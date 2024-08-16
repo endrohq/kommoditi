@@ -1,8 +1,8 @@
 import {
-	CTFPurchase,
+	CTFPurchased,
 	CommodityListing,
-	CommodityPurchased,
 	CommodityToken,
+	ConsumerPurchased,
 	GetAllPoolsResponse,
 	GetCommodityResponse,
 	LiquidityChanged,
@@ -10,7 +10,6 @@ import {
 	ParticipantType,
 	PoolEvent,
 	PriceUpdated,
-	SerialNumberStatusChanged,
 } from "@/typings";
 import { parseSmartContractDate } from "@/utils/date.utils";
 import { parseSmToNumberFormat } from "@/utils/number.utils";
@@ -88,6 +87,7 @@ export function parseSmCommodityPoolEvent(
 		type: log.eventName,
 		tokenAddress: token?.tokenAddress,
 		transactionHash: log.transactionHash,
+		createdAt: parseSmartContractDate(event.timestamp),
 	};
 
 	switch (baseEvent.type) {
@@ -95,9 +95,8 @@ export function parseSmCommodityPoolEvent(
 			return {
 				...baseEvent,
 				listingId: Number(event.listingId),
-				producer: event.producer,
+				producerId: event.producerId,
 				serialNumbers: event.serialNumbers.map((sn: any) => Number(sn)),
-				createdAt: parseSmartContractDate(event.timestamp),
 			} as ListingAdded;
 
 		case "LiquidityChanged":
@@ -110,27 +109,26 @@ export function parseSmCommodityPoolEvent(
 				isAdding: event.isAdding,
 			} as LiquidityChanged;
 
-		case "CTFPurchase":
+		case "CTFPurchased":
 			return {
 				...baseEvent,
-				ctf: event.ctf,
-				producer: event.producer,
+				ctfId: event.to,
+				producerId: event.from,
 				listingId: Number(event.listingId),
 				serialNumbers: event.serialNumbers.map((sn: any) => Number(sn)),
 				price: parseSmToNumberFormat(Number(event.price)),
 				totalPrice: parseSmToNumberFormat(Number(event.totalPrice)),
-			} as CTFPurchase;
+			} as CTFPurchased;
 
-		case "CommodityPurchased":
+		case "ConsumerPurchased":
 			return {
 				...baseEvent,
-				buyer: event.buyer,
-				ctf: event.ctf,
+				consumerId: event.to,
+				ctfId: event.from,
 				serialNumbers: event.serialNumbers.map((sn: any) => Number(sn)),
-				quantity: Number(event.quantity),
-				basePrice: Number(event.basePrice),
-				ctfFee: event.ctfFee.toString(),
-			} as CommodityPurchased;
+				price: Number(event.basePrice),
+				totalPrice: Number(event.totalPrice),
+			} as ConsumerPurchased;
 
 		case "PriceUpdated":
 			return {
@@ -138,16 +136,6 @@ export function parseSmCommodityPoolEvent(
 				price: parseSmToNumberFormat(Number(event.newPrice)),
 				tokenAddress: token?.tokenAddress,
 			} as PriceUpdated;
-
-		case "SerialNumberStatusChanged":
-			return {
-				...baseEvent,
-				serialNumber: Number(event.serialNumber),
-				previousOwner: event.previousOwner,
-				newOwner: event.newOwner,
-				status: event.status,
-				createdAt: parseSmartContractDate(event.timestamp),
-			} as SerialNumberStatusChanged;
 		default:
 			throw new Error(`Unsupported event type: ${baseEvent.type}`);
 	}

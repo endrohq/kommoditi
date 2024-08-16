@@ -36,13 +36,13 @@
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "ctf",
+				"name": "from",
 				"type": "address"
 			},
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "producer",
+				"name": "to",
 				"type": "address"
 			},
 			{
@@ -70,7 +70,7 @@
 				"type": "uint256"
 			}
 		],
-		"name": "CTFPurchase",
+		"name": "CTFPurchased",
 		"type": "event"
 	},
 	{
@@ -79,13 +79,13 @@
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "buyer",
+				"name": "from",
 				"type": "address"
 			},
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "ctf",
+				"name": "to",
 				"type": "address"
 			},
 			{
@@ -97,23 +97,17 @@
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "quantity",
+				"name": "price",
 				"type": "uint256"
 			},
 			{
 				"indexed": false,
 				"internalType": "uint256",
-				"name": "basePrice",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "ctfFee",
+				"name": "totalPrice",
 				"type": "uint256"
 			}
 		],
-		"name": "CommodityPurchased",
+		"name": "ConsumerPurchased",
 		"type": "event"
 	},
 	{
@@ -165,7 +159,7 @@
 			{
 				"indexed": true,
 				"internalType": "address",
-				"name": "producer",
+				"name": "producerId",
 				"type": "address"
 			},
 			{
@@ -195,43 +189,6 @@
 			}
 		],
 		"name": "PriceUpdated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "int64",
-				"name": "serialNumber",
-				"type": "int64"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "previousOwner",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "newOwner",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "status",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			}
-		],
-		"name": "SerialNumberStatusChanged",
 		"type": "event"
 	},
 	{

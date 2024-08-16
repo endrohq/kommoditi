@@ -57,26 +57,17 @@ contract CommodityPool {
 
     // Not in sync with frontend
 
-    event ListingAdded(uint256 indexed listingId, address indexed producer, int64[] serialNumbers, uint256 timestamp);
+    event ListingAdded(uint256 indexed listingId, address indexed producerId, int64[] serialNumbers, uint256 timestamp);
     event LiquidityChanged(address ctf, uint256 amount, uint256 minPrice, uint256 maxPrice, bool isAdding);
-    event CTFPurchase(address indexed ctf, address indexed producer, uint256 listingId, int64[] serialNumbers, uint256 price, uint256 totalPrice);
-    event CommodityPurchased(
-        address indexed buyer,
-        address indexed ctf,
+    event CTFPurchased(address indexed from, address indexed to, uint256 listingId, int64[] serialNumbers, uint256 price, uint256 totalPrice);
+    event ConsumerPurchased(
+        address indexed from,
+        address indexed to,
         int64[] serialNumbers,
-        uint256 quantity,
-        uint256 basePrice,
-        uint256 ctfFee
+        uint256 price,
+        uint256 totalPrice
     );
     event PriceUpdated(uint256 newPrice);
-
-    event SerialNumberStatusChanged(
-        int64 indexed serialNumber,
-        address indexed previousOwner,
-        address indexed newOwner,
-        string status,
-        uint256 timestamp
-    );
 
     constructor(address _tokenAddress, address _tokenAuthority, address _commodityExchange, address _participantRegistry, bool isHedera) {
         tokenAddress = _tokenAddress;
@@ -84,6 +75,7 @@ contract CommodityPool {
         commodityExchange = _commodityExchange;
         participantRegistry = ParticipantRegistry(_participantRegistry);
         currentPrice = isHedera ? HEDERA_BASE_PRICE : ETHEREUM_BASE_PRICE;
+        emit PriceUpdated(currentPrice);
     }
 
     modifier onlyCommodityExchange() {
@@ -183,7 +175,7 @@ contract CommodityPool {
         // Transfer payment
         payable(ctf).transfer(totalPrice);
 
-        emit CommodityPurchased(buyer, ctf, purchasedSerialNumbers, quantity, basePrice, ctfFee);
+        emit ConsumerPurchased(ctf, buyer, purchasedSerialNumbers, currentPrice, totalPrice);
 
         adjustPrice(true);
     }
@@ -269,7 +261,7 @@ contract CommodityPool {
         totalLiquidity -= totalPrice;
         payable(listing.producer).transfer(totalPrice);
 
-        emit CTFPurchase(ctf, listing.producer, listingId, listing.serialNumbers, currentPrice, totalPrice);
+        emit CTFPurchased(ctf, listing.producer, listingId, listing.serialNumbers, currentPrice, totalPrice);
         listing.active = false;
 
         adjustPrice(true);

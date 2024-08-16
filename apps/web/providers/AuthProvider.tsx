@@ -55,7 +55,6 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 				const response = await fetchWrapper<Participant>(
 					`/api/participants/${address}`,
 				);
-				console.log({ response });
 				setParticipant(response);
 			} catch (error) {
 				console.error(error);
@@ -89,7 +88,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 			logout: () => logout(),
 			isLoading: !ready || isLoading,
 		}),
-		[isLoading, participant, authenticated],
+		[isLoading, ready, participant, authenticated, user],
 	);
 
 	return (
