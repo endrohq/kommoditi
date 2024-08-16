@@ -61,19 +61,21 @@ export default function Page() {
 		}
 	}, [ctfLiquidityDetails, currentPrice]);
 
-	const { writeToContract, isSuccess, isSubmitting } = usePublishTx({
-		address: contracts.commodityExchange.address,
-		abi: contracts.commodityExchange.abi,
-		functionName: "provideLiquidity",
-		eventName: "CommodityLPAdded",
-	});
+	const { writeToContract, isSuccessFullPurchase, isSubmitting } = usePublishTx(
+		{
+			address: contracts.commodityExchange.address,
+			abi: contracts.commodityExchange.abi,
+			functionName: "provideLiquidity",
+			eventName: "CommodityLPAdded",
+		},
+	);
 
 	useEffect(() => {
-		if (isSuccess) {
+		if (isSuccessFullPurchase) {
 			toast.success("Liquidity added successfully");
 			router.push(getTokenPage(commodity.tokenAddress));
 		}
-	}, [isSuccess]);
+	}, [isSuccessFullPurchase]);
 
 	function handleAddLiquidity() {
 		const parsedMinPrice = parseNumberToSmFormat(roundToTwoDecimals(minPrice));

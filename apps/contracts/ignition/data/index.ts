@@ -83,7 +83,7 @@ export const participantsOnDevnet = [
     name: 'CTF One',
     account: process.env.CTF_ONE_ACCOUNT || '',
     privateKey: process.env.CTF_ONE_PK || '',
-    overheadPercentage: 25,
+    overheadPercentage: 2500,
     type: 1,
     locations: [
       {
@@ -107,7 +107,7 @@ export const participantsOnDevnet = [
     name: 'CTF Two',
     account: process.env.CTF_TWO_ACCOUNT || '',
     privateKey: process.env.CTF_TWO_PK || '',
-    overheadPercentage: 25,
+    overheadPercentage: 2500,
     type: 1,
     locations: [
       {
@@ -131,7 +131,7 @@ export const participantsOnDevnet = [
     name: 'CTF Three',
     account: process.env.CTF_THREE_ACCOUNT || '',
     privateKey: process.env.CTF_THREE_PK || '',
-    overheadPercentage: 25,
+    overheadPercentage: 2500,
     type: 1,
     locations: [
       {

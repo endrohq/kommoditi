@@ -23,33 +23,35 @@ export function ConfirmOrderForConsumer({
 	ctfs,
 }: ConfirmOrderForConsumerProps) {
 	const { commodity, currentPrice } = useTokenPage();
-	const { writeToContract, isSubmitting, isSuccess } = usePublishTx({
-		address: contracts.commodityExchange.address,
-		abi: contracts.commodityExchange.abi,
-		functionName: "purchaseCommodityFromCTF",
-		eventName: "CommodityPurchased",
-	});
+	const { writeToContract, isSubmitting, isSuccessFullPurchase } = usePublishTx(
+		{
+			address: contracts.commodityExchange.address,
+			abi: contracts.commodityExchange.abi,
+			functionName: "purchaseCommodityFromCTF",
+			eventName: "CommodityPurchased",
+		},
+	);
 
 	useEffect(() => {
-		if (isSuccess) {
+		if (isSuccessFullPurchase) {
 			toast.success("Commodity purchased successfully");
 			onClose();
 		}
 	}, []);
 
-	function calculateTotalPrice() {
+	function calculateTotalPrice(overheadPercentage: number) {
 		if (!currentPrice) return;
 		const basePrice = currentPrice * quantity;
-		const overheadFee = (basePrice / 100) * 25;
+		const overheadFee = (basePrice * overheadPercentage) / 10000; // Using basis points
 		return basePrice + overheadFee;
 	}
 
 	async function handlePurchase() {
 		try {
-			const activeCtfAddress = ctfs?.[0]?.id;
-			const totalPrice = calculateTotalPrice();
+			const activeCtf = ctfs?.[0];
+			const totalPrice = calculateTotalPrice(activeCtf?.overheadPercentage);
 			writeToContract(
-				[commodity?.tokenAddress, activeCtfAddress, quantity],
+				[commodity?.tokenAddress, activeCtf?.id, quantity],
 				totalPrice?.toString(),
 			);
 		} catch (error) {

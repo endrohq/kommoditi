@@ -36,7 +36,7 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 	const {
 		writeToContract: register,
 		isSubmitting,
-		isSuccess,
+		isSuccessFullPurchase,
 		error,
 	} = usePublishTx({
 		address: contracts.participantRegistry.address,
@@ -45,7 +45,7 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 		eventName: "ParticipantRegistered",
 	});
 
-	const isSuccessDebounced = useDebouncedValue(isSuccess, 300);
+	const isSuccessDebounced = useDebouncedValue(isSuccessFullPurchase, 300);
 
 	useEffect(() => {
 		if (participant?.locations && participant?.locations?.length > 0) {
@@ -115,7 +115,7 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 							"w-32 aspect-square  mb-10 rounded-full flex flex-col items-center justify-center",
 							{
 								"animate-pulse bg-gray-50": isSubmitting,
-								"bg-green-50": isSuccess,
+								"bg-green-50": isSuccessFullPurchase,
 							},
 						)}
 					>

@@ -28,7 +28,7 @@ export function CreateCommodityModal({
 	const {
 		writeToContract: registerCommodity,
 		isSubmitting,
-		isSuccess,
+		isSuccessFullPurchase,
 	} = usePublishTx({
 		address: tokenAuthority.address,
 		abi: tokenAuthority.abi,
@@ -37,12 +37,12 @@ export function CreateCommodityModal({
 	});
 
 	useEffect(() => {
-		if (isSuccess) {
+		if (isSuccessFullPurchase) {
 			toast.success("Commodity created successfully");
 			setCommodity({});
 			onSuccess();
 		}
-	}, [isSuccess]);
+	}, [isSuccessFullPurchase]);
 
 	function handleCancel() {
 		setCommodity({});

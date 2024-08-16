@@ -126,8 +126,8 @@ export function parseSmCommodityPoolEvent(
 				consumerId: event.to,
 				ctfId: event.from,
 				serialNumbers: event.serialNumbers.map((sn: any) => Number(sn)),
-				price: Number(event.basePrice),
-				totalPrice: Number(event.totalPrice),
+				price: parseSmToNumberFormat(Number(event.price)),
+				totalPrice: parseSmToNumberFormat(Number(event.totalPrice)),
 			} as ConsumerPurchased;
 
 		case "PriceUpdated":

@@ -261,7 +261,7 @@ contract CommodityPool {
         totalLiquidity -= totalPrice;
         payable(listing.producer).transfer(totalPrice);
 
-        emit CTFPurchased(ctf, listing.producer, listingId, listing.serialNumbers, currentPrice, totalPrice);
+        emit CTFPurchased(listing.producer, ctf, listingId, listing.serialNumbers, currentPrice, totalPrice);
         listing.active = false;
 
         adjustPrice(true);

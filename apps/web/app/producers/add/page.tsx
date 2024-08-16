@@ -25,7 +25,7 @@ export default function Page() {
 	const {
 		writeToContract: listCommodity,
 		isSubmitting,
-		isSuccess,
+		isSuccessFullPurchase,
 		error,
 	} = usePublishTx({
 		address: contracts.commodityExchange.address,
@@ -35,11 +35,11 @@ export default function Page() {
 	});
 
 	useEffect(() => {
-		if (isSuccess) {
+		if (isSuccessFullPurchase) {
 			toast.success("Commodity listed successfully");
 			router.push("/producers");
 		}
-	}, [isSuccess]);
+	}, [isSuccessFullPurchase]);
 
 	useEffect(() => {
 		if (error) {

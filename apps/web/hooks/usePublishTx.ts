@@ -14,7 +14,7 @@ interface useWriteTransactionReturnProps {
 	writeToContract(args: unknown[], value?: string): void;
 	isSubmitting: boolean;
 	error: Error | null;
-	isSuccess: boolean;
+	isSuccessFullPurchase: boolean;
 }
 
 export function usePublishTx({
@@ -72,6 +72,6 @@ export function usePublishTx({
 		writeToContract,
 		isSubmitting,
 		error,
-		isSuccess,
+		isSuccessFullPurchase: isSuccess,
 	};
 }

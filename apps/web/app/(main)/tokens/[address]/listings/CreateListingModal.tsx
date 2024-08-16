@@ -44,7 +44,7 @@ export default function CreateListingModal({
 	const {
 		writeToContract: listCommodity,
 		isSubmitting,
-		isSuccess,
+		isSuccessFullPurchase,
 		error,
 	} = usePublishTx({
 		address: commodityExchange.address,
@@ -54,11 +54,11 @@ export default function CreateListingModal({
 	});
 
 	useEffect(() => {
-		if (isSuccess) {
+		if (isSuccessFullPurchase) {
 			toast.success("Commodity listed successfully");
 			handleClose();
 		}
-	}, [isSuccess]);
+	}, [isSuccessFullPurchase]);
 
 	useEffect(() => {
 		if (error) {

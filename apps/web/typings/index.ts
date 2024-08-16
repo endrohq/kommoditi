@@ -292,6 +292,11 @@ export interface OwnerQuantity {
 	quantity: number;
 }
 
+export type ParticipantQuantity = {
+	partner: Participant;
+	quantity: number;
+};
+
 export interface CommodityGroup {
 	token: CommodityToken;
 	quantity: number;
@@ -306,7 +311,7 @@ export type CommodityPricePoint = {
 };
 
 export type TradeRoute = {
-	ctfs: Participant[];
+	options: ParticipantQuantity[];
 	destination: string;
 };
 
