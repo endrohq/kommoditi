@@ -22,7 +22,7 @@ export function TokenPageHeader() {
 					className="pb-6 w-full flex items-center justify-between"
 				>
 					<div className="gap-2 flex flex-col">
-						<span className="text-2xl text-indigo-900  font-bold">
+						<span className="text-2xl text-indigo-900 leading-normal font-bold">
 							{commodity.name}
 						</span>
 						<span className="text-sm -mt-1.5 font-medium text-gray-700">

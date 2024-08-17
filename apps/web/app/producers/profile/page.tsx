@@ -5,7 +5,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { getShortenedFormat } from "@/utils/address.utils";
 import React from "react";
 
-export default function Page() {
+export default async function Page() {
 	const { account } = useAuth();
 	return (
 		<div className="">

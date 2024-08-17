@@ -342,3 +342,13 @@ export type CommodityPurchasePrice = {
 	buffer: number;
 	totalPrice: number;
 };
+
+export interface ParticipantProfileToken {
+	token: CommodityToken;
+	amount: number;
+}
+
+export interface ParticipantProfile {
+	account: Participant;
+	tokens: ParticipantProfileToken[];
+}

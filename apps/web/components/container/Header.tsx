@@ -1,7 +1,8 @@
 "use client";
 
-import { UserAvatar } from "@carbon/icons-react";
+import { ChevronDown, UserAvatar } from "@carbon/icons-react";
 import {
+	Button,
 	Header,
 	HeaderContainer,
 	HeaderGlobalAction,
@@ -26,10 +27,9 @@ import {
 	ROUTE_ADMIN_PAGE,
 	ROUTE_HOME,
 	ROUTE_USERS_PAGE,
-	getProfileRoute,
 } from "@/utils/route.utils";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 interface ContainerHeaderProps {
 	isSideNavExpanded: boolean;
@@ -39,8 +39,9 @@ interface ContainerHeaderProps {
 export function ContainerHeader() {
 	const { isAuthenticated, account, login, logout, isLoading } = useAuth();
 	const [isOpen, setIsOpen] = useState(false);
+	const menuButtonRef = useRef(null);
 
-	const togglePanel = () => {
+	const handleMenuToggle = () => {
 		setIsOpen(!isOpen);
 	};
 
@@ -105,42 +106,61 @@ export function ContainerHeader() {
 							</SideNavItems>
 						</SideNav>
 						<HeaderGlobalBar>
-							<HeaderGlobalAction
-								onClick={!isAuthenticated ? login : togglePanel}
-								className="action-icons relative"
-								aria-label=""
-							>
-								<OverflowMenu
-									open={isOpen}
-									as="div"
-									flipped
-									style={{ background: "transparent" }}
-									onClose={() => setIsOpen(false)}
-									renderIcon={() =>
-										isLoading ? (
-											<LoadingOutlined className="text-white" />
-										) : !isAuthenticated ? (
-											<UserAvatar size={20} />
-										) : (
-											!!account?.address && (
-												<EthAvatar address={account?.address} size={20} />
-											)
-										)
-									}
+							{isLoading ? (
+								<HeaderGlobalAction
+									className="action-icons relative"
+									aria-label="Loading"
 								>
-									<Link
-										className="w-full"
-										href={getProfileRoute(account?.address)}
+									<LoadingOutlined className="text-white" />
+								</HeaderGlobalAction>
+							) : !isAuthenticated ? (
+								<HeaderGlobalAction aria-label="Login" onClick={login}>
+									<Button kind="ghost" size="sm">
+										Login
+									</Button>
+								</HeaderGlobalAction>
+							) : (
+								<HeaderGlobalAction
+									// @ts-ignore
+									ref={menuButtonRef}
+									aria-label="User menu"
+									onClick={handleMenuToggle}
+									className="flex items-center justify-between px-2 custom-avatar-menu"
+									style={{ width: "auto", minWidth: "150px" }}
+								>
+									<div className="flex items-center">
+										{account?.address && (
+											<EthAvatar address={account.address} size={24} />
+										)}
+										<span className="ml-2 text-sm truncate max-w-[100px]">
+											{account?.address
+												? `0x${account.address.slice(2, 6)}...${account.address.slice(-4)}`
+												: "User"}
+										</span>
+									</div>
+									<ChevronDown size={16} className="ml-2" />
+									<OverflowMenu
+										open={isOpen}
+										flipped
+										renderIcon={() => <></>}
+										className="custom-overflow-menu !w-0"
+										style={{
+											background: "transparent",
+										}}
+										onOpen={() => setIsOpen(true)}
+										onClose={() => setIsOpen(false)}
 									>
-										<OverflowMenuItem itemText="Profile" />
-									</Link>
-									<OverflowMenuItem
-										onClick={logout}
-										itemText="Logout"
-										hasDivider
-									/>
-								</OverflowMenu>
-							</HeaderGlobalAction>
+										<Link href={`/profile/${account?.address}`}>
+											<OverflowMenuItem itemText="Profile" />
+										</Link>
+										<OverflowMenuItem
+											onClick={logout}
+											itemText="Logout"
+											hasDivider
+										/>
+									</OverflowMenu>
+								</HeaderGlobalAction>
+							)}
 						</HeaderGlobalBar>
 					</Header>
 				)}
