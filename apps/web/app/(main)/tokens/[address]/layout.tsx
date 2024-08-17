@@ -1,4 +1,7 @@
-import { fetchCommodity } from "@/app/(main)/actions";
+import {
+	fetchCommodity,
+	getCountriesWhereCommodityTokenIsActiveIn,
+} from "@/app/(main)/actions";
 import { TokenPageProvider } from "@/providers/TokenPageProvider";
 import React from "react";
 
@@ -10,6 +13,14 @@ interface LayoutProps {
 }
 
 export default async function Layout({ params, children }: LayoutProps) {
-	const token = await fetchCommodity(params.address);
-	return <TokenPageProvider token={token}>{children}</TokenPageProvider>;
+	const [token, countries] = await Promise.all([
+		fetchCommodity(params.address),
+		getCountriesWhereCommodityTokenIsActiveIn(params.address),
+	]);
+	console.log(countries);
+	return (
+		<TokenPageProvider countries={countries} token={token}>
+			{children}
+		</TokenPageProvider>
+	);
 }

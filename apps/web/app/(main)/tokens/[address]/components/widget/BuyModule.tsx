@@ -1,43 +1,32 @@
 "use client";
 
 import { ButtonWithAuthentication } from "@/components/button/ButtonWithAuthentication";
-import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
-import { MinusOutlined } from "@/components/icons/MinusOutlined";
-import { PlaneOutlined } from "@/components/icons/PlaneOutlined";
 import { NumericInput } from "@/components/input/NumericInput";
 
-import { baseCommodityUnit, contracts } from "@/lib/constants";
+import { baseCommodityUnit } from "@/lib/constants";
 import { useAuth } from "@/providers/AuthProvider";
 import { useTokenPage } from "@/providers/TokenPageProvider";
-import { BuyModuleArgs, Region, TradeRoute } from "@/typings";
+import { BuyModuleArgs, CommodityPurchasePrice, TradeRoute } from "@/typings";
 import { getCountryNameFromAddress } from "@/utils/commodity.utils";
 import { fetchWrapper } from "@/utils/fetch.utils";
 import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 
-import { usePublishTx } from "@/hooks/usePublishTx";
+import { ConfirmOrderForConsumer } from "@/app/(main)/tokens/[address]/components/widget/ConfirmOrderForConsumer";
+import { TradeRouteDisplay } from "@/app/(main)/tokens/[address]/components/widget/TradeRouteDisplay";
+
 import { nFormatter } from "@/utils/number.utils";
+import { calculateCommodityPurchaseTotalPrice } from "@/utils/price.utils";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo } from "react";
-import toast from "react-hot-toast";
 import Select from "react-select";
 
-interface BuyModuleProps {
-	countries?: Region[];
-}
-
-export function BuyModule({ countries }: BuyModuleProps) {
+export function BuyModule() {
 	const params = useSearchParams();
 	const { isAuthenticated, account } = useAuth();
-	const { commodity, currentPrice } = useTokenPage();
-	const { writeToContract, isSubmitting, isSuccessFullPurchase } = usePublishTx(
-		{
-			address: contracts.commodityExchange.address,
-			abi: contracts.commodityExchange.abi,
-			functionName: "consumerBuyFromDistributor",
-			eventName: "CommodityPurchased",
-		},
-	);
+	const { commodity, currentPrice, countries } = useTokenPage();
+
+	const [intentionToBuy, setIntentionToBuy] = React.useState(false);
 
 	const [form, setForm] = React.useState<Partial<BuyModuleArgs>>({
 		country: countries?.find((c) => c.id === params.get("country")),
@@ -58,17 +47,9 @@ export function BuyModule({ countries }: BuyModuleProps) {
 		enabled: !!form?.country?.id,
 	});
 
-	console.log(tradeRoute);
-
 	const activeTradeRoutePartner = useMemo(() => {
 		return tradeRoute?.options?.[0];
 	}, [tradeRoute]);
-
-	useEffect(() => {
-		if (isSuccessFullPurchase) {
-			toast.success("Commodity purchased successfully");
-		}
-	}, [isSuccessFullPurchase]);
 
 	useEffect(() => {
 		if (form?.country?.id) {
@@ -78,43 +59,10 @@ export function BuyModule({ countries }: BuyModuleProps) {
 
 	const hasNoAmount = !form?.quantity || form?.quantity === 0;
 
-	const countryOfUser = getCountryNameFromAddress(
-		account?.locations?.[0]?.name || "",
-	);
+	const countryOfUser =
+		getCountryNameFromAddress(account?.locations?.[0]?.name || "") || "";
 
-	function calculateTotalPrice() {
-		if (
-			!currentPrice ||
-			!form?.quantity ||
-			!activeTradeRoutePartner?.partner?.overheadPercentage
-		)
-			return;
-		const basePrice = currentPrice * form?.quantity;
-		const overheadFee =
-			(basePrice * activeTradeRoutePartner?.partner?.overheadPercentage) /
-			10000;
-		const totalPrice = basePrice + overheadFee;
-		const buffer = totalPrice * 0.0001; // 0.01% buffer
-		return totalPrice + buffer;
-	}
-
-	async function handlePurchase() {
-		try {
-			const totalPrice = calculateTotalPrice();
-			writeToContract(
-				[
-					commodity?.tokenAddress,
-					activeTradeRoutePartner?.partner?.id,
-					form?.quantity,
-				],
-				totalPrice?.toString(),
-			);
-		} catch (error) {
-			console.error("Transaction failed:", error);
-		}
-	}
-
-	function getButtonLabel() {
+	function getButtonLabel(totalPrice: undefined | number) {
 		if (!isAuthenticated) {
 			return "Connect Wallet";
 		} else if (!form?.country) {
@@ -122,18 +70,64 @@ export function BuyModule({ countries }: BuyModuleProps) {
 		} else if (hasNoAmount) {
 			return "Enter an amount";
 		} else {
-			return `Purchase for ~${nFormatter(calculateTotalPrice() || 0)} HBAR`;
+			return `Purchase for ~${nFormatter(totalPrice || 0)} HBAR`;
 		}
 	}
 
 	function isButtonDisabled() {
+		if (!isAuthenticated) return false;
+
 		return (
 			!form?.country ||
 			hasNoAmount ||
-			isSubmitting ||
+			intentionToBuy ||
 			!activeTradeRoutePartner?.partner?.id
 		);
 	}
+
+	const commodityPriceDetails = useMemo<CommodityPurchasePrice>(() => {
+		if (!currentPrice || !form?.quantity) {
+			return {
+				basePrice: 0,
+				overheadFee: 0,
+				subtotal: 0,
+				serviceFee: 0,
+				buffer: 0,
+				totalPrice: 0,
+			};
+		}
+
+		const basePrice = currentPrice * (form?.quantity || 0);
+		const overheadFee = activeTradeRoutePartner?.partner?.overheadPercentage
+			? (basePrice * activeTradeRoutePartner?.partner?.overheadPercentage) /
+				10000
+			: 0;
+		const subtotal = basePrice + overheadFee;
+		const serviceFee = (subtotal * 100) / 10000; // 1%
+		const buffer = (subtotal * 1) / 10000; // 0.01%
+		const totalPrice = subtotal + serviceFee + buffer;
+
+		console.log("Frontend Calculation:");
+		console.log("Base Price:", basePrice);
+		console.log("Overhead Fee:", overheadFee);
+		console.log("Subtotal:", subtotal);
+		console.log("Service Fee:", serviceFee);
+		console.log("Buffer:", buffer);
+		console.log("Total Price:", totalPrice);
+
+		return {
+			basePrice,
+			overheadFee,
+			subtotal,
+			serviceFee,
+			buffer,
+			totalPrice,
+		};
+	}, [
+		currentPrice,
+		form?.quantity,
+		activeTradeRoutePartner?.partner?.overheadPercentage,
+	]);
 
 	return (
 		<>
@@ -164,65 +158,13 @@ export function BuyModule({ countries }: BuyModuleProps) {
 					/>
 				</div>
 				{form?.country && isAuthenticated && (
-					<div className="">
-						<div
-							className="ml-4 h-2 w-[1px]"
-							style={{ borderRight: "1px dashed #312E81" }}
-						/>
-
-						<div className=" rounded">
-							<div
-								style={{ border: "1px dashed #312E81" }}
-								className="p-3 bg-white rounded"
-							>
-								{tradeRouteLoading ? (
-									<div className="flex items-center space-x-2">
-										<LoadingOutlined className="text-sm text-gray-500" />
-										<span className="text-xs text-gray-600">
-											Searching for trade routes to {countryOfUser}..
-										</span>
-									</div>
-								) : activeTradeRoutePartner ? (
-									<div className="flex items-center space-x-3">
-										<div className="p-2 pb-2.5 pt-1.5 bg-orange-50 rounded-full">
-											<PlaneOutlined className="text-xl leading-none text-orange-700" />
-										</div>
-										<div className="text-sm w-8/12">
-											<span className="font-medium leading-normal text-black">
-												Trade routes found
-											</span>{" "}
-											<span>
-												between{" "}
-												<span className="underline">{form?.country?.name}</span>{" "}
-												and <span className="underline">{countryOfUser}</span>{" "}
-												through {activeTradeRoutePartner?.partner?.name}
-											</span>
-										</div>
-									</div>
-								) : (
-									<div className="flex items-center space-x-3">
-										<div className="p-2 pb-2.5 pt-1.5 bg-red-50 rounded-full">
-											<MinusOutlined className="text-lg leading-none text-red-700" />
-										</div>
-										<div className="text-sm w-8/12">
-											<span className="font-medium leading-normal text-black">
-												No trade routes found
-											</span>{" "}
-											<span>
-												between{" "}
-												<span className="underline">{form?.country?.name}</span>{" "}
-												and <span className="underline">{countryOfUser}</span>.
-											</span>
-										</div>
-									</div>
-								)}
-							</div>
-						</div>
-						<div
-							className="ml-4 h-2 w-[1px]"
-							style={{ borderRight: "1px dashed #312E81" }}
-						/>
-					</div>
+					<TradeRouteDisplay
+						isLoading={tradeRouteLoading}
+						countryOfUser={countryOfUser}
+						activeTradeRoutePartner={activeTradeRoutePartner}
+						activeCountryName={form?.country?.name}
+						participantType={account?.type}
+					/>
 				)}
 				<div className="pb-4">
 					<div className="text-xs mb-2 text-gray-800">Amount</div>
@@ -268,16 +210,31 @@ export function BuyModule({ countries }: BuyModuleProps) {
 					<ButtonWithAuthentication
 						disabled={isButtonDisabled()}
 						fullWidth
-						loading={isSubmitting}
+						loading={intentionToBuy}
 						variant="black"
 						className="py-2"
 						size="lg"
-						onClick={handlePurchase}
+						onClick={() => setIntentionToBuy(true)}
 					>
-						{getButtonLabel()}
+						{getButtonLabel(commodityPriceDetails?.totalPrice)}
 					</ButtonWithAuthentication>
 				</div>
 			</div>
+			{intentionToBuy &&
+				activeTradeRoutePartner &&
+				form?.quantity &&
+				commodityPriceDetails && (
+					<ConfirmOrderForConsumer
+						activeTradeRoutePartner={activeTradeRoutePartner}
+						quantity={form?.quantity}
+						overheadPercentage={
+							activeTradeRoutePartner?.partner?.overheadPercentage
+						}
+						priceDetails={commodityPriceDetails}
+						onClose={() => setIntentionToBuy(false)}
+						isConsumer={account?.type === "CONSUMER"}
+					/>
+				)}
 		</>
 	);
 }

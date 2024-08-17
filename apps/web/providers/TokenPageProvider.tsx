@@ -1,16 +1,18 @@
 "use client";
 
-import { CommodityToken } from "@/typings";
+import { CommodityToken, Region } from "@/typings";
 import { createContext, useContext, useState } from "react";
 
 interface TokenContextProps {
 	commodity: CommodityToken;
+	countries: Region[];
 	setCurrentPrice: (price: number) => void;
 	currentPrice?: number;
 }
 
 export const TokenContext = createContext<TokenContextProps>({
 	currentPrice: 0,
+	countries: [],
 	commodity: {} as CommodityToken,
 	setCurrentPrice: () => {},
 });
@@ -22,14 +24,20 @@ export function useTokenPage() {
 export function TokenPageProvider({
 	children,
 	token,
-}: { children: React.ReactNode; token: CommodityToken | null }) {
+	countries,
+}: {
+	children: React.ReactNode;
+	token: CommodityToken | null;
+	countries: Region[];
+}) {
 	const [currentPrice, setCurrentPrice] = useState<number>();
-	console.log(currentPrice);
+	console.log(countries);
 	return (
 		<TokenContext.Provider
 			value={{
 				currentPrice,
 				commodity: token as CommodityToken,
+				countries,
 				setCurrentPrice: (p) => setCurrentPrice(p),
 			}}
 		>

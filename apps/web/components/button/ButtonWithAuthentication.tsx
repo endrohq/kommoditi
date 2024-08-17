@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from "@/providers/AuthProvider";
-import Link from "next/link";
 import React from "react";
 import { Button, ButtonProps } from "./index";
 
@@ -20,7 +19,7 @@ export function ButtonWithAuthentication({
 	}
 
 	return (
-		<Button onClick={() => login()} {...props}>
+		<Button {...props} onClick={() => login()}>
 			{children}
 		</Button>
 	);

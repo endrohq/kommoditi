@@ -4,31 +4,48 @@ import { Button } from "@/components/button";
 import { Modal } from "@/components/modal";
 import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
+import { useAuth } from "@/providers/AuthProvider";
 import { useTokenPage } from "@/providers/TokenPageProvider";
-import { CommodityGroup, Participant } from "@/typings";
+import {
+	CommodityGroup,
+	CommodityPurchasePrice,
+	Participant,
+	ParticipantQuantity,
+	ParticipantType,
+} from "@/typings";
+import { nFormatter } from "@/utils/number.utils";
+import { calculateCommodityPurchaseTotalPrice } from "@/utils/price.utils";
 import React, { useEffect } from "react";
 import toast from "react-hot-toast";
 
 interface ConfirmOrderForConsumerProps {
-	activeCommodityByRegion?: CommodityGroup;
 	onClose(): void;
 	quantity: number;
-	distributors: Participant[];
+	overheadPercentage?: number;
+	activeTradeRoutePartner: ParticipantQuantity;
+	priceDetails: CommodityPurchasePrice;
+	isConsumer: boolean;
 }
 
 export function ConfirmOrderForConsumer({
 	quantity,
-	activeCommodityByRegion,
+	overheadPercentage,
 	onClose,
-	distributors,
+	activeTradeRoutePartner,
+	priceDetails,
+	isConsumer,
 }: ConfirmOrderForConsumerProps) {
 	const { commodity, currentPrice } = useTokenPage();
 	const { writeToContract, isSubmitting, isSuccessFullPurchase } = usePublishTx(
 		{
 			address: contracts.commodityExchange.address,
 			abi: contracts.commodityExchange.abi,
-			functionName: "purchaseCommodityFromDistributor",
-			eventName: "CommodityPurchased",
+			functionName: isConsumer
+				? "consumerBuyFromDistributor"
+				: "distributorManualBuy",
+			eventName: isConsumer
+				? "ConsumerPurchaseMade"
+				: "DistributorPurchaseMade",
 		},
 	);
 
@@ -39,23 +56,16 @@ export function ConfirmOrderForConsumer({
 		}
 	}, []);
 
-	function calculateTotalPrice(overheadPercentage: number) {
-		if (!currentPrice) return;
-		const basePrice = currentPrice * quantity;
-		const overheadFee = (basePrice * overheadPercentage) / 10000; // Using basis points
-		return basePrice + overheadFee;
-	}
-
 	async function handlePurchase() {
+		const args = isConsumer
+			? [
+					commodity?.tokenAddress,
+					activeTradeRoutePartner?.partner?.id,
+					quantity,
+				]
+			: [commodity?.tokenAddress, activeTradeRoutePartner?.listingIds?.[0]];
 		try {
-			const activeDistributor = distributors?.[0];
-			const totalPrice = calculateTotalPrice(
-				activeDistributor?.overheadPercentage,
-			);
-			writeToContract(
-				[commodity?.tokenAddress, activeDistributor?.id, quantity],
-				totalPrice?.toString(),
-			);
+			writeToContract(args, priceDetails?.totalPrice?.toString());
 		} catch (error) {
 			console.error("Transaction failed:", error);
 		}
@@ -63,23 +73,50 @@ export function ConfirmOrderForConsumer({
 
 	return (
 		<Modal open onClose={onClose}>
-			<div>
-				<div>
-					<div className="text-sm">
-						<div>Requesting: {quantity}</div>
-						<div>Supply: {activeCommodityByRegion?.quantity}</div>
-						<div>country: {activeCommodityByRegion?.country}</div>
+			<div className="p-4 text-sm">
+				<h2 className="text-xl font-bold mb-4">Confirm your trade</h2>
+				<div
+					style={{ borderBottom: "1px solid #efefef" }}
+					className="mb-2 pb-4"
+				>
+					<div className="flex justify-between">
+						<span>{commodity?.name}</span>
+						<span>{priceDetails?.basePrice} HBAR</span>
+					</div>
+					<div className="text-sm text-gray-500">
+						{quantity} x {currentPrice} HBAR
 					</div>
 				</div>
+				{isConsumer && overheadPercentage && (
+					<div className="flex justify-between mb-2">
+						<span>Overhead Fee ({overheadPercentage / 100}%)</span>
+						<span>{nFormatter(priceDetails?.overheadFee)} HBAR</span>
+					</div>
+				)}
+				<div className="flex justify-between mb-2">
+					<span>Service Fee (1%)</span>
+					<span>~{nFormatter(priceDetails?.serviceFee)} HBAR</span>
+				</div>
+				<div className="flex justify-between mb-2">
+					<span>Buffer (0.01%)</span>
+					<span>~{nFormatter(priceDetails?.buffer)} HBAR</span>
+				</div>
+				<div
+					style={{ borderTop: "1px solid #efefef" }}
+					className="flex justify-between font-bold mb-6 mt-4 pt-2 !border-t border-gray-100"
+				>
+					<span>Total</span>
+					<span>{priceDetails?.totalPrice} HBAR</span>
+				</div>
+				<Button
+					onClick={handlePurchase}
+					loading={isSubmitting}
+					variant="secondary"
+					fullWidth
+				>
+					Confirm Purchase
+				</Button>
 			</div>
-			<Button
-				onClick={handlePurchase}
-				loading={isSubmitting}
-				variant="secondary"
-				fullWidth
-			>
-				Confirm
-			</Button>
 		</Modal>
 	);
 }

@@ -213,7 +213,14 @@ export type DistributorPurchaseEvent = {
 
 export type TimelineEvent = {
 	id?: number;
-	type: "listing" | "purchase";
+	type:
+		| "listing"
+		| "purchase"
+		| "liquidity"
+		| "tokenCreation"
+		| "liquidityEvent"
+		| "distributorPurchase"
+		| "commodityTransfer";
 	createdAt: Date;
 	commodityToken: CommodityToken;
 	transaction: PoolTransaction;
@@ -295,6 +302,7 @@ export interface OwnerQuantity {
 export type ParticipantQuantity = {
 	partner: Participant;
 	quantity: number;
+	listingIds?: number[];
 };
 
 export interface CommodityGroup {
@@ -319,4 +327,13 @@ export type BuyModuleArgs = {
 	quantity: number;
 	country?: Region;
 	tradingRoute?: TradeRoute;
+};
+
+export type CommodityPurchasePrice = {
+	basePrice: number;
+	overheadFee: number;
+	subtotal: number;
+	serviceFee: number;
+	buffer: number;
+	totalPrice: number;
 };

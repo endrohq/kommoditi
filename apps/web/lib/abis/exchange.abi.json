@@ -166,12 +166,6 @@
 				"internalType": "uint256",
 				"name": "listingId",
 				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "quantity",
-				"type": "uint256"
 			}
 		],
 		"name": "DistributorPurchaseMade",
@@ -285,7 +279,7 @@
 		],
 		"name": "consumerBuyFromDistributor",
 		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "payable",
 		"type": "function"
 	},
 	{
@@ -317,16 +311,11 @@
 				"internalType": "uint256",
 				"name": "listingId",
 				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "quantity",
-				"type": "uint256"
 			}
 		],
 		"name": "distributorManualBuy",
 		"outputs": [],
-		"stateMutability": "nonpayable",
+		"stateMutability": "payable",
 		"type": "function"
 	},
 	{

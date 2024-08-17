@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "./TokenAuthority.sol";
 import "../HederaResponseCodes.sol";
 import "../ParticipantRegistry.sol";
+import "hardhat/console.sol";
 
 contract CommodityPool {
     struct Listing {
@@ -43,7 +44,7 @@ contract CommodityPool {
     uint256 constant private PRICE_ADJUSTMENT_PRECISION = 1000000;
 
     // Fee percentage for facilitating trades
-    uint256 constant private FEE_PERCENTAGE = 500;  // 5% fee (500 basis points)
+    uint256 constant private FEE_PERCENTAGE = 100;  // 1% fee (100 basis points)
     uint256 constant private FEE_PRECISION = 10000;  // 100% = 10000
 
     uint256 public constant ETHEREUM_BASE_PRICE = 1e18; // 18 decimal places
@@ -98,14 +99,19 @@ contract CommodityPool {
         _tryDistributorAutoBuyAll(distributor);
     }
 
-    function distributorManualBuy(address distributor, uint256 listingId, uint256 quantity) external onlyCommodityExchange {
+    function distributorManualBuy(address distributor, uint256 listingId) external payable onlyCommodityExchange {
         require(listings[listingId].active, "Listing is not active");
-        require(listings[listingId].serialNumbers.length >= quantity, "Not enough commodities in listing");
 
+        uint256 quantity = listings[listingId].serialNumbers.length;
         uint256 totalPrice = currentPrice * quantity;
-        require(distributorLiquidity[distributor].amount >= totalPrice, "Insufficient Distributor liquidity");
+        require(msg.value >= totalPrice, "Insufficient payment for purchase");
 
-        _executeDistributorPurchase(distributor, listingId, quantity);
+        _executeDistributorPurchase(distributor, listingId, true);
+
+        // Refund excess payment if any
+        if (msg.value > totalPrice) {
+            payable(distributor).transfer(msg.value - totalPrice);
+        }
     }
 
     function consumerProvideFunds(address consumer) external payable onlyCommodityExchange {
@@ -113,14 +119,33 @@ contract CommodityPool {
         _tryConsumerAutoBuyAll(consumer);
     }
 
-    function consumerBuyFromDistributor(address consumer, address distributor, uint256 quantity) external onlyCommodityExchange {
-        _consumerBuyFromDistributor(consumer, distributor, quantity);
+    function consumerBuyFromDistributor(address consumer, address distributor, uint256 quantity) external payable onlyCommodityExchange {
+        require(distributorOwnedSerialNumbers[distributor].length >= quantity, "Not enough commodities in Distributor inventory");
+
+        (, , , , uint256 totalPrice) = getConsumerTotalPrice(distributor, quantity);
+        console.log('totalPrice: %s', totalPrice);
+        console.log('Given value: %s', msg.value);
+        require(msg.value >= totalPrice, "Insufficient payment for purchase");
+
+        _executeConsumerPurchase(consumer, distributor, quantity, true);
+
+        // Refund excess payment if any
+        if (msg.value > totalPrice) {
+            payable(consumer).transfer(msg.value - totalPrice);
+        }
     }
 
-    function _consumerBuyFromDistributor(address consumer, address distributor, uint256 quantity) internal {
-        uint256 totalPrice = currentPrice * quantity;
-        require(consumerFunds[consumer] >= totalPrice, "Insufficient Consumer funds");
-        require(distributorOwnedSerialNumbers[distributor].length >= quantity, "Not enough commodities in Distributor inventory");
+    function _executeConsumerPurchase(
+        address consumer,
+        address distributor,
+        uint256 quantity,
+        bool isManualBuy
+    ) internal {
+        (uint256 basePrice, uint256 overheadFee, , uint256 serviceFee, uint256 totalPrice) = getConsumerTotalPrice(distributor, quantity);
+
+        if (!isManualBuy) {
+            require(consumerFunds[consumer] >= totalPrice, "Insufficient Consumer funds");
+        }
 
         int64[] memory serialNumbers = new int64[](quantity);
         for (uint256 i = 0; i < quantity; i++) {
@@ -129,8 +154,12 @@ contract CommodityPool {
             tokenAuthority.transferNFT(tokenAddress, distributor, consumer, serialNumbers[i]);
         }
 
-        consumerFunds[consumer] -= totalPrice;
-        distributorLiquidity[distributor].amount += totalPrice;
+        if (isManualBuy) {
+            payable(distributor).transfer(basePrice + overheadFee);
+        } else {
+            consumerFunds[consumer] -= totalPrice;
+            distributorLiquidity[distributor].amount += basePrice + overheadFee;
+        }
 
         emit ConsumerPurchased(distributor, consumer, serialNumbers, currentPrice, totalPrice);
     }
@@ -141,11 +170,8 @@ contract CommodityPool {
 
         for (uint i = 0; i < distributors.length; i++) {
             address distributor = distributors[i];
-            if (distributorLiquidity[distributor].amount >= totalPrice &&
-            currentPrice >= distributorLiquidity[distributor].minPrice &&
-            currentPrice <= distributorLiquidity[distributor].maxPrice &&
-                participantRegistry.isInAddressBook(distributor, listing.producer)) {
-                _executeDistributorPurchase(distributor, listingId, listing.serialNumbers.length);
+            if (_isEligibleForAutoBuy(distributor, listing.producer, totalPrice)) {
+                _executeDistributorPurchase(distributor, listingId, false);
                 break;
             }
         }
@@ -153,15 +179,20 @@ contract CommodityPool {
 
     function _tryDistributorAutoBuyAll(address distributor) internal {
         for (uint256 i = 0; i < listingCount; i++) {
-            if (listings[i].active && participantRegistry.isInAddressBook(distributor, listings[i].producer)) {
+            if (listings[i].active) {
                 uint256 totalPrice = currentPrice * listings[i].serialNumbers.length;
-                if (distributorLiquidity[distributor].amount >= totalPrice &&
-                currentPrice >= distributorLiquidity[distributor].minPrice &&
-                    currentPrice <= distributorLiquidity[distributor].maxPrice) {
-                    _executeDistributorPurchase(distributor, i, listings[i].serialNumbers.length);
+                if (_isEligibleForAutoBuy(distributor, listings[i].producer, totalPrice)) {
+                    _executeDistributorPurchase(distributor, i, false);
                 }
             }
         }
+    }
+
+    function _isEligibleForAutoBuy(address distributor, address producer, uint256 totalPrice) internal view returns (bool) {
+        return distributorLiquidity[distributor].amount >= totalPrice &&
+        currentPrice >= distributorLiquidity[distributor].minPrice &&
+        currentPrice <= distributorLiquidity[distributor].maxPrice &&
+            participantRegistry.isInAddressBook(distributor, producer);
     }
 
     function _tryConsumerAutoBuyAll(address consumer) internal {
@@ -169,21 +200,39 @@ contract CommodityPool {
         for (uint256 i = 0; i < approvedDistributors.length; i++) {
             address distributor = approvedDistributors[i];
             uint256 availableQuantity = distributorOwnedSerialNumbers[distributor].length;
-            uint256 affordableQuantity = consumerFunds[consumer] / currentPrice;
+
+            // Calculate the maximum affordable quantity based on the total price
+            uint256 affordableQuantity = 0;
+            for (uint256 j = 1; j <= availableQuantity; j++) {
+                (, , , , uint256 totalPrice) = getConsumerTotalPrice(distributor, j);
+                if (totalPrice > consumerFunds[consumer]) {
+                    break;
+                }
+                affordableQuantity = j;
+            }
+
             uint256 quantityToBuy = availableQuantity < affordableQuantity ? availableQuantity : affordableQuantity;
 
             if (quantityToBuy > 0) {
-                _consumerBuyFromDistributor(consumer, distributor, quantityToBuy);
+                _executeConsumerPurchase(consumer, distributor, quantityToBuy, false);
             }
         }
     }
 
-    function _executeDistributorPurchase(address distributor, uint256 listingId, uint256 quantity) internal {
+    function _executeDistributorPurchase(address distributor, uint256 listingId, bool isManualBuy) internal {
         Listing storage listing = listings[listingId];
+        uint256 quantity = listing.serialNumbers.length;
         uint256 totalPrice = currentPrice * quantity;
 
-        distributorLiquidity[distributor].amount -= totalPrice;
-        payable(listing.producer).transfer(totalPrice);
+        if (isManualBuy) {
+            // For manual buys, transfer the payment from msg.value
+            payable(listing.producer).transfer(totalPrice);
+        } else {
+            // For auto-buys, use the distributor's liquidity
+            require(distributorLiquidity[distributor].amount >= totalPrice, "Insufficient Distributor liquidity");
+            distributorLiquidity[distributor].amount -= totalPrice;
+            payable(listing.producer).transfer(totalPrice);
+        }
 
         for (uint256 i = 0; i < quantity; i++) {
             int64 serialNumber = listing.serialNumbers[listing.serialNumbers.length - 1];
@@ -192,9 +241,7 @@ contract CommodityPool {
             tokenAuthority.transferNFT(tokenAddress, listing.producer, distributor, serialNumber);
         }
 
-        if (listing.serialNumbers.length == 0) {
-            listing.active = false;
-        }
+        listing.active = false;
 
         emit DistributorPurchased(listing.producer, distributor, listingId, distributorOwnedSerialNumbers[distributor], currentPrice, totalPrice);
         adjustPrice(true);
@@ -207,5 +254,20 @@ contract CommodityPool {
             currentPrice = currentPrice * (PRICE_ADJUSTMENT_PRECISION - PRICE_ADJUSTMENT_FACTOR) / PRICE_ADJUSTMENT_PRECISION;
         }
         emit PriceUpdated(currentPrice);
+    }
+
+    function getConsumerTotalPrice(address distributor, uint256 quantity) public view returns (
+        uint256 basePrice,
+        uint256 overheadFee,
+        uint256 subtotal,
+        uint256 serviceFee,
+        uint256 totalPrice
+    ) {
+        basePrice = currentPrice * quantity;
+        uint256 overheadPercentage = participantRegistry.getParticipantByAddress(distributor).overheadPercentage;
+        overheadFee = (basePrice * overheadPercentage) / FEE_PRECISION;
+        subtotal = basePrice + overheadFee;
+        serviceFee = (subtotal * FEE_PERCENTAGE) / FEE_PRECISION;
+        totalPrice = subtotal + serviceFee;
     }
 }

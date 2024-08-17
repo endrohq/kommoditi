@@ -40,12 +40,11 @@ function TransactWidgetMenuItem({
 
 interface TransactWidgetProps {
 	address: string;
-	countries?: Region[];
 }
 
 type Tab = "buy" | "add liquidity";
 
-export function TransactWidget({ address, countries }: TransactWidgetProps) {
+export function TransactWidget({ address }: TransactWidgetProps) {
 	const [activeTab, setActiveTab] = React.useState<Tab>("buy");
 
 	return (
@@ -61,7 +60,7 @@ export function TransactWidget({ address, countries }: TransactWidgetProps) {
 					<TransactWidgetMenuItem activeTab={activeTab} label="add liquidity" />
 				</Link>
 			</div>
-			<BuyModule countries={countries} />
+			<BuyModule />
 		</>
 	);
 }

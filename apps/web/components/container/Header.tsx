@@ -1,6 +1,6 @@
 "use client";
 
-import { Notification, UserAvatar } from "@carbon/icons-react";
+import { UserAvatar } from "@carbon/icons-react";
 import {
 	Header,
 	HeaderContainer,
@@ -14,6 +14,7 @@ import {
 	OverflowMenuItem,
 	SideNav,
 	SideNavItems,
+	Tag,
 	Theme,
 } from "@carbon/react";
 
@@ -57,7 +58,23 @@ export function ContainerHeader() {
 							isActive={isSideNavExpanded}
 						/>
 						<Link className="cds--header__name" href={ROUTE_HOME} passHref>
-							{appTitle} {account?.type ? `(As ${account?.type})` : ""}
+							<span className="text-sm mr-3">{appTitle}</span>
+							{account?.type ? (
+								<Tag
+									type={
+										account?.type === "CONSUMER"
+											? "teal"
+											: account?.type === "DISTRIBUTOR"
+												? "purple"
+												: "blue"
+									}
+									className="capitalize text-[12px] font-semibold ml-2"
+								>
+									as {account?.type?.toLowerCase()}
+								</Tag>
+							) : (
+								""
+							)}
 						</Link>
 						<HeaderNavigation aria-label="Hello Future Navigation">
 							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>

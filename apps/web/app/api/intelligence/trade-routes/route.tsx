@@ -89,19 +89,29 @@ export async function GET(req: NextRequest) {
 			tokenAddress,
 		);
 
-		// Count commodities by owner
+		// Count commodities by owner and collect listing IDs
 		const commodityCounts = allCommodities.reduce(
 			(acc, commodity) => {
-				acc[commodity.currentOwnerId] =
-					(acc[commodity.currentOwnerId] || 0) + 1;
+				if (!acc[commodity.currentOwnerId]) {
+					acc[commodity.currentOwnerId] = { quantity: 0, listingIds: [] };
+				}
+				acc[commodity.currentOwnerId].quantity += 1;
+				if (
+					acc[commodity.currentOwnerId].listingIds.indexOf(
+						commodity.listingId,
+					) === -1
+				) {
+					acc[commodity.currentOwnerId].listingIds.push(commodity.listingId);
+				}
 				return acc;
 			},
-			{} as Record<string, number>,
+			{} as Record<string, { quantity: number; listingIds: number[] }>,
 		);
 
 		const partnersWithCommodities = partners.map((partner) => ({
 			partner,
-			quantity: commodityCounts[partner.id] || 0,
+			quantity: commodityCounts[partner.id]?.quantity || 0,
+			listingIds: commodityCounts[partner.id]?.listingIds || [],
 		}));
 
 		return NextResponse.json({

@@ -18,7 +18,7 @@ contract CommodityExchange {
     event LiquidityRemoved(address indexed tokenAddress, address indexed provider, uint256 amount);
     event ConsumerFundsAdded(address indexed tokenAddress, address indexed consumer, uint256 amount);
     event ConsumerFundsWithdrawn(address indexed tokenAddress, address indexed consumer, uint256 amount);
-    event DistributorPurchaseMade(address indexed tokenAddress, address indexed distributor, uint256 listingId, uint256 quantity);
+    event DistributorPurchaseMade(address indexed tokenAddress, address indexed distributor, uint256 listingId);
     event ConsumerPurchaseMade(address indexed tokenAddress, address indexed consumer, address indexed distributor, uint256 quantity);
 
     constructor(address _factory, address _participantRegistry) {
@@ -74,23 +74,23 @@ contract CommodityExchange {
         emit ConsumerFundsAdded(tokenAddress, msg.sender, msg.value);
     }
 
-    function distributorManualBuy(address tokenAddress, uint256 listingId, uint256 quantity) external {
+    function distributorManualBuy(address tokenAddress, uint256 listingId) external payable {
         address poolAddress = factory.commodityPoolsByToken(tokenAddress);
         require(poolAddress != address(0), "No pool exists for this commodity");
-        require(participantRegistry.getParticipantByAddress(msg.sender).participantType == ParticipantRegistry.ParticipantType.Distributor, "Only Distributors can manually buy");
 
-        CommodityPool(poolAddress).distributorManualBuy(msg.sender, listingId, quantity);
+        CommodityPool(poolAddress).distributorManualBuy{value: msg.value}(msg.sender, listingId);
 
-        emit DistributorPurchaseMade(tokenAddress, msg.sender, listingId, quantity);
+        emit DistributorPurchaseMade(tokenAddress, msg.sender, listingId);
     }
 
-    function consumerBuyFromDistributor(address tokenAddress, address distributor, uint256 quantity) external {
+    function consumerBuyFromDistributor(address tokenAddress, address distributor, uint256 quantity) external payable {
         address poolAddress = factory.commodityPoolsByToken(tokenAddress);
         require(poolAddress != address(0), "No pool exists for this commodity");
-        require(participantRegistry.getParticipantByAddress(msg.sender).participantType == ParticipantRegistry.ParticipantType.Consumer, "Only consumers can buy from Distributors");
+        // require(participantRegistry.getParticipantByAddress(msg.sender).participantType == ParticipantRegistry.ParticipantType.Consumer, "Only consumers can buy from Distributors");
 
-        CommodityPool(poolAddress).consumerBuyFromDistributor(msg.sender, distributor, quantity);
+        CommodityPool(poolAddress).consumerBuyFromDistributor{value: msg.value}(msg.sender, distributor, quantity);
 
         emit ConsumerPurchaseMade(tokenAddress, msg.sender, distributor, quantity);
     }
+
 }

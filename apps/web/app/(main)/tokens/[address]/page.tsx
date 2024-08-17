@@ -3,8 +3,10 @@ import {
 	fetchCommodity,
 	getCountriesWhereCommodityTokenIsActiveIn,
 } from "@/app/(main)/actions";
+import { PoolTransactions } from "@/app/(main)/tokens/[address]/PoolTransactions";
 import { PriceChart } from "@/app/(main)/tokens/[address]/components/PriceChart";
 import { TokenPageHeader } from "@/app/(main)/tokens/[address]/components/TokenPageHeader";
+import { TokenPageMap } from "@/app/(main)/tokens/[address]/components/TokenPageMap";
 import { TransactWidget } from "@/app/(main)/tokens/[address]/components/widget/TransactWidget";
 import { ItemForPurchase } from "@/components/commodity/ItemForPurchase";
 import { MapToDisplay } from "@/components/input/MapToDisplay";
@@ -26,15 +28,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function Page({ params }: Props) {
-	const countries = await getCountriesWhereCommodityTokenIsActiveIn(
-		params.address,
-	);
-
 	return (
 		<div className="relative">
-			<div className="bg-orange-50">
-				<MapToDisplay regions={countries} mapHeight={225} />
-			</div>
+			<TokenPageMap />
 			<div className="!z-[999] layout flex flex-col -pt-2">
 				<div
 					style={{ marginTop: "-60px" }}
@@ -46,9 +42,10 @@ export default async function Page({ params }: Props) {
 			<div className="layout my-10 space-x-10 flex items-start px-6">
 				<div className="w-8/12">
 					<PriceChart />
+					<PoolTransactions tokenAddress={params.address} />
 				</div>
 				<div className="w-4/12">
-					<TransactWidget countries={countries} address={params.address} />
+					<TransactWidget address={params.address} />
 				</div>
 			</div>
 		</div>

@@ -35,3 +35,20 @@ export function processPriceDistribution(
 
 	return distribution;
 }
+
+export function calculateCommodityPurchaseTotalPrice(
+	currentPrice: number,
+	quantity: number,
+	overheadPercentage?: number,
+) {
+	if (!currentPrice || !quantity) return;
+	const basePrice = currentPrice * quantity;
+
+	let totalPrice = basePrice;
+	if (overheadPercentage !== undefined) {
+		const overheadFee = (basePrice * overheadPercentage) / 10000;
+		totalPrice = basePrice + overheadFee;
+	}
+	const buffer = totalPrice * 0.0002; // 0.01% buffer
+	return totalPrice + buffer;
+}
