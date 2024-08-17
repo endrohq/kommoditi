@@ -211,21 +211,26 @@ export type DistributorPurchaseEvent = {
 	totalPrice: number;
 };
 
+export type ConsumerPurchaseEvent = {
+	consumer: Participant;
+	price: number;
+	totalPrice: number;
+};
+
 export type TimelineEvent = {
 	id?: number;
 	type:
 		| "listing"
-		| "purchase"
 		| "liquidity"
-		| "tokenCreation"
-		| "liquidityEvent"
+		| "consumerPurchase"
 		| "distributorPurchase"
 		| "commodityTransfer";
 	createdAt: Date;
 	commodityToken: CommodityToken;
 	transaction: PoolTransaction;
 } & ListingAddedEvent &
-	DistributorPurchaseEvent;
+	DistributorPurchaseEvent &
+	ConsumerPurchaseEvent;
 
 export type ParticipantUserView = {
 	id: string; // EthAddress

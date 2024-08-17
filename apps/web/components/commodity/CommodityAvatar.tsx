@@ -13,6 +13,7 @@ const variants = cva("rounded-full flex items-center text-lg justify-center ", {
 		},
 		size: {
 			default: "w-10 h-10",
+			sm: "w-8 h-8 !text-sm",
 		},
 	},
 	defaultVariants: {

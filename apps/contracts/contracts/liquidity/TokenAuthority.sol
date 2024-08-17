@@ -33,8 +33,6 @@ contract TokenAuthority {
     }
 
     modifier onlyCommodityExchange() {
-        console.log("msg.sender: %s", msg.sender);
-        console.log("commodityExchange: %s", commodityExchange);
         require(msg.sender == commodityExchange, "Only CommodityExchange can perform this action");
         _;
     }

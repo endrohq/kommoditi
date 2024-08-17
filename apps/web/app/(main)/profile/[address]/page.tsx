@@ -50,8 +50,6 @@ export default function ProfilePage({ params }: ProfilePageProps) {
 		address: params?.address as EthAddress,
 	});
 
-	console.log(account);
-
 	return (
 		<div className="relative">
 			<MapToDisplay regions={account?.locations || []} mapHeight={250} />

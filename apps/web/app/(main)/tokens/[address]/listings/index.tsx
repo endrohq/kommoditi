@@ -31,8 +31,6 @@ export function CommodityListings() {
 
 	const listings = parseListings(listingsData as Record<string, any>[]);
 
-	console.log(listings);
-
 	return (
 		<div>
 			<div className="flex justify-between mb-2">

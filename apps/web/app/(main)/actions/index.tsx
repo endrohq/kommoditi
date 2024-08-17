@@ -37,6 +37,17 @@ export async function fetchCommodity(tokenAddress: string) {
 	return commodity;
 }
 
+export async function fetchLatestPrice(tokenAddress: string) {
+	const { data: prices } = await supabase
+		.from("commodityPrice")
+		.select("price")
+		.eq("tokenAddress", tokenAddress)
+		.order("createdAt", { ascending: false })
+		.limit(1);
+
+	return prices?.[0]?.price;
+}
+
 export async function getCountriesWhereCommodityTokenIsActiveIn(
 	tokenAddress: string,
 ) {
@@ -59,8 +70,6 @@ export async function getCountriesWhereCommodityTokenIsActiveIn(
 		.select("*,locations:location(*)")
 		.in("id", producerIds)
 		.returns<ParticipantUserView[]>();
-
-	console.log(producers);
 
 	const countryNames = (producers || [])
 		.map((producer) => {

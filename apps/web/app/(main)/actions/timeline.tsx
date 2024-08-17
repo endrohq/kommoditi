@@ -6,7 +6,6 @@ function groupEventsByDate(events: TimelineEvent[]): GroupedByDateTimeline[] {
 	const groupedEvents: { [key: string]: TimelineEvent[] } = {};
 
 	events.forEach((event) => {
-		console.log(event);
 		const eventDate = new Date(event.createdAt);
 		let dateGroup: string;
 
@@ -79,7 +78,7 @@ export async function fetchProducerTimeline(
 
 export async function fetchTokenTimeline(
 	tokenAddress: string,
-): Promise<GroupedByDateTimeline[]> {
+): Promise<TimelineEvent[]> {
 	const { data: token, error: tokenError } = await supabase
 		.from("commodityToken")
 		.select("*")
@@ -93,7 +92,7 @@ export async function fetchTokenTimeline(
 
 	const { data: listings, error: listingError } = await supabase
 		.from("listing")
-		.select("*, participant:producerId(*), transaction:transactionHash(*)")
+		.select("*, producer:producerId(*), transaction:transactionHash(*)")
 		.eq("tokenAddress", tokenAddress);
 
 	if (listingError) {
@@ -104,9 +103,7 @@ export async function fetchTokenTimeline(
 	const { data: distributorPurchases, error: distributorPurchaseError } =
 		await supabase
 			.from("distributorPurchase")
-			.select(
-				"*, participant:distributorId(*), transaction:transactionHash(*), listing(*)",
-			)
+			.select("*,distributor:distributorId(*),transaction:transactionHash(*)")
 			.eq("tokenAddress", tokenAddress);
 
 	if (distributorPurchaseError) {
@@ -117,35 +114,31 @@ export async function fetchTokenTimeline(
 		return [];
 	}
 
-	const { data: commodities, error: commodityError } = await supabase
-		.from("commodity")
-		.select("*, participant:currentOwnerId(*), listing(*)")
-		.eq("tokenAddress", tokenAddress);
+	const { data: consumerPurchases, error: consumerPurchaseError } =
+		await supabase
+			.from("consumerPurchase")
+			.select("*,consumer:consumerId(*),transaction:transactionHash(*)")
+			.eq("tokenAddress", tokenAddress);
 
-	if (commodityError) {
-		console.error("Error fetching commodities:", commodityError);
+	if (consumerPurchaseError) {
+		console.error("Error fetching consumer purchases:", consumerPurchaseError);
 		return [];
 	}
 
-	const allEvents: TimelineEvent[] = [
-		{
-			type: "tokenCreation",
-			...token,
-			createdAt: token.createdAt,
-		},
+	return [
 		...listings.map((l) => ({
 			type: "listing",
 			...l,
-			createdAt: l.createdAt,
 		})),
 		...distributorPurchases.map((p) => ({
 			type: "distributorPurchase",
 			...p,
-			createdAt: p.createdAt,
+		})),
+		...consumerPurchases.map((p) => ({
+			type: "consumerPurchase",
+			...p,
 		})),
 	].sort(
-		(a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 	);
-
-	return groupEventsByDate(allEvents);
 }

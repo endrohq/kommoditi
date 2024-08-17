@@ -1,5 +1,6 @@
 import {
 	fetchCommodity,
+	fetchLatestPrice,
 	getCountriesWhereCommodityTokenIsActiveIn,
 } from "@/app/(main)/actions";
 import { TokenPageProvider } from "@/providers/TokenPageProvider";
@@ -13,13 +14,18 @@ interface LayoutProps {
 }
 
 export default async function Layout({ params, children }: LayoutProps) {
-	const [token, countries] = await Promise.all([
+	const [token, countries, currentPrice] = await Promise.all([
 		fetchCommodity(params.address),
 		getCountriesWhereCommodityTokenIsActiveIn(params.address),
+		fetchLatestPrice(params.address),
 	]);
-	console.log(countries);
+
 	return (
-		<TokenPageProvider countries={countries} token={token}>
+		<TokenPageProvider
+			countries={countries}
+			token={token}
+			currentPrice={currentPrice}
+		>
 			{children}
 		</TokenPageProvider>
 	);

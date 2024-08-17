@@ -15,11 +15,13 @@ import {
 } from "@/typings";
 import { nFormatter } from "@/utils/number.utils";
 import { calculateCommodityPurchaseTotalPrice } from "@/utils/price.utils";
+import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import toast from "react-hot-toast";
 
 interface ConfirmOrderForConsumerProps {
 	onClose(): void;
+	onSuccess(): void;
 	quantity: number;
 	overheadPercentage?: number;
 	activeTradeRoutePartner: ParticipantQuantity;
@@ -31,10 +33,12 @@ export function ConfirmOrderForConsumer({
 	quantity,
 	overheadPercentage,
 	onClose,
+	onSuccess,
 	activeTradeRoutePartner,
 	priceDetails,
 	isConsumer,
 }: ConfirmOrderForConsumerProps) {
+	const router = useRouter();
 	const { commodity, currentPrice } = useTokenPage();
 	const { writeToContract, isSubmitting, isSuccessFullPurchase } = usePublishTx(
 		{
@@ -52,9 +56,10 @@ export function ConfirmOrderForConsumer({
 	useEffect(() => {
 		if (isSuccessFullPurchase) {
 			toast.success("Commodity purchased successfully");
-			onClose();
+			router.refresh();
+			onSuccess();
 		}
-	}, []);
+	}, [isSuccessFullPurchase]);
 
 	async function handlePurchase() {
 		const args = isConsumer
@@ -98,7 +103,7 @@ export function ConfirmOrderForConsumer({
 					<span>~{nFormatter(priceDetails?.serviceFee)} HBAR</span>
 				</div>
 				<div className="flex justify-between mb-2">
-					<span>Buffer (0.01%)</span>
+					<span>Buffer (0.15%)</span>
 					<span>~{nFormatter(priceDetails?.buffer)} HBAR</span>
 				</div>
 				<div

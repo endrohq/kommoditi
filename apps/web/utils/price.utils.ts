@@ -1,4 +1,5 @@
-import { CommodityPoolLiquidity } from "@/typings";
+import { CommodityPoolLiquidity, CommodityPurchasePrice } from "@/typings";
+import { useMemo } from "react";
 
 export function processPriceDistribution(
 	distributorLiquidities: CommodityPoolLiquidity[] = [],
@@ -51,4 +52,39 @@ export function calculateCommodityPurchaseTotalPrice(
 	}
 	const buffer = totalPrice * 0.0002; // 0.01% buffer
 	return totalPrice + buffer;
+}
+
+const basePriceDetails: CommodityPurchasePrice = {
+	basePrice: 0,
+	overheadFee: 0,
+	subtotal: 0,
+	serviceFee: 0,
+	buffer: 0,
+	totalPrice: 0,
+};
+
+export function calculateCommodityPriceDetails(
+	price: number,
+	quantity: number,
+	overheadPercentage?: number,
+): CommodityPurchasePrice {
+	if (!price || !quantity) return basePriceDetails;
+
+	const basePrice = price * (quantity || 0);
+	const overheadFee = overheadPercentage
+		? (basePrice * overheadPercentage) / 10000
+		: 0;
+	const subtotal = basePrice + overheadFee;
+	const serviceFee = (subtotal * 100) / 10000; // 1%
+	const buffer = (subtotal * 15) / 10000; // 0.15%
+	const totalPrice = subtotal + serviceFee + buffer;
+
+	return {
+		basePrice,
+		overheadFee,
+		subtotal,
+		serviceFee,
+		buffer,
+		totalPrice,
+	};
 }

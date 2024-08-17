@@ -1,6 +1,7 @@
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { MinusOutlined } from "@/components/icons/MinusOutlined";
 import { PlaneOutlined } from "@/components/icons/PlaneOutlined";
+import { baseCommodityUnit } from "@/lib/constants";
 import { useTokenPage } from "@/providers/TokenPageProvider";
 import { ParticipantQuantity, ParticipantType } from "@/typings";
 import clsx from "clsx";
@@ -12,6 +13,7 @@ interface TradeRouteDisplayProps {
 	countryOfUser: string;
 	activeCountryName: string;
 	participantType?: ParticipantType;
+	isConsumer?: boolean;
 }
 
 export function TradeRouteDisplay({
@@ -19,20 +21,20 @@ export function TradeRouteDisplay({
 	countryOfUser,
 	activeTradeRoutePartner,
 	activeCountryName,
-	participantType,
+	isConsumer,
 }: TradeRouteDisplayProps) {
 	const { commodity } = useTokenPage();
 	function RouteFound() {
-		if (participantType === ParticipantType.DISTRIBUTOR) {
+		if (!isConsumer) {
 			return (
 				<>
-					<span>Producer</span>{" "}
 					<span className="font-medium leading-normal text-black">
 						{activeTradeRoutePartner?.partner?.name}
 					</span>{" "}
 					<span>
 						was found in <span className="underline">{activeCountryName}</span>{" "}
-						you distribute in.
+						selling {activeTradeRoutePartner?.quantity}
+						{baseCommodityUnit}.
 					</span>
 				</>
 			);
@@ -52,7 +54,7 @@ export function TradeRouteDisplay({
 	}
 
 	function NoTradeRoutesFound() {
-		if (participantType === ParticipantType.DISTRIBUTOR) {
+		if (!isConsumer) {
 			return (
 				<>
 					<span className="font-medium leading-normal text-black">

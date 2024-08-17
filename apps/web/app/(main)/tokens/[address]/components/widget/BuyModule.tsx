@@ -16,18 +16,19 @@ import { ConfirmOrderForConsumer } from "@/app/(main)/tokens/[address]/component
 import { TradeRouteDisplay } from "@/app/(main)/tokens/[address]/components/widget/TradeRouteDisplay";
 
 import { nFormatter } from "@/utils/number.utils";
-import { calculateCommodityPurchaseTotalPrice } from "@/utils/price.utils";
+import { calculateCommodityPriceDetails } from "@/utils/price.utils";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useMemo } from "react";
 import Select from "react-select";
 
 export function BuyModule() {
 	const params = useSearchParams();
+
 	const { isAuthenticated, account } = useAuth();
+	const isConsumer = account?.type === "CONSUMER";
+
 	const { commodity, currentPrice, countries } = useTokenPage();
-
 	const [intentionToBuy, setIntentionToBuy] = React.useState(false);
-
 	const [form, setForm] = React.useState<Partial<BuyModuleArgs>>({
 		country: countries?.find((c) => c.id === params.get("country")),
 	});
@@ -51,6 +52,12 @@ export function BuyModule() {
 		return tradeRoute?.options?.[0];
 	}, [tradeRoute]);
 
+	const quantityToBeUsed = useMemo(() => {
+		return isConsumer
+			? form?.quantity || 0
+			: activeTradeRoutePartner?.quantity || 0;
+	}, [isConsumer, form?.quantity, activeTradeRoutePartner]);
+
 	useEffect(() => {
 		if (form?.country?.id) {
 			refetch();
@@ -67,7 +74,7 @@ export function BuyModule() {
 			return "Connect Wallet";
 		} else if (!form?.country) {
 			return "Select Origin";
-		} else if (hasNoAmount) {
+		} else if (isConsumer && hasNoAmount) {
 			return "Enter an amount";
 		} else {
 			return `Purchase for ~${nFormatter(totalPrice || 0)} HBAR`;
@@ -79,14 +86,14 @@ export function BuyModule() {
 
 		return (
 			!form?.country ||
-			hasNoAmount ||
+			(hasNoAmount && isConsumer) ||
 			intentionToBuy ||
 			!activeTradeRoutePartner?.partner?.id
 		);
 	}
 
 	const commodityPriceDetails = useMemo<CommodityPurchasePrice>(() => {
-		if (!currentPrice || !form?.quantity) {
+		if (!currentPrice || (!form?.quantity && isConsumer)) {
 			return {
 				basePrice: 0,
 				overheadFee: 0,
@@ -97,42 +104,17 @@ export function BuyModule() {
 			};
 		}
 
-		const basePrice = currentPrice * (form?.quantity || 0);
-		const overheadFee = activeTradeRoutePartner?.partner?.overheadPercentage
-			? (basePrice * activeTradeRoutePartner?.partner?.overheadPercentage) /
-				10000
-			: 0;
-		const subtotal = basePrice + overheadFee;
-		const serviceFee = (subtotal * 100) / 10000; // 1%
-		const buffer = (subtotal * 1) / 10000; // 0.01%
-		const totalPrice = subtotal + serviceFee + buffer;
-
-		console.log("Frontend Calculation:");
-		console.log("Base Price:", basePrice);
-		console.log("Overhead Fee:", overheadFee);
-		console.log("Subtotal:", subtotal);
-		console.log("Service Fee:", serviceFee);
-		console.log("Buffer:", buffer);
-		console.log("Total Price:", totalPrice);
-
-		return {
-			basePrice,
-			overheadFee,
-			subtotal,
-			serviceFee,
-			buffer,
-			totalPrice,
-		};
-	}, [
-		currentPrice,
-		form?.quantity,
-		activeTradeRoutePartner?.partner?.overheadPercentage,
-	]);
+		return calculateCommodityPriceDetails(
+			currentPrice,
+			quantityToBeUsed,
+			activeTradeRoutePartner?.partner?.overheadPercentage,
+		);
+	}, [currentPrice, form?.quantity, activeTradeRoutePartner]);
 
 	return (
 		<>
 			<div className="bg-gray-100 rounded p-6 space-y-2">
-				<div className="mb-1">
+				<div className="mb-1 pb1">
 					<div className="text-xs mb-2 text-gray-800">Origin</div>
 					<Select
 						placeholder="Columbia, Congo, .."
@@ -163,49 +145,52 @@ export function BuyModule() {
 						countryOfUser={countryOfUser}
 						activeTradeRoutePartner={activeTradeRoutePartner}
 						activeCountryName={form?.country?.name}
-						participantType={account?.type}
+						isConsumer={isConsumer}
 					/>
 				)}
-				<div className="pb-4">
-					<div className="text-xs mb-2 text-gray-800">Amount</div>
-					<div className="flex items-center justify-between bg-gray-200 py-2 px-4 rounded">
-						<NumericInput
-							onCorrection={() => setHadCorrection(true)}
-							placeholder="0"
-							max={
-								activeTradeRoutePartner?.partner?.id
-									? activeTradeRoutePartner?.quantity || 0
-									: undefined
-							}
-							className="text-lg font-medium"
-							value={form?.quantity}
-							onChange={(value) => {
-								setForm({ ...form, quantity: value });
-								if (hadCorrection) {
-									setHadCorrection(false);
+				{isConsumer && (
+					<div className="pb-4">
+						<div className="text-xs mb-2 text-gray-800">Amount</div>
+						<div className="flex items-center justify-between bg-gray-200 py-2 px-4 rounded">
+							<NumericInput
+								onCorrection={() => setHadCorrection(true)}
+								placeholder="0"
+								max={
+									activeTradeRoutePartner?.partner?.id
+										? activeTradeRoutePartner?.quantity || 0
+										: undefined
 								}
-							}}
-						/>
-						<div className="text-gray-400 font-medium flex items-center space-x-1 text-sm">
-							<span>{baseCommodityUnit}</span> <span>{commodity?.symbol}</span>
+								className="text-lg font-medium"
+								value={form?.quantity}
+								onChange={(value) => {
+									setForm({ ...form, quantity: value });
+									if (hadCorrection) {
+										setHadCorrection(false);
+									}
+								}}
+							/>
+							<div className="text-gray-400 font-medium flex items-center space-x-1 text-sm">
+								<span>{baseCommodityUnit}</span>{" "}
+								<span>{commodity?.symbol}</span>
+							</div>
 						</div>
-					</div>
-					{activeTradeRoutePartner && (
-						<span
-							className={clsx(
-								"text-xs mt-1.5",
-								hadCorrection ? "text-red-800 font-medium" : "text-gray-500",
-							)}
-						>
-							* Available supply through{" "}
-							<span className="font-medium">
-								{activeTradeRoutePartner?.partner?.name}
+						{activeTradeRoutePartner && (
+							<span
+								className={clsx(
+									"text-xs mt-1.5",
+									hadCorrection ? "text-red-800 font-medium" : "text-gray-600",
+								)}
+							>
+								* Available supply through{" "}
+								<span className="font-medium">
+									{activeTradeRoutePartner?.partner?.name}
+								</span>
+								: {activeTradeRoutePartner?.quantity || 0}
+								{baseCommodityUnit}
 							</span>
-							: {activeTradeRoutePartner?.quantity || 0}
-							{baseCommodityUnit}
-						</span>
-					)}
-				</div>
+						)}
+					</div>
+				)}
 				<div>
 					<ButtonWithAuthentication
 						disabled={isButtonDisabled()}
@@ -220,21 +205,23 @@ export function BuyModule() {
 					</ButtonWithAuthentication>
 				</div>
 			</div>
-			{intentionToBuy &&
-				activeTradeRoutePartner &&
-				form?.quantity &&
-				commodityPriceDetails && (
-					<ConfirmOrderForConsumer
-						activeTradeRoutePartner={activeTradeRoutePartner}
-						quantity={form?.quantity}
-						overheadPercentage={
-							activeTradeRoutePartner?.partner?.overheadPercentage
-						}
-						priceDetails={commodityPriceDetails}
-						onClose={() => setIntentionToBuy(false)}
-						isConsumer={account?.type === "CONSUMER"}
-					/>
-				)}
+			{intentionToBuy && activeTradeRoutePartner && commodityPriceDetails && (
+				<ConfirmOrderForConsumer
+					activeTradeRoutePartner={activeTradeRoutePartner}
+					quantity={quantityToBeUsed}
+					overheadPercentage={
+						activeTradeRoutePartner?.partner?.overheadPercentage
+					}
+					priceDetails={commodityPriceDetails}
+					onClose={() => setIntentionToBuy(false)}
+					onSuccess={() => {
+						setIntentionToBuy(false);
+						setForm({});
+						setHadCorrection(false);
+					}}
+					isConsumer={isConsumer}
+				/>
+			)}
 		</>
 	);
 }

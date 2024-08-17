@@ -123,8 +123,6 @@ contract CommodityPool {
         require(distributorOwnedSerialNumbers[distributor].length >= quantity, "Not enough commodities in Distributor inventory");
 
         (, , , , uint256 totalPrice) = getConsumerTotalPrice(distributor, quantity);
-        console.log('totalPrice: %s', totalPrice);
-        console.log('Given value: %s', msg.value);
         require(msg.value >= totalPrice, "Insufficient payment for purchase");
 
         _executeConsumerPurchase(consumer, distributor, quantity, true);

@@ -4,6 +4,7 @@ import {
 	getCountriesWhereCommodityTokenIsActiveIn,
 } from "@/app/(main)/actions";
 import { PoolTransactions } from "@/app/(main)/tokens/[address]/PoolTransactions";
+import { TokenStatistics } from "@/app/(main)/tokens/[address]/TokenStatistics";
 import { PriceChart } from "@/app/(main)/tokens/[address]/components/PriceChart";
 import { TokenPageHeader } from "@/app/(main)/tokens/[address]/components/TokenPageHeader";
 import { TokenPageMap } from "@/app/(main)/tokens/[address]/components/TokenPageMap";
@@ -31,15 +32,8 @@ export default async function Page({ params }: Props) {
 	return (
 		<div className="relative">
 			<TokenPageMap />
-			<div className="!z-[999] layout flex flex-col -pt-2">
-				<div
-					style={{ marginTop: "-60px" }}
-					className="bg-white shadow-sm w-full rounded p-6"
-				>
-					<TokenPageHeader />
-				</div>
-			</div>
-			<div className="layout my-10 space-x-10 flex items-start px-6">
+			<TokenPageHeader />
+			<div className="layout my-10 space-x-10 flex items-start px-10">
 				<div className="w-8/12">
 					<PriceChart />
 					<PoolTransactions tokenAddress={params.address} />

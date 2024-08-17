@@ -16,7 +16,7 @@ type PriceEndpointResult = {
 };
 
 export function PriceChart() {
-	const { commodity, setCurrentPrice } = useTokenPage();
+	const { commodity, currentPrice } = useTokenPage();
 	const [displayedPrice, setDisplayedPrice] = React.useState<number>();
 
 	const { data, isLoading } = useQuery({
@@ -27,14 +27,6 @@ export function PriceChart() {
 			),
 	});
 
-	useEffect(() => {
-		console.log({ priceData: data });
-		if (data?.currentPrice) {
-			setCurrentPrice(data.currentPrice);
-		}
-	}, [data]);
-
-	const currentPrice = data?.currentPrice;
 	const history = data?.history || [];
 
 	const chartOptions: AreaChartOptions = {

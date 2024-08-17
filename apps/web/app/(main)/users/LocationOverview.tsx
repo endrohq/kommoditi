@@ -8,7 +8,6 @@ interface PageProps {
 }
 
 export function LocationOverview({ regions }: PageProps) {
-	console.log("regions", regions);
 	return (
 		<div className="p4 rounded overflow-hidden">
 			<MapToDisplay regions={regions} mapHeight={400} />
