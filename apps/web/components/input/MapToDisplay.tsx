@@ -15,6 +15,7 @@ interface MapWithRegionsProps {
 	initialViewState?: MapBoxViewState;
 	mapHeight?: number;
 	regions: Region[];
+	customZoom?: number;
 }
 
 export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
@@ -25,6 +26,7 @@ export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
 	},
 	regions,
 	mapHeight,
+	customZoom,
 }) => {
 	const mapRef = useRef<MapRef>(null);
 	const [mapLoaded, setMapLoaded] = useState(false);
@@ -38,6 +40,7 @@ export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
 
 	useEffect(() => {
 		if (mapRef.current && regionsData.length > 0 && mapLoaded) {
+			// Always fit bounds
 			const bounds = new mapboxgl.LngLatBounds();
 			regionsData.forEach(({ geometry }) => {
 				if (geometry.geometry.type === "Point") {
@@ -54,9 +57,19 @@ export const MapToDisplay: React.FC<MapWithRegionsProps> = ({
 					});
 				}
 			});
+
 			mapRef.current.fitBounds(bounds, { padding: 40, duration: 1000 });
+
+			// Apply custom zoom after a short delay to ensure bounds are fit first
+			if (customZoom !== undefined) {
+				setTimeout(() => {
+					if (mapRef.current) {
+						mapRef.current.setZoom(customZoom);
+					}
+				}, 1100); // Slightly longer than the fitBounds duration
+			}
 		}
-	}, [regionsData, mapLoaded]);
+	}, [regionsData, mapLoaded, customZoom]);
 
 	return (
 		<Map

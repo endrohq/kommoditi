@@ -115,7 +115,7 @@ export function ContainerHeader() {
 								</HeaderGlobalAction>
 							) : !isAuthenticated ? (
 								<HeaderGlobalAction aria-label="Login" onClick={login}>
-									<Button kind="ghost" size="sm">
+									<Button className="mr-10" kind="ghost" size="sm">
 										Login
 									</Button>
 								</HeaderGlobalAction>

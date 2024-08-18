@@ -21,6 +21,9 @@
   .layout {
     @apply w-[95%] xl:w-[90%] mx-auto max-w-[1440px];
   }
+  .layout-xs {
+    @apply w-[95%] mx-auto max-w-[760px];
+  }
 }
 
 * {
@@ -29,4 +32,9 @@
 
 canvas, .cds--data-table-content {
   z-index: 0 !important;
+}
+
+.homepage-banner {
+  background: url('/homepage-banner.png') no-repeat bottom right;
+  background-size: cover;
 }
