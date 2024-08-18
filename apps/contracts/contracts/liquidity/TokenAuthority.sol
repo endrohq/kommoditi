@@ -3,7 +3,6 @@ pragma solidity ^0.8.24;
 
 import "../tokenService/IHederaTokenService.sol";
 import "../HederaResponseCodes.sol";
-import "hardhat/console.sol";
 
 contract TokenAuthority {
 
@@ -111,18 +110,4 @@ contract TokenAuthority {
         return tokenInfo;
     }
 
-    function getCommodities() external returns (CommodityInfo[] memory) {
-        CommodityInfo[] memory commodities = new CommodityInfo[](createdTokens.length);
-
-        for (uint i = 0; i < createdTokens.length; i++) {
-            address tokenAddress = createdTokens[i];
-            (int64 responseCode, IHederaTokenService.TokenInfo memory tokenInfo) = tokenService.getTokenInfo(tokenAddress);
-
-            require(responseCode == HederaResponseCodes.SUCCESS, "Failed to get token info");
-
-            commodities[i] = CommodityInfo(tokenAddress, tokenInfo);
-        }
-
-        return commodities;
-    }
 }

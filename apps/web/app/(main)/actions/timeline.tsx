@@ -1,3 +1,4 @@
+import { networkId } from "@/lib/constants";
 import { GroupedByDateTimeline, TimelineEvent } from "@/typings";
 import supabase from "@/utils/supabase.utils";
 import { format, isToday, isYesterday } from "date-fns";
@@ -43,7 +44,8 @@ export async function fetchProducerTimeline(
 		.select(
 			"*,commodityToken(*),transaction:transactionHash(*),quantity:commodity(count)",
 		)
-		.eq("producerId", address);
+		.eq("producerId", address)
+		.eq("chainId", networkId);
 
 	if (listingError) {
 		console.error("Error fetching listings:", listingError);
@@ -55,7 +57,8 @@ export async function fetchProducerTimeline(
 	const { data: purchases, error: purchaseError } = await supabase
 		.from("distributorPurchase")
 		.select("*,commodityToken(*),transaction:transactionHash(*),distributor(*)")
-		.in("listingId", listingIds);
+		.in("listingId", listingIds)
+		.eq("chainId", networkId);
 
 	if (purchaseError) {
 		console.error("Error fetching purchases:", purchaseError);
@@ -83,6 +86,7 @@ export async function fetchTokenTimeline(
 		.from("commodityToken")
 		.select("*")
 		.eq("tokenAddress", tokenAddress)
+		.eq("chainId", networkId)
 		.single();
 
 	if (tokenError) {
@@ -93,7 +97,8 @@ export async function fetchTokenTimeline(
 	const { data: listings, error: listingError } = await supabase
 		.from("listing")
 		.select("*, producer:producerId(*), transaction:transactionHash(*)")
-		.eq("tokenAddress", tokenAddress);
+		.eq("tokenAddress", tokenAddress)
+		.eq("chainId", networkId);
 
 	if (listingError) {
 		console.error("Error fetching listings:", listingError);
@@ -104,7 +109,8 @@ export async function fetchTokenTimeline(
 		await supabase
 			.from("distributorPurchase")
 			.select("*,distributor:distributorId(*),transaction:transactionHash(*)")
-			.eq("tokenAddress", tokenAddress);
+			.eq("tokenAddress", tokenAddress)
+			.eq("chainId", networkId);
 
 	if (distributorPurchaseError) {
 		console.error(
@@ -118,7 +124,8 @@ export async function fetchTokenTimeline(
 		await supabase
 			.from("consumerPurchase")
 			.select("*,consumer:consumerId(*),transaction:transactionHash(*)")
-			.eq("tokenAddress", tokenAddress);
+			.eq("tokenAddress", tokenAddress)
+			.eq("chainId", networkId);
 
 	if (consumerPurchaseError) {
 		console.error("Error fetching consumer purchases:", consumerPurchaseError);

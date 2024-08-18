@@ -5,11 +5,6 @@
 				"internalType": "address",
 				"name": "_factory",
 				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "_participantRegistry",
-				"type": "address"
 			}
 		],
 		"stateMutability": "nonpayable",
@@ -347,19 +342,6 @@
 		"name": "listCommodity",
 		"outputs": [],
 		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "participantRegistry",
-		"outputs": [
-			{
-				"internalType": "contract ParticipantRegistry",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
 		"type": "function"
 	},
 	{

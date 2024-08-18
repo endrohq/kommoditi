@@ -1,4 +1,5 @@
 import { fetchParticipantsWithLocations } from "@/app/(main)/actions";
+import { networkId } from "@/lib/constants";
 import { ParticipantType, ParticipantUserView, Region } from "@/typings";
 import { getCountryNameFromAddress } from "@/utils/commodity.utils";
 import { findTradingPartners } from "@/utils/overlap.utils";
@@ -12,6 +13,7 @@ async function getParticipantDetails(
 		.from("participant")
 		.select("*,locations:location(*)")
 		.eq("id", participantId)
+		.eq("chainId", networkId)
 		.single<ParticipantUserView>();
 
 	if (error) {
@@ -39,7 +41,8 @@ async function getCommoditiesForParticipants(
 		.from("commodity")
 		.select("*")
 		.in("currentOwnerId", participantIds)
-		.eq("tokenAddress", tokenAddress);
+		.eq("tokenAddress", tokenAddress)
+		.eq("chainId", networkId);
 
 	if (error) {
 		console.error("Error fetching commodities:", error);

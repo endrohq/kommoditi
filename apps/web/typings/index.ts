@@ -1,5 +1,12 @@
 import { Point } from "geojson";
 
+export type ContractName =
+	| "participantRegistry"
+	| "commodityExchange"
+	| "tokenAuthority"
+	| "commodityFactory"
+	| "commodityPool";
+
 export enum ParticipantType {
 	PRODUCER = "PRODUCER",
 	DISTRIBUTOR = "DISTRIBUTOR",

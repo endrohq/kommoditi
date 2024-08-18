@@ -4,13 +4,11 @@ pragma solidity ^0.8.24;
 import "./liquidity/TokenAuthority.sol";
 import "./liquidity/CommodityFactory.sol";
 import "./liquidity/CommodityPool.sol";
-import "./ParticipantRegistry.sol";
 
 contract CommodityExchange {
     address public admin;
     CommodityFactory public factory;
     TokenAuthority public tokenAuthority;
-    ParticipantRegistry public participantRegistry;
 
     event CommodityTokenCreated(address indexed tokenAddress, string name, string symbol);
     event CommodityListed(address indexed tokenAddress, int64[] serialNumbers, address indexed producer);
@@ -21,10 +19,9 @@ contract CommodityExchange {
     event DistributorPurchaseMade(address indexed tokenAddress, address indexed distributor, uint256 listingId);
     event ConsumerPurchaseMade(address indexed tokenAddress, address indexed consumer, address indexed distributor, uint256 quantity);
 
-    constructor(address _factory, address _participantRegistry) {
+    constructor(address _factory) {
         admin = msg.sender;
         factory = CommodityFactory(_factory);
-        participantRegistry = ParticipantRegistry(_participantRegistry);
     }
 
     modifier onlyAdmin() {
@@ -37,7 +34,7 @@ contract CommodityExchange {
         tokenAuthority = TokenAuthority(_tokenAuthority);
     }
 
-    function createCommodityToken(string memory name, string memory symbol) external onlyAdmin {
+    function createCommodityToken(string memory name, string memory symbol) external  {
         address tokenAddress = tokenAuthority.createToken(name, symbol);
         factory.createPool(tokenAddress);
         emit CommodityTokenCreated(tokenAddress, name, symbol);
@@ -46,7 +43,6 @@ contract CommodityExchange {
     function listCommodity(address tokenAddress, int64 quantity) external {
         address poolAddress = factory.commodityPoolsByToken(tokenAddress);
         require(poolAddress != address(0), "No pool exists for this token");
-        require(participantRegistry.getParticipantByAddress(msg.sender).participantType == ParticipantRegistry.ParticipantType.Producer, "Only producers can list commodities");
 
         int64[] memory serialNumbers = tokenAuthority.mintNFT(tokenAddress, msg.sender, quantity);
         CommodityPool(poolAddress).addListing(msg.sender, serialNumbers);
@@ -57,7 +53,6 @@ contract CommodityExchange {
     function provideLiquidity(address tokenAddress, uint256 minPrice, uint256 maxPrice) external payable {
         address poolAddress = factory.commodityPoolsByToken(tokenAddress);
         require(poolAddress != address(0), "No pool exists for this commodity");
-        require(participantRegistry.getParticipantByAddress(msg.sender).participantType == ParticipantRegistry.ParticipantType.Distributor, "Only Distributors can provide liquidity");
 
         CommodityPool(poolAddress).provideLiquidity{value: msg.value}(msg.sender, minPrice, maxPrice);
 
@@ -67,7 +62,6 @@ contract CommodityExchange {
     function addConsumerFunds(address tokenAddress) external payable {
         address poolAddress = factory.commodityPoolsByToken(tokenAddress);
         require(poolAddress != address(0), "No pool exists for this commodity");
-        require(participantRegistry.getParticipantByAddress(msg.sender).participantType == ParticipantRegistry.ParticipantType.Consumer, "Only consumers can add funds");
 
         CommodityPool(poolAddress).consumerProvideFunds{value: msg.value}(msg.sender);
 
@@ -86,7 +80,6 @@ contract CommodityExchange {
     function consumerBuyFromDistributor(address tokenAddress, address distributor, uint256 quantity) external payable {
         address poolAddress = factory.commodityPoolsByToken(tokenAddress);
         require(poolAddress != address(0), "No pool exists for this commodity");
-        // require(participantRegistry.getParticipantByAddress(msg.sender).participantType == ParticipantRegistry.ParticipantType.Consumer, "Only consumers can buy from Distributors");
 
         CommodityPool(poolAddress).consumerBuyFromDistributor{value: msg.value}(msg.sender, distributor, quantity);
 

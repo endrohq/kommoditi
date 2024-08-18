@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import "./TokenAuthority.sol";
 import "../HederaResponseCodes.sol";
 import "../ParticipantRegistry.sol";
-import "hardhat/console.sol";
 
 contract CommodityPool {
     struct Listing {
@@ -262,7 +261,7 @@ contract CommodityPool {
         uint256 totalPrice
     ) {
         basePrice = currentPrice * quantity;
-        uint256 overheadPercentage = participantRegistry.getParticipantByAddress(distributor).overheadPercentage;
+        uint256 overheadPercentage = participantRegistry.getOverheadPercentage(distributor);
         overheadFee = (basePrice * overheadPercentage) / FEE_PRECISION;
         subtotal = basePrice + overheadFee;
         serviceFee = (subtotal * FEE_PERCENTAGE) / FEE_PRECISION;

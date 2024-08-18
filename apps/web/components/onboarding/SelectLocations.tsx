@@ -15,6 +15,8 @@ import {
 
 import { Button } from "@/components/button";
 import { ContextHeader } from "@/components/onboarding/ContextHeader";
+import { TrashCan } from "@carbon/icons-react";
+import clsx from "clsx";
 import React from "react";
 
 interface SelectLocationsProps {
@@ -77,34 +79,49 @@ export function SelectLocations({
 								: [PlaceType.ADDRESS]
 						}
 					/>
-					<TableContainer>
-						{/*Add a table of our selected regions*/}
-						<Table className="!z-0">
-							<TableBody className="!z-0">
-								{hasSelectedRegions ? (
-									locations?.map((region) => (
-										<TableRow className="!z-0" key={`region-${region.id}`}>
-											<TableCell className="capitalize">{region.id}</TableCell>
-											<TableCell className="font-medium !text-black">
-												{region.name} (Lat:{region.centerLat}, Lng:
-												{region.centerLng})
-											</TableCell>
-											<TableCell>
-												<CloseOutlined
-													className="text-gray-600 hover:text-red-800 cursor-pointer"
-													onClick={() => handleRegionRemove(region)}
-												/>
-											</TableCell>
-										</TableRow>
-									))
-								) : (
-									<TableRow>
-										<TableCell>Add the regions you are active in</TableCell>
-									</TableRow>
-								)}
-							</TableBody>
-						</Table>
-					</TableContainer>
+
+					<div className="!mt-6">
+						<div>
+							<div className="flex items-center text-xs text-gray-600 font-medium pb-2.5 px-4">
+								<div className="w-1/12 ">#</div>
+								<div className="w-7/12 ">Location</div>
+								<div className="w-4/12"></div>
+							</div>
+						</div>
+						<div className="text-sm">
+							{hasSelectedRegions ? (
+								locations?.map((region, idx) => (
+									<div
+										className={clsx("flex items-center py-4 px-4", {
+											"bg-gray-50": idx % 2 === 0,
+										})}
+										key={`region-${region.id}`}
+									>
+										<div className="capitalize text-xs w-1/12">{idx + 1}</div>
+										<div className="w-7/12 font-medium !text-black">
+											{region.name}
+										</div>
+										<div className="w-4/12">
+											<div
+												onClick={() => handleRegionRemove(region)}
+												className="flex items-center hover:text-red-800 cursor-pointer text-gray-600 space-x-1.5"
+											>
+												<TrashCan className=" " />
+												<div>Remove</div>
+											</div>
+										</div>
+									</div>
+								))
+							) : (
+								<div className="py-2 px-4 bg-gray-50 rounded flex items-center">
+									<div className="capitalize w-1/12">-</div>
+									<div className="w-7/12 text-gray-500">
+										No locations selected..
+									</div>
+								</div>
+							)}
+						</div>
+					</div>
 					<Button
 						disabled={!locations || locations?.length === 0}
 						type="submit"

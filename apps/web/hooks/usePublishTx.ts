@@ -1,4 +1,5 @@
-import { EthAddress } from "@/typings";
+import { useNetworkManager } from "@/providers/NetworkManager";
+import { ContractName, EthAddress } from "@/typings";
 import { useEffect, useState } from "react";
 import { Abi, parseEther } from "viem";
 import { useWatchContractEvent, useWriteContract } from "wagmi";
@@ -8,6 +9,7 @@ interface useWriteTransactionArgs {
 	abi: Abi;
 	functionName: string;
 	eventName: string;
+	contractName: ContractName;
 }
 
 interface useWriteTransactionReturnProps {
@@ -22,7 +24,9 @@ export function usePublishTx({
 	abi,
 	functionName,
 	eventName,
+	contractName,
 }: useWriteTransactionArgs): useWriteTransactionReturnProps {
+	const { signalNewTx } = useNetworkManager();
 	const [isSuccess, setIsSuccess] = useState(false);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const { writeContract, data: hash, error } = useWriteContract();
@@ -42,12 +46,17 @@ export function usePublishTx({
 		onLogs(logs) {
 			logs.forEach((log) => {
 				if (log.transactionHash === hash) {
-					setIsSuccess(true);
-					setIsSubmitting(false);
+					handleSuccess();
 				}
 			});
 		},
 	});
+
+	async function handleSuccess() {
+		await signalNewTx(contractName);
+		setIsSuccess(true);
+		setIsSubmitting(false);
+	}
 
 	function writeToContract(args: unknown[], value?: string) {
 		if (isSubmitting) return;

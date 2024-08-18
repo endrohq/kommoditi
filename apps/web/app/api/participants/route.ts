@@ -8,7 +8,8 @@ export async function GET() {
 	try {
 		const { data: participants, error } = await supabase
 			.from("participant")
-			.select("*");
+			.select("*")
+			.eq("chainId", networkId);
 
 		if (error) {
 			console.error("Error fetching participants:", error);
@@ -32,6 +33,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 				.from("participant")
 				.select("*")
 				.eq("id", item.id)
+				.eq("chainId", networkId)
 				.single();
 
 			if (!participant) {
@@ -79,6 +81,7 @@ async function upsertParticipant(item: Participant) {
 			.from("location")
 			.select("*")
 			.eq("id", location.id)
+			.eq("chainId", networkId)
 			.single();
 		if (existingLocation) continue;
 
@@ -92,6 +95,7 @@ async function upsertParticipant(item: Participant) {
 				centerLng: location.centerLng / 1000000,
 				centerLat: location.centerLat / 1000000,
 				participant_id: item.id,
+				chainId: networkId,
 			})
 			.select()
 			.single();

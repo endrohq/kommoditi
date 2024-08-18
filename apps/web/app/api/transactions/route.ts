@@ -5,11 +5,8 @@ import {
 	CommodityStatus,
 	ConsumerPurchased,
 	DistributorPurchased,
-	LiquidityChanged,
 	ListingAdded,
-	Participant,
 	PoolTransaction,
-	PoolTransactionType,
 	PriceUpdated,
 } from "@/typings";
 
@@ -19,7 +16,8 @@ export async function GET() {
 	try {
 		const { data: transactions, error } = await supabase
 			.from("transaction")
-			.select("*");
+			.select("*")
+			.eq("chainId", networkId);
 
 		if (error) {
 			console.error("Error fetching transactions:", error);
@@ -43,6 +41,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 				.from("transaction")
 				.select("*")
 				.eq("id", item.id)
+				.eq("chainId", networkId)
 				.single();
 
 			if (!transaction) {
@@ -72,6 +71,7 @@ async function handleListingAdded(event: ListingAdded) {
 			createdAt: event.createdAt,
 			transactionHash: event.transactionHash,
 			tokenAddress: event.tokenAddress,
+			chainId: networkId,
 		})
 		.single();
 
@@ -84,6 +84,7 @@ async function handleListingAdded(event: ListingAdded) {
 		status: CommodityStatus.LISTED,
 		currentOwnerId: event.producerId,
 		tokenAddress: event.tokenAddress,
+		chainId: networkId,
 	}));
 
 	const { error: commoditiesError } = await supabase
@@ -98,6 +99,7 @@ async function handlePriceUpdated(event: PriceUpdated) {
 		tokenAddress: event.tokenAddress,
 		transactionHash: event.transactionHash,
 		price: event.price,
+		chainId: networkId,
 	});
 
 	if (error) throw error;
@@ -114,6 +116,7 @@ async function handleDistributorPurchase(event: DistributorPurchased) {
 			listingId: event.listingId,
 			price: event.price,
 			totalPrice: event.totalPrice,
+			chainId: networkId,
 		});
 
 	if (distributorError) throw distributorError;
@@ -125,7 +128,8 @@ async function handleDistributorPurchase(event: DistributorPurchased) {
 			status: CommodityStatus.PURCHASED_BY_DISTRIBUTOR,
 			currentOwnerId: event.distributorId,
 		})
-		.in("id", event.serialNumbers);
+		.in("id", event.serialNumbers)
+		.eq("chainId", networkId);
 
 	if (commoditiesError) throw commoditiesError;
 }
@@ -141,6 +145,7 @@ async function handleConsumerPurchase(event: ConsumerPurchased) {
 			consumerId: event.consumerId,
 			price: event.price,
 			totalPrice: event.totalPrice,
+			chainId: networkId,
 		});
 
 	if (consumerError) throw consumerError;
@@ -152,7 +157,8 @@ async function handleConsumerPurchase(event: ConsumerPurchased) {
 			status: CommodityStatus.PURCHASED_BY_CONSUMER,
 			currentOwnerId: event.consumerId,
 		})
-		.in("id", event.serialNumbers);
+		.in("id", event.serialNumbers)
+		.eq("chainId", networkId);
 
 	if (commoditiesError) throw commoditiesError;
 }

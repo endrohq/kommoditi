@@ -407,6 +407,50 @@
 		"type": "function"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "distributor",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "quantity",
+				"type": "uint256"
+			}
+		],
+		"name": "getConsumerTotalPrice",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "basePrice",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "overheadFee",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "subtotal",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "serviceFee",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "totalPrice",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [],
 		"name": "listingCount",
 		"outputs": [

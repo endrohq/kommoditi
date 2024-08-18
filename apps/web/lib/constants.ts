@@ -2,6 +2,7 @@ import { Abi } from "viem";
 import { http, createConfig } from "wagmi";
 import { hardhat, hederaTestnet } from "wagmi/chains";
 
+import { ContractName } from "@/typings";
 import commodityPoolAbi from "./abis/commodity-pool.abi.json";
 import exchangeAbi from "./abis/exchange.abi.json";
 import commodityFactoryAbi from "./abis/factory.abi.json";
@@ -37,19 +38,12 @@ export const chainOptions = isLocalNetwork
 	? localOnlyConfig
 	: testnetOnlyConfig;
 
-type ContractNames =
-	| "participantRegistry"
-	| "commodityExchange"
-	| "tokenAuthority"
-	| "commodityFactory"
-	| "commodityPool";
-
 type ContractInfo = {
 	address: `0x${string}`;
 	abi: Abi;
 };
 
-const localContracts: Record<ContractNames, ContractInfo> = {
+const localContracts: Record<ContractName, ContractInfo> = {
 	participantRegistry: {
 		address: "0xc5BE7797465EEe63523c4674F347730A9D0472A4",
 		abi: participantsAbi as Abi,
@@ -72,26 +66,26 @@ const localContracts: Record<ContractNames, ContractInfo> = {
 	},
 };
 
-const testnetContracts: Record<ContractNames, ContractInfo> = {
+const testnetContracts: Record<ContractName, ContractInfo> = {
 	participantRegistry: {
-		address: "0x",
-		abi: [],
+		address: "0x65d72E96Ed0e48e08c08b06a3Fd05b2BB1F7e957",
+		abi: participantsAbi as Abi,
 	},
 	commodityExchange: {
-		address: "0x",
-		abi: [],
+		address: "0xaeFf7F3FdcCa9fF29ad4568EFB331A3feaCCa0d9",
+		abi: exchangeAbi as Abi,
 	},
 	tokenAuthority: {
-		address: "0x",
-		abi: [],
+		address: "0xf716DFC4a3eadefD9128607FDE29793642cC5129",
+		abi: tokenAuthorityAbi as Abi,
 	},
 	commodityFactory: {
-		address: "0x",
-		abi: [],
+		address: "0xe9877ff42FBC2c00812ea922Bd58df9377AEB444",
+		abi: commodityFactoryAbi as Abi,
 	},
 	commodityPool: {
 		address: "0x",
-		abi: [],
+		abi: commodityPoolAbi as Abi,
 	},
 };
 

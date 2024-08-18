@@ -35,7 +35,7 @@ contract ParticipantRegistry {
     mapping(address => Participant) public participants;
     uint256 public participantCount;
 
-    event ParticipantRegistered(address indexed participantAddress, string name, ParticipantType participantType);
+    event ParticipantRegistered(address indexed participant, string name, ParticipantType participantType, uint256 overheadPercentage, Location[] locations);
     event AddressAdded(address indexed participant, address indexed addedAddress);
 
     function registerParticipant(string memory _name, uint256 _overheadPercentage, ParticipantType _participantType, Location[] memory _locations) public {
@@ -48,7 +48,7 @@ contract ParticipantRegistry {
         }
         participantCount++;
 
-        emit ParticipantRegistered(msg.sender, _name, _participantType);
+        emit ParticipantRegistered(msg.sender, _name, _participantType, _overheadPercentage, _locations);
     }
 
     function addToAddressBook(address _address) public {
@@ -79,24 +79,8 @@ contract ParticipantRegistry {
         return false;
     }
 
-    function getParticipantByAddress(address _participantAddress) public view returns (ParticipantView memory) {
-        Participant storage p = participants[_participantAddress];
-        ParticipantType pType;
-
-        if (bytes(p.name).length == 0) {
-            return ParticipantView(0, "", new Location[](0), ParticipantType.Producer, new address[](0));
-        }
-
-        // Determine participant type (you might want to store this explicitly in the Participant struct in a real-world scenario)
-        if (_participantAddress == address(uint160(participantCount - 1))) {
-            pType = ParticipantType.Consumer;
-        } else if (_participantAddress == address(uint160(participantCount - 2))) {
-            pType = ParticipantType.Distributor;
-        } else {
-            pType = ParticipantType.Producer;
-        }
-
-        return ParticipantView(p.overheadPercentage, p.name, p.locations, pType, p.addressBook);
+    function getOverheadPercentage(address _participant) public view returns (uint256) {
+        return participants[_participant].overheadPercentage;
     }
 
 }

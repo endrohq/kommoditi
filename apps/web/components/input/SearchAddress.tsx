@@ -37,10 +37,13 @@ export function SearchAddress({
 			)}.json?access_token=${mapboxAccessToken}&types=${allowTypes.join(",")}`,
 		);
 
-		const data: IGeocoderResult = await response.json();
-
-		if (data.features && data.features.length > 0) {
-			setSearchResults(data.features);
+		if (response.ok) {
+			const data: IGeocoderResult = await response.json();
+			if (data.features && data.features.length > 0) {
+				setSearchResults(data.features);
+			} else {
+				setSearchResults([]);
+			}
 		} else {
 			setSearchResults([]);
 		}
@@ -92,7 +95,7 @@ export function SearchAddress({
 				isMulti={false}
 				onInputChange={(inputValue) => debouncedHandleAddressSearch(inputValue)}
 				noOptionsMessage={() => "No results found"}
-				className="!text-sm !border-gray-200 !z-[100]"
+				className="!text-sm"
 			/>
 		</>
 	);

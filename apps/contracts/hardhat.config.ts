@@ -11,6 +11,7 @@ const config: HardhatUserConfig = {
     hederaTestnet: {
       url: "https://testnet.hashio.io/api",
       chainId: 296,
+      timeout: 120000, // 2 minutes in milliseconds
       accounts: [adminAccount],
     },
     hardhat: {

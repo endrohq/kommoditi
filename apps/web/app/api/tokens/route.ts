@@ -1,3 +1,4 @@
+import { networkId } from "@/lib/constants";
 import { CommodityToken } from "@/typings";
 import supabase from "@/utils/supabase.utils";
 import { NextResponse } from "next/server";
@@ -10,6 +11,7 @@ export async function GET() {
 	const { data: commodityTokens, error: tokenError } = await supabase
 		.from("commodityToken")
 		.select("*")
+		.eq("chainId", networkId)
 		.returns<CommodityToken[]>();
 
 	if (!commodityTokens) return NextResponse.json([]);
@@ -20,6 +22,7 @@ export async function GET() {
 			.from("commodityPrice")
 			.select("*")
 			.eq("tokenAddress", token.tokenAddress)
+			.eq("chainId", networkId)
 			.order("createdAt", { ascending: false })
 			.limit(1);
 

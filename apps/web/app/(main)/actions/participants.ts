@@ -1,5 +1,6 @@
 "use server";
 
+import { networkId } from "@/lib/constants";
 import { CommodityToken, Participant, ParticipantProfile } from "@/typings";
 import supabase from "@/utils/supabase.utils";
 
@@ -10,10 +11,10 @@ export async function getParticipant(
 		.from("participant")
 		.select("*,locations:location(*)")
 		.eq("id", address)
+		.eq("chainId", networkId)
 		.single<Participant>();
 
 	if (error) {
-		console.error(`Error fetching participant ${address}:`, error);
 		return {} as ParticipantProfile;
 	}
 
@@ -21,11 +22,13 @@ export async function getParticipant(
 		.from("commodity")
 		.select("tokenAddress")
 		.eq("currentOwnerId", address)
+		.eq("chainId", networkId)
 		.returns<{ tokenAddress: string }[]>();
 
 	const { data: tokens } = await supabase
 		.from("commodityToken")
 		.select("*")
+		.eq("chainId", networkId)
 		.returns<CommodityToken[]>();
 
 	// group commodities by id and count the amount of tokens in possession with default value of 0

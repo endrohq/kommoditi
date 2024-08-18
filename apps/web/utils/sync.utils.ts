@@ -15,7 +15,7 @@ import {
 	parseSmCommodityPoolEvent,
 	smParticipantTypeToParticipantType,
 } from "@/utils/parser.utils";
-import { getPublicClient, readContract, readContracts } from "@wagmi/core";
+import { getPublicClient, readContracts } from "@wagmi/core";
 
 import { formatEther } from "viem";
 
@@ -39,10 +39,12 @@ export async function getCommoditiesFromClient(chainId: number) {
 		const tokens = commoditiesData as GetCommodityResponse[];
 		const pools = poolData as GetAllPoolsResponse[];
 		const parsedCommodities = parseCommodities(tokens, pools, chainId);
-		await fetchWrapper<any>("/api/commodities", {
-			method: "POST",
-			body: JSON.stringify(parsedCommodities),
-		});
+		if (parsedCommodities.length > 0) {
+			await fetchWrapper<any>("/api/commodities", {
+				method: "POST",
+				body: JSON.stringify(parsedCommodities),
+			});
+		}
 		return parsedCommodities;
 	} catch (error) {
 		console.error("Error fetching stored commodities:", error);
@@ -119,10 +121,12 @@ export async function getPoolTransactions(
 			}),
 		);
 
-		await fetchWrapper("/api/transactions", {
-			method: "POST",
-			body: JSON.stringify(transactions),
-		});
+		if (transactions.length > 0) {
+			await fetchWrapper("/api/transactions", {
+				method: "POST",
+				body: JSON.stringify(transactions),
+			});
+		}
 	} catch (error) {
 		console.error("Error fetching stored transactions:", error);
 	}
@@ -136,34 +140,29 @@ export async function getParticipants(fromBlock: bigint, toBlock: bigint) {
 			// @ts-ignore
 			(event) => event.name === "ParticipantRegistered",
 		),
-		fromBlock: BigInt(0),
+		fromBlock,
 	});
 
 	const dataWithNull: (Participant | null)[] = await Promise.all(
 		events.map(async (log) => {
-			const { name, participantAddress, participantType } = log.args as Record<
-				string,
-				any
-			>;
+			const {
+				name,
+				participant,
+				participantType,
+				locations,
+				overheadPercentage,
+			} = log.args as Record<string, any>;
+
+			console.log(log.args);
 
 			const type = smParticipantTypeToParticipantType(participantType);
 
-			const result = await readContract(chainOptions, {
-				address: contracts.participantRegistry.address,
-				abi: contracts.participantRegistry.abi,
-				functionName: "getParticipantByAddress",
-				args: [participantAddress],
-			});
-
-			if (!result) return null;
-			const participant = result as Participant;
-
 			return {
-				id: participantAddress,
+				id: participant,
 				name,
-				overheadPercentage: Number(participant.overheadPercentage),
+				overheadPercentage: Number(overheadPercentage),
 				type,
-				locations: participant.locations?.map((l) => ({
+				locations: locations?.map((l: Record<string, any>) => ({
 					id: l.id,
 					name: l.name,
 					centerLat: Number(l.centerLat),
@@ -174,8 +173,11 @@ export async function getParticipants(fromBlock: bigint, toBlock: bigint) {
 		}),
 	);
 	const participants = dataWithNull.filter((p) => p !== null) as Participant[];
-	await fetchWrapper<any>("/api/participants", {
-		method: "POST",
-		body: JSON.stringify(participants),
-	});
+
+	if (participants.length > 0) {
+		await fetchWrapper("/api/participants", {
+			method: "POST",
+			body: JSON.stringify(participants),
+		});
+	}
 }

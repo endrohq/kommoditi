@@ -8,7 +8,8 @@ export async function GET() {
 	try {
 		const { data: commodities, error } = await supabase
 			.from("commodityToken")
-			.select("*");
+			.select("*")
+			.eq("chainId", networkId);
 
 		if (error) {
 			console.error("Error fetching commodities:", error);

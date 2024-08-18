@@ -1,5 +1,6 @@
 "use server";
 
+import { networkId } from "@/lib/constants";
 import {
 	CommodityGroup,
 	CommodityToken,
@@ -22,6 +23,7 @@ export async function loadCommodities() {
 	const { data: commodities, error } = await supabase
 		.from("commodityToken")
 		.select("*")
+		.eq("chainId", networkId)
 		.returns<CommodityToken[]>();
 
 	return commodities;
@@ -32,6 +34,7 @@ export async function fetchCommodity(tokenAddress: string) {
 		.from("commodityToken")
 		.select("*")
 		.eq("tokenAddress", tokenAddress)
+		.eq("chainId", networkId)
 		.single<CommodityToken>();
 
 	return commodity;
@@ -42,6 +45,7 @@ export async function fetchLatestPrice(tokenAddress: string) {
 		.from("commodityPrice")
 		.select("price")
 		.eq("tokenAddress", tokenAddress)
+		.eq("chainId", networkId)
 		.order("createdAt", { ascending: false })
 		.limit(1);
 
@@ -54,6 +58,7 @@ export async function getCountriesWhereCommodityTokenIsActiveIn(
 	const { data: commodities, error } = await supabase
 		.from("listing")
 		.select("producerId")
+		.eq("chainId", networkId)
 		.eq("tokenAddress", tokenAddress);
 
 	if (error) {
@@ -69,6 +74,7 @@ export async function getCountriesWhereCommodityTokenIsActiveIn(
 		.from("participant")
 		.select("*,locations:location(*)")
 		.in("id", producerIds)
+		.eq("chainId", networkId)
 		.returns<ParticipantUserView[]>();
 
 	const countryNames = (producers || [])

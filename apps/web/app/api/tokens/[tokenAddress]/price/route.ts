@@ -1,3 +1,4 @@
+import { networkId } from "@/lib/constants";
 import { CommodityPricePoint, PriceUpdated } from "@/typings";
 import supabase from "@/utils/supabase.utils";
 import { NextRequest, NextResponse } from "next/server";
@@ -15,6 +16,7 @@ export async function GET(
 		.from("commodityPrice")
 		.select("createdAt, price")
 		.eq("tokenAddress", params.tokenAddress)
+		.eq("chainId", networkId)
 		.gte("createdAt", twentyFourHoursAgo.toISOString())
 		.lte("createdAt", now.toISOString())
 		.order("createdAt", { ascending: true })
@@ -40,6 +42,7 @@ export async function GET(
 				.from("commodityPrice")
 				.select("createdAt, price")
 				.eq("tokenAddress", params.tokenAddress)
+				.eq("chainId", networkId)
 				.lt("createdAt", twentyFourHoursAgo.toISOString())
 				.order("createdAt", { ascending: false })
 				.limit(1)

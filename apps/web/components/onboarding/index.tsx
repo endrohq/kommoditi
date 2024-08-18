@@ -12,6 +12,7 @@ import { participantTypeToSmParticipantType } from "@/utils/parser.utils";
 
 import { CheckOutlined } from "@/components/icons/CheckOutlined";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import { useAuth } from "@/providers/AuthProvider";
 import { normalizeCoordinate } from "@/utils/number.utils";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
@@ -29,7 +30,7 @@ interface RegisterParticipantProfileProps {
 }
 
 export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
-	const router = useRouter();
+	const { logout } = useAuth();
 	const [type, setType] = useState<ParticipantType>();
 	const [participant, setParticipant] = useState<Partial<ParticipantArgs>>({});
 
@@ -94,6 +95,11 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 			withPadding={false}
 			showClose={false}
 		>
+			<div className="flex justify-end px-4 mt-4">
+				<div className="text-sm cursor-pointer text-blue-700" onClick={logout}>
+					Logout
+				</div>
+			</div>
 			{!type ? (
 				<SelectType setType={setType} />
 			) : !participant.name ? (

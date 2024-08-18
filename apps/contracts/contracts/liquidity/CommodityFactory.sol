@@ -57,23 +57,5 @@ contract CommodityFactory {
         emit PoolCreated(tokenAddress, address(newPool));
     }
 
-    function allPoolsLength() external view returns (uint) {
-        return allPools.length;
-    }
-
-    function getAllPools() external view returns (Pool[] memory) {
-        Pool[] memory pools = new Pool[](allPools.length);
-        for (uint i = 0; i < allPools.length; i++) {
-            pools[i] = Pool({
-                tokenAddress: CommodityPool(allPools[i]).tokenAddress(),
-                poolAddress: allPools[i]
-            });
-        }
-        return pools;
-    }
-
-    function getPoolByToken(address tokenAddress) external view returns (address) {
-        return commodityPoolsByToken[tokenAddress];
-    }
 
 }
