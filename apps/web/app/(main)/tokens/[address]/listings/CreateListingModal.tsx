@@ -15,10 +15,7 @@ import {
 import { Modal } from "@/components/modal";
 import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
-import { useCommodities } from "@/providers/CommoditiesProvider";
 import { useTokenPage } from "@/providers/TokenPageProvider";
-import { ROUTE_HOME } from "@/utils/route.utils";
-import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -44,21 +41,22 @@ export default function CreateListingModal({
 	const {
 		writeToContract: listCommodity,
 		isSubmitting,
-		isSuccessFullPurchase,
+		isSuccess,
 		error,
 	} = usePublishTx({
 		address: commodityExchange.address,
 		abi: commodityExchange.abi,
 		functionName: "listCommodity",
 		eventName: "CommodityListed",
+		contractName: "commodityExchange",
 	});
 
 	useEffect(() => {
-		if (isSuccessFullPurchase) {
+		if (isSuccess) {
 			toast.success("Commodity listed successfully");
 			handleClose();
 		}
-	}, [isSuccessFullPurchase]);
+	}, [isSuccess]);
 
 	useEffect(() => {
 		if (error) {

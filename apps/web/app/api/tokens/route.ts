@@ -1,7 +1,22 @@
-import { networkId } from "@/lib/constants";
+import { contracts, networkId } from "@/lib/constants";
 import { CommodityToken } from "@/typings";
 import supabase from "@/utils/supabase.utils";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+
+import { getHederaAdminAccount, getHederaClient } from "@/utils/hedera.utils";
+import {
+	AccountId,
+	AccountInfoQuery,
+	Client,
+	ContractExecuteTransaction,
+	ContractFunctionParameters,
+	ContractId,
+	PrivateKey,
+	TokenCreateTransaction,
+	TokenId,
+	TokenSupplyType,
+	TokenType,
+} from "@hashgraph/sdk";
 
 type CommodityTokenWithPrice = CommodityToken & {
 	price: number;
@@ -30,4 +45,55 @@ export async function GET() {
 	}
 
 	return NextResponse.json(mergedData || []);
+}
+
+export async function POST(req: NextRequest) {
+	try {
+		const { name, symbol } = await req.json();
+
+		if (!name || !symbol) {
+			return NextResponse.json(
+				{ error: "Name and symbol are required" },
+				{ status: 400 },
+			);
+		}
+
+		const { adminPrivKey, adminAccount } = await getHederaAdminAccount();
+		const client = await getHederaClient();
+
+		const createTokenTx = new TokenCreateTransaction()
+			.setTokenName(name)
+			.setTokenSymbol(symbol)
+			.setTokenType(TokenType.NonFungibleUnique)
+			.setSupplyType(TokenSupplyType.Finite)
+			.setInitialSupply(0)
+			.setMaxSupply(1000000)
+			.setTreasuryAccountId(adminAccount)
+			.setAdminKey(adminPrivKey.publicKey)
+			.setSupplyKey(adminPrivKey.publicKey)
+			.setFreezeDefault(false);
+
+		const tokenTxResponse = await createTokenTx.execute(client);
+		const tokenRx = await tokenTxResponse.getReceipt(client);
+		const tokenId = tokenRx.tokenId!;
+		const tokenAddress = TokenId.fromString(
+			tokenId.toString(),
+		).toSolidityAddress();
+
+		return NextResponse.json({
+			success: true,
+			tokenId: tokenId.toString(),
+			tokenAddress,
+		});
+	} catch (error: any) {
+		console.error("Error creating token:", error);
+		return NextResponse.json(
+			{
+				error: "Failed to create token",
+				details: error.message,
+				stack: error.stack,
+			},
+			{ status: 500 },
+		);
+	}
 }

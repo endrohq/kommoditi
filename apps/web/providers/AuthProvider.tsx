@@ -49,19 +49,20 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 	const [participant, setParticipant] = useState<Participant>();
 	const { authenticated, user, login, ready, logout } = usePrivy();
 
-	useEffect(() => {
-		async function fetchParticipant(address: EthAddress) {
-			try {
-				const response = await fetchWrapper<Participant>(
-					`/api/participants/${address}`,
-				);
-				setParticipant(response);
-			} catch (error) {
-				console.error(error);
-			} finally {
-				setIsLoading(false);
-			}
+	async function fetchParticipant(address: EthAddress) {
+		try {
+			const response = await fetchWrapper<Participant>(
+				`/api/participants/${address}`,
+			);
+			setParticipant(response);
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setIsLoading(false);
 		}
+	}
+
+	useEffect(() => {
 		if (ready && authenticated && !isLoading) {
 			setIsLoading(true);
 			fetchParticipant(user?.wallet?.address as EthAddress);
@@ -94,8 +95,10 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 	return (
 		<AuthContext.Provider value={values}>
 			{children}
-			{!isOnboarded && authenticated && !isLoading && ready && (
-				<OnboardingModal refetch={() => ""} />
+			{isOnboarded && authenticated && !isLoading && ready && (
+				<OnboardingModal
+					refetch={() => fetchParticipant(user?.wallet?.address as EthAddress)}
+				/>
 			)}
 		</AuthContext.Provider>
 	);

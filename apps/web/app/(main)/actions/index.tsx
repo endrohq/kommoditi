@@ -33,7 +33,7 @@ export async function fetchCommodity(tokenAddress: string) {
 	const { data: commodity, error } = await supabase
 		.from("commodityToken")
 		.select("*")
-		.eq("tokenAddress", tokenAddress)
+		.eq("tokenAddress", tokenAddress.toLowerCase())
 		.eq("chainId", networkId)
 		.single<CommodityToken>();
 

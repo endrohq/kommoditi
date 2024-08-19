@@ -8,6 +8,12 @@ const config: Config = {
 	],
 	theme: {
 		extend: {
+			keyframes: {
+				scroll: {
+					"0%": { transform: "translateX(0)" },
+					"100%": { transform: "translateX(-100%)" },
+				},
+			},
 			backgroundColor: {
 				primary: "#004560",
 				secondary: "#287a93",

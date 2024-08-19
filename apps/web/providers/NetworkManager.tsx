@@ -7,6 +7,7 @@ import {
 	getCommoditiesFromClient,
 	getParticipants,
 	getPoolTransactions,
+	syncCommodity,
 } from "@/utils/sync.utils";
 import { usePrivy } from "@privy-io/react-auth";
 import React, { ReactNode, createContext, useEffect } from "react";
@@ -15,6 +16,7 @@ import { useAccount, useBlockNumber, useSwitchChain } from "wagmi";
 interface UseNetworkManagerProps {
 	blockNumber?: bigint;
 	signalNewTx(contractName: ContractName): Promise<void>;
+	signalNewToken(tokenAddress: string, poolAddress: string): Promise<void>;
 }
 
 const BLOCKCHAIN_API_ENDPOINT = "/api/blockchain";
@@ -24,6 +26,7 @@ const SYNC_INTERVAL = 3000000; // 3000 seconds
 export const NetworkManagerContext = createContext<UseNetworkManagerProps>({
 	blockNumber: undefined,
 	signalNewTx: async () => {},
+	signalNewToken: async () => {},
 });
 
 export const useNetworkManager = () => React.useContext(NetworkManagerContext);
@@ -50,15 +53,26 @@ export default function NetworkManager({ children }: AuthProviderProps) {
 	}, [chains, ready]);
 
 	async function checkAndSync(contractNames?: ContractName[]) {
-		const blockNumberOnApi = await fetchWrapper<number>(
-			BLOCKCHAIN_API_ENDPOINT,
-		);
+		let blockNumberOnApi = await fetchWrapper<number>(BLOCKCHAIN_API_ENDPOINT);
+		console.log("blockNumberOnApi", blockNumberOnApi?.toString());
+
+		if (
+			(blockNumberOnApi === undefined ||
+				blockNumberOnApi === null ||
+				blockNumberOnApi === 0) &&
+			currentBlockNumber
+		) {
+			blockNumberOnApi = Number(currentBlockNumber - BigInt(1000));
+		}
 
 		if (blockNumberOnApi < Number(currentBlockNumber)) {
 			if (!currentBlockNumber) return;
 			let commodities: CommodityToken[] = [];
 			if (contractNames?.includes("tokenAuthority")) {
-				commodities = await getCommoditiesFromClient(Number(chainId));
+				commodities = await getCommoditiesFromClient(
+					BigInt(blockNumberOnApi),
+					currentBlockNumber,
+				);
 			}
 
 			if (contractNames?.includes("participantRegistry")) {
@@ -81,6 +95,10 @@ export default function NetworkManager({ children }: AuthProviderProps) {
 		}
 	}
 
+	async function signalNewToken(tokenAddress: string, poolAddress: string) {
+		await syncCommodity([{ tokenAddress, poolAddress }]);
+	}
+
 	useEffect(() => {
 		if (ready && currentBlockNumber) {
 			checkAndSync([
@@ -100,6 +118,7 @@ export default function NetworkManager({ children }: AuthProviderProps) {
 				blockNumber: currentBlockNumber,
 				signalNewTx: (contractName: ContractName) =>
 					checkAndSync([contractName]),
+				signalNewToken,
 			}}
 		>
 			{isNaN(Number(currentBlockNumber)) && ready && (

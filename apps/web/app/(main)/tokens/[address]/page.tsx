@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
 	return (
-		<div className="relative">
+		<div className="relative tokenPage">
 			<TokenPageMap />
 			<TokenPageHeader />
 			<div className="layout my-10 space-x-10 flex items-start px-10">

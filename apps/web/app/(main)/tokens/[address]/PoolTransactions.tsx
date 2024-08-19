@@ -20,7 +20,10 @@ interface TokenSalesOverviewProps {
 	tokenAddress: string;
 }
 
-function TimelineItem({ event, idx }: { event: TimelineEvent; idx: number }) {
+export function TimelineItem({
+	event,
+	idx,
+}: { event: TimelineEvent; idx: number }) {
 	function generateEventSlogan() {
 		switch (event.type) {
 			case "listing":

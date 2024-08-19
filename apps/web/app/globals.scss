@@ -34,3 +34,22 @@ canvas, .cds--data-table-content {
   background: url('/homepage-banner.png') no-repeat bottom right;
   background-size: cover;
 }
+
+.tokenPage {
+  * {
+    z-index: inherit;
+  }
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll linear infinite;
+}

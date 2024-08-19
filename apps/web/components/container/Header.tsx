@@ -1,8 +1,7 @@
 "use client";
 
-import { ChevronDown, UserAvatar } from "@carbon/icons-react";
+import { Add, ChevronDown } from "@carbon/icons-react";
 import {
-	Button,
 	Header,
 	HeaderContainer,
 	HeaderGlobalAction,
@@ -20,6 +19,8 @@ import {
 } from "@carbon/react";
 
 import { EthAvatar } from "@/components/EthAvatar";
+import { Button } from "@/components/button";
+import { CreateCommodityModal } from "@/components/container/CreateCommodityModal";
 import { LoadingOutlined } from "@/components/icons/LoadingOutlined";
 import { appTitle } from "@/lib/constants";
 import { useAuth } from "@/providers/AuthProvider";
@@ -40,9 +41,18 @@ export function ContainerHeader() {
 	const { isAuthenticated, account, login, logout, isLoading } = useAuth();
 	const [isOpen, setIsOpen] = useState(false);
 	const menuButtonRef = useRef(null);
+	const [showModal, setShowModal] = useState(false);
 
 	const handleMenuToggle = () => {
 		setIsOpen(!isOpen);
+	};
+
+	const handleCreateCommodity = () => {
+		if (isAuthenticated) {
+			setShowModal(true);
+		} else {
+			login();
+		}
 	};
 
 	return (
@@ -106,6 +116,13 @@ export function ContainerHeader() {
 							</SideNavItems>
 						</SideNav>
 						<HeaderGlobalBar>
+							<HeaderMenuItem
+								onClick={handleCreateCommodity}
+								className="flex items-center mr-5"
+							>
+								<Button variant="link">Create Commodity</Button>
+							</HeaderMenuItem>
+
 							{isLoading ? (
 								<HeaderGlobalAction
 									className="action-icons relative"
@@ -115,7 +132,7 @@ export function ContainerHeader() {
 								</HeaderGlobalAction>
 							) : !isAuthenticated ? (
 								<HeaderGlobalAction aria-label="Login" onClick={login}>
-									<Button className="mr-10" kind="ghost" size="sm">
+									<Button variant="ghost" className="mr-10" size="sm">
 										Login
 									</Button>
 								</HeaderGlobalAction>
@@ -133,9 +150,11 @@ export function ContainerHeader() {
 											<EthAvatar address={account.address} size={24} />
 										)}
 										<span className="ml-2 text-sm truncate max-w-[100px]">
-											{account?.address
-												? `0x${account.address.slice(2, 6)}...${account.address.slice(-4)}`
-												: "User"}
+											{account?.name
+												? account?.name
+												: account?.address
+													? `0x${account.address.slice(2, 6)}...${account.address.slice(-4)}`
+													: "User"}
 										</span>
 									</div>
 									<ChevronDown size={16} className="ml-2" />
@@ -165,6 +184,9 @@ export function ContainerHeader() {
 					</Header>
 				)}
 			/>
+			{showModal && (
+				<CreateCommodityModal onClose={() => setShowModal(false)} />
+			)}
 		</Theme>
 	);
 }

@@ -66,21 +66,28 @@ const localContracts: Record<ContractName, ContractInfo> = {
 	},
 };
 
+/*
+HelloFutureModuleHederaTestnet#IHederaTokenService - 0x0000000000000000000000000000000000000167
+HelloFutureModuleHederaTestnet#ParticipantRegistry -
+HelloFutureModuleHederaTestnet#CommodityFactory -
+HelloFutureModuleHederaTestnet#CommodityExchange -
+HelloFutureModuleHederaTestnet#TokenAuthority -
+*/
 const testnetContracts: Record<ContractName, ContractInfo> = {
 	participantRegistry: {
-		address: "0x65d72E96Ed0e48e08c08b06a3Fd05b2BB1F7e957",
+		address: "0x4d79aEEeA45875CE1bbC3C49393b5Ee680f7F83C",
 		abi: participantsAbi as Abi,
 	},
 	commodityExchange: {
-		address: "0xaeFf7F3FdcCa9fF29ad4568EFB331A3feaCCa0d9",
+		address: "0xA718759B61FA54b09456D71f56448a2A4d9b9270",
 		abi: exchangeAbi as Abi,
 	},
 	tokenAuthority: {
-		address: "0xf716DFC4a3eadefD9128607FDE29793642cC5129",
+		address: "0x6FDE6E26957610e01484E3f53f737142D758Dab4",
 		abi: tokenAuthorityAbi as Abi,
 	},
 	commodityFactory: {
-		address: "0xe9877ff42FBC2c00812ea922Bd58df9377AEB444",
+		address: "0x0d6861c137DF96105cEDa659d0ACc4B928496D92",
 		abi: commodityFactoryAbi as Abi,
 	},
 	commodityPool: {

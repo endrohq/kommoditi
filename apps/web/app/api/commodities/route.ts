@@ -28,6 +28,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 		const bodyInput = await req.json();
 		const commodities = bodyInput.map((item: CommodityToken) => ({
 			...item,
+			tokenAddress: item.tokenAddress.toLowerCase(),
 			chainId: networkId,
 		}));
 

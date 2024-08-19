@@ -37,16 +37,16 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 	const {
 		writeToContract: register,
 		isSubmitting,
-		isSuccessFullPurchase,
+		isSuccess,
+		status,
 		error,
 	} = usePublishTx({
 		address: contracts.participantRegistry.address,
 		abi: contracts.participantRegistry.abi,
 		functionName: "registerParticipant",
 		eventName: "ParticipantRegistered",
+		contractName: "participantRegistry",
 	});
-
-	const isSuccessDebounced = useDebouncedValue(isSuccessFullPurchase, 300);
 
 	useEffect(() => {
 		if (participant?.locations && participant?.locations?.length > 0) {
@@ -55,10 +55,10 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 	}, [participant]);
 
 	useEffect(() => {
-		if (isSuccessDebounced) {
+		if (status === "success") {
 			refetch();
 		}
-	}, [isSuccessDebounced]);
+	}, [status]);
 
 	useEffect(() => {
 		if (error) {
@@ -95,11 +95,16 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 			withPadding={false}
 			showClose={false}
 		>
-			<div className="flex justify-end px-4 mt-4">
-				<div className="text-sm cursor-pointer text-blue-700" onClick={logout}>
-					Logout
+			{!isSubmitting && !isSuccess && (
+				<div className="flex justify-end px-4 mt-4">
+					<div
+						className="text-sm cursor-pointer text-blue-700"
+						onClick={logout}
+					>
+						Logout
+					</div>
 				</div>
-			</div>
+			)}
 			{!type ? (
 				<SelectType setType={setType} />
 			) : !participant.name ? (
@@ -121,7 +126,7 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 							"w-32 aspect-square  mb-10 rounded-full flex flex-col items-center justify-center",
 							{
 								"animate-pulse bg-gray-50": isSubmitting,
-								"bg-green-50": isSuccessFullPurchase,
+								"bg-green-50": isSuccess,
 							},
 						)}
 					>

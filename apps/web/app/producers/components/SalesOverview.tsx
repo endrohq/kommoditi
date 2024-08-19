@@ -1,5 +1,6 @@
 "use client";
 
+import { TimelineItem } from "@/app/(main)/tokens/[address]/PoolTransactions";
 import { SaleItemModal } from "@/app/producers/components/SaleItemModal";
 import { CommodityAvatar } from "@/components/commodity/CommodityAvatar";
 import { ListingOutlined } from "@/components/icons/ListingOutlined";
@@ -16,62 +17,6 @@ import { useEffect, useState } from "react";
 
 interface SalesOverviewProps {
 	getProducerTimeline(address: string): Promise<GroupedByDateTimeline[]>;
-}
-
-function TimelineItem({ event }: { event: TimelineEvent }) {
-	function generateEventSlogan() {
-		if (event.type === "listing") {
-			return (
-				<>
-					Listed <span className="font-semibold">{event.quantity}KG</span>{" "}
-					{event?.commodityToken?.name} for sale
-				</>
-			);
-		} else if (event.type === "purchase") {
-			const purchase = event as DistributorPurchaseEvent;
-			return (
-				<>
-					Sold <span className="font-semibold">{event.quantity}KG</span>{" "}
-					{event?.commodityToken?.name} to {purchase?.distributor?.name || "-"}
-				</>
-			);
-		}
-		return <>-</>;
-	}
-
-	function getActivityPriceField() {
-		if (event.type === "purchase") {
-			return `+ ${formatNumber((event as any).totalPrice || 0)}`;
-		}
-		return "-";
-	}
-
-	return (
-		<div
-			key={`${event.id}-${event.createdAt}`}
-			className="flex justify-between my-6"
-		>
-			<div className="flex items-center gap-4">
-				<CommodityAvatar variant={event.type} />
-				<div>
-					<div className="text-sm gap-x-1 flex items-center">
-						{generateEventSlogan()}
-					</div>
-					<div className="text-xs text-gray-500 gap-1 flex items-center">
-						<span>{getDistanceForDate(new Date(event.createdAt))}</span>
-						<span>•</span>
-						<span className="capitalize">{event.type}</span>
-					</div>
-				</div>
-			</div>
-			<div className="text-right">
-				<div className="text-sm font-semibold ">{getActivityPriceField()}</div>
-				<div className="text-[10px] leading-none uppercase text-gray-500">
-					HBAR
-				</div>
-			</div>
-		</div>
-	);
 }
 
 export function SalesOverview({ getProducerTimeline }: SalesOverviewProps) {
@@ -115,8 +60,8 @@ export function SalesOverview({ getProducerTimeline }: SalesOverviewProps) {
 					listings.map(({ dateGroup, events }) => (
 						<div key={dateGroup}>
 							<h2 className="text-sm font-medium text-gray-800">{dateGroup}</h2>
-							{events.map((event) => (
-								<TimelineItem key={event.id} event={event} />
+							{events.map((event, idx) => (
+								<TimelineItem key={event.id} event={event} idx={idx} />
 							))}
 						</div>
 					))

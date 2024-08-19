@@ -45,16 +45,10 @@
 				"type": "address"
 			},
 			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "symbol",
-				"type": "string"
+				"indexed": true,
+				"internalType": "address",
+				"name": "poolAddress",
+				"type": "address"
 			}
 		],
 		"name": "CommodityTokenCreated",
@@ -280,14 +274,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "symbol",
-				"type": "string"
+				"internalType": "address",
+				"name": "tokenAddress",
+				"type": "address"
 			}
 		],
 		"name": "createCommodityToken",

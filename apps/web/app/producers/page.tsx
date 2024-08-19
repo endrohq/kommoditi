@@ -1,4 +1,4 @@
-import { fetchProducerTimeline } from "@/app/(main)/actions";
+import { fetchProducerTimeline } from "@/app/(main)/actions/timeline";
 import { ProducerHeader } from "@/app/producers/components/ProducerHeader";
 import { SalesOverview } from "@/app/producers/components/SalesOverview";
 

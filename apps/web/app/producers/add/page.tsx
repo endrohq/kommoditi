@@ -25,21 +25,22 @@ export default function Page() {
 	const {
 		writeToContract: listCommodity,
 		isSubmitting,
-		isSuccessFullPurchase,
+		isSuccess,
 		error,
 	} = usePublishTx({
 		address: contracts.commodityExchange.address,
 		abi: contracts.commodityExchange.abi,
 		functionName: "listCommodity",
 		eventName: "CommodityListed",
+		contractName: "commodityExchange",
 	});
 
 	useEffect(() => {
-		if (isSuccessFullPurchase) {
+		if (isSuccess) {
 			toast.success("Commodity listed successfully");
 			router.push("/producers");
 		}
-	}, [isSuccessFullPurchase]);
+	}, [isSuccess]);
 
 	useEffect(() => {
 		if (error) {

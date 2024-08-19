@@ -14,36 +14,6 @@ import {
 import { parseSmartContractDate } from "@/utils/date.utils";
 import { parseSmToNumberFormat } from "@/utils/number.utils";
 
-export function parseCommodity(
-	commodity: GetCommodityResponse,
-	pools: GetAllPoolsResponse[] = [],
-	chainId: number,
-): CommodityToken {
-	const token = commodity.tokenInfo || ({} as CommodityToken);
-	return {
-		totalSupply: Number(commodity.tokenInfo.totalSupply),
-		name: token.token.name,
-		symbol: token.token.symbol,
-		treasury: token.token.treasury,
-		maxSupply: 0,
-		tokenAddress: commodity.tokenAddress,
-		poolAddress: pools.find(
-			(pool) => pool.tokenAddress === commodity.tokenAddress,
-		)?.poolAddress,
-		chainId,
-	};
-}
-
-export function parseCommodities(
-	commodities: GetCommodityResponse[],
-	pools: GetAllPoolsResponse[],
-	chainId: number,
-) {
-	return (commodities || [])?.map((commodity) =>
-		parseCommodity(commodity, pools, chainId),
-	);
-}
-
 export function parseListings(listingsData: Record<string, any>[]) {
 	return listingsData?.map(
 		(listing) =>
@@ -85,7 +55,7 @@ export function parseSmCommodityPoolEvent(
 	const event = log.args;
 	const baseEvent = {
 		type: log.eventName,
-		tokenAddress: token?.tokenAddress,
+		tokenAddress: token?.tokenAddress?.toLowerCase(),
 		transactionHash: log.transactionHash,
 		createdAt: parseSmartContractDate(event.timestamp),
 	};
@@ -134,7 +104,6 @@ export function parseSmCommodityPoolEvent(
 			return {
 				...baseEvent,
 				price: parseSmToNumberFormat(Number(event.newPrice)),
-				tokenAddress: token?.tokenAddress,
 			} as PriceUpdated;
 		default:
 			throw new Error(`Unsupported event type: ${baseEvent.type}`);

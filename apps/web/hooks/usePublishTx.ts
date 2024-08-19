@@ -1,8 +1,19 @@
+import { chainOptions } from "@/lib/constants";
 import { useNetworkManager } from "@/providers/NetworkManager";
 import { ContractName, EthAddress } from "@/typings";
+import { getPublicClient } from "@wagmi/core";
 import { useEffect, useState } from "react";
-import { Abi, parseEther } from "viem";
-import { useWatchContractEvent, useWriteContract } from "wagmi";
+import { Abi, formatEther, parseEther, parseGwei } from "viem";
+import {
+	useEstimateGas,
+	usePublicClient,
+	useWaitForTransactionReceipt,
+	useWatchContractEvent,
+	useWriteContract,
+} from "wagmi";
+
+const MIN_TX_FEE_HBAR = "1"; // 1 HBAR in string format
+const GAS_BUFFER_FACTOR = 1.3; // Increase buffer to 30%
 
 interface useWriteTransactionArgs {
 	address: EthAddress;
@@ -10,13 +21,24 @@ interface useWriteTransactionArgs {
 	functionName: string;
 	eventName: string;
 	contractName: ContractName;
+	confirmations?: number;
 }
+
+type TransactionState =
+	| "idle"
+	| "estimating"
+	| "submitting"
+	| "confirming"
+	| "success"
+	| "error";
 
 interface useWriteTransactionReturnProps {
 	writeToContract(args: unknown[], value?: string): void;
-	isSubmitting: boolean;
+	status: TransactionState;
 	error: Error | null;
-	isSuccessFullPurchase: boolean;
+	isSubmitting: boolean;
+	isSuccess: boolean;
+	isConfirming: boolean;
 }
 
 export function usePublishTx({
@@ -25,19 +47,37 @@ export function usePublishTx({
 	functionName,
 	eventName,
 	contractName,
+	confirmations = 5,
 }: useWriteTransactionArgs): useWriteTransactionReturnProps {
-	const { signalNewTx } = useNetworkManager();
-	const [isSuccess, setIsSuccess] = useState(false);
-	const [isSubmitting, setIsSubmitting] = useState(false);
+	const { signalNewTx, signalNewToken } = useNetworkManager();
+	const [transactionState, setTransactionState] =
+		useState<TransactionState>("idle");
 	const { writeContract, data: hash, error } = useWriteContract();
+
+	const { isLoading: isWaitingForReceipt, isSuccess: isConfirmed } =
+		useWaitForTransactionReceipt({
+			hash,
+			confirmations,
+		});
 
 	useEffect(() => {
 		if (error) {
 			console.error(error);
-			setIsSubmitting(false);
-			setIsSuccess(false);
+			setTransactionState("error");
 		}
 	}, [error]);
+
+	useEffect(() => {
+		if (isWaitingForReceipt) {
+			setTransactionState("confirming");
+		}
+	}, [isWaitingForReceipt]);
+
+	useEffect(() => {
+		if (isConfirmed) {
+			handleSuccess();
+		}
+	}, [isConfirmed]);
 
 	useWatchContractEvent({
 		address,
@@ -46,41 +86,55 @@ export function usePublishTx({
 		onLogs(logs) {
 			logs.forEach((log) => {
 				if (log.transactionHash === hash) {
-					handleSuccess();
+					if (contractName === "tokenAuthority") {
+						const args = (log as any)?.args as {
+							tokenAddress: string;
+							poolAddress: string;
+						};
+						signalNewToken(args.tokenAddress, args.poolAddress);
+					} else {
+						signalNewTx(contractName);
+					}
+					setTransactionState("confirming");
 				}
 			});
 		},
 	});
 
 	async function handleSuccess() {
-		await signalNewTx(contractName);
-		setIsSuccess(true);
-		setIsSubmitting(false);
+		setTransactionState("success");
 	}
 
-	function writeToContract(args: unknown[], value?: string) {
-		if (isSubmitting) return;
-		setIsSubmitting(true);
-		const valueToUse = value ? parseEther(value) : BigInt(0);
+	async function writeToContract(args: unknown[], value?: string) {
+		if (transactionState === "submitting" || transactionState === "confirming")
+			return;
+
+		setTransactionState("estimating");
+
 		try {
+			const valueToUse = value ? parseEther(value) : undefined;
+
+			setTransactionState("submitting");
+
 			writeContract({
 				address,
 				abi,
 				functionName,
 				args,
-				value: valueToUse,
+				value: valueToUse, // Always add 1 HBAR to cover the minimum fee
 			});
 		} catch (e) {
 			console.error(e);
-			setIsSubmitting(false);
-			setIsSuccess(false);
+			setTransactionState("error");
 		}
 	}
 
 	return {
 		writeToContract,
-		isSubmitting,
+		status: transactionState,
 		error,
-		isSuccessFullPurchase: isSuccess,
+		isSuccess: transactionState === "success",
+		isSubmitting: transactionState === "submitting",
+		isConfirming: transactionState === "confirming",
 	};
 }

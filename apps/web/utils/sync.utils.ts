@@ -2,8 +2,6 @@ import { chainOptions, contracts } from "@/lib/constants";
 import {
 	CommodityToken,
 	EthAddress,
-	GetAllPoolsResponse,
-	GetCommodityResponse,
 	Participant,
 	PoolTransaction,
 	poolTransactionTypes,
@@ -11,41 +9,61 @@ import {
 import { fetchWrapper } from "@/utils/fetch.utils";
 import { formatNumber } from "@/utils/number.utils";
 import {
-	parseCommodities,
 	parseSmCommodityPoolEvent,
 	smParticipantTypeToParticipantType,
 } from "@/utils/parser.utils";
-import { getPublicClient, readContracts } from "@wagmi/core";
+import { getPublicClient } from "@wagmi/core";
 
 import { formatEther } from "viem";
 
-export async function getCommoditiesFromClient(chainId: number) {
+export async function syncCommodity(
+	events: { tokenAddress: string; poolAddress: string }[],
+) {
+	let tokens: CommodityToken[] = [];
+	for (const { tokenAddress, poolAddress } of events) {
+		const token = await fetchWrapper<{ name: string; symbol: string }>(
+			`/api/tokens/${tokenAddress}`,
+		);
+		tokens.push({
+			tokenAddress,
+			poolAddress,
+			name: token.name,
+			symbol: token.symbol,
+		} as CommodityToken);
+	}
+
+	if (tokens.length > 0) {
+		await fetchWrapper("/api/commodities", {
+			method: "POST",
+			body: JSON.stringify(tokens),
+		});
+	}
+
+	return tokens;
+}
+
+export async function getCommoditiesFromClient(
+	fromBlock: bigint,
+	toBlock: bigint,
+) {
 	try {
-		const [{ result: commoditiesData }, { result: poolData }] =
-			await readContracts(chainOptions, {
-				contracts: [
-					{
-						address: contracts.tokenAuthority.address,
-						abi: contracts.tokenAuthority.abi,
-						functionName: "getCommodities",
-					},
-					{
-						address: contracts.commodityFactory.address,
-						abi: contracts.commodityFactory.abi,
-						functionName: "getAllPools",
-					},
-				],
-			});
-		const tokens = commoditiesData as GetCommodityResponse[];
-		const pools = poolData as GetAllPoolsResponse[];
-		const parsedCommodities = parseCommodities(tokens, pools, chainId);
-		if (parsedCommodities.length > 0) {
-			await fetchWrapper<any>("/api/commodities", {
-				method: "POST",
-				body: JSON.stringify(parsedCommodities),
-			});
-		}
-		return parsedCommodities;
+		const client = getPublicClient(chainOptions);
+		const events = await client.getLogs({
+			address: contracts.commodityExchange.address,
+			events: contracts.commodityExchange.abi.filter(
+				// @ts-ignore
+				(event) => event.name === "CommodityTokenCreated",
+			),
+			fromBlock: fromBlock - BigInt(500),
+			toBlock,
+		});
+
+		const input = events.map(({ args }) => ({
+			tokenAddress: (args as any).tokenAddress,
+			poolAddress: (args as any).poolAddress,
+		}));
+
+		return await syncCommodity(input);
 	} catch (error) {
 		console.error("Error fetching stored commodities:", error);
 	}

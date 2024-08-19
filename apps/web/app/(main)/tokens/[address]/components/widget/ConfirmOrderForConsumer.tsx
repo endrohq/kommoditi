@@ -40,26 +40,23 @@ export function ConfirmOrderForConsumer({
 }: ConfirmOrderForConsumerProps) {
 	const router = useRouter();
 	const { commodity, currentPrice } = useTokenPage();
-	const { writeToContract, isSubmitting, isSuccessFullPurchase } = usePublishTx(
-		{
-			address: contracts.commodityExchange.address,
-			abi: contracts.commodityExchange.abi,
-			functionName: isConsumer
-				? "consumerBuyFromDistributor"
-				: "distributorManualBuy",
-			eventName: isConsumer
-				? "ConsumerPurchaseMade"
-				: "DistributorPurchaseMade",
-		},
-	);
+	const { writeToContract, isSubmitting, isSuccess } = usePublishTx({
+		address: contracts.commodityExchange.address,
+		abi: contracts.commodityExchange.abi,
+		functionName: isConsumer
+			? "consumerBuyFromDistributor"
+			: "distributorManualBuy",
+		eventName: isConsumer ? "ConsumerPurchaseMade" : "DistributorPurchaseMade",
+		contractName: "commodityExchange",
+	});
 
 	useEffect(() => {
-		if (isSuccessFullPurchase) {
+		if (isSuccess) {
 			toast.success("Commodity purchased successfully");
 			router.refresh();
 			onSuccess();
 		}
-	}, [isSuccessFullPurchase]);
+	}, [isSuccess]);
 
 	async function handlePurchase() {
 		const args = isConsumer
