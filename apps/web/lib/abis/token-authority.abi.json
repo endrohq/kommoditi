@@ -139,25 +139,6 @@
 	{
 		"inputs": [
 			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			}
-		],
-		"name": "createToken",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
@@ -172,35 +153,6 @@
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "receiver",
-				"type": "address"
-			},
-			{
-				"internalType": "int64",
-				"name": "quantity",
-				"type": "int64"
-			}
-		],
-		"name": "mintNFT",
-		"outputs": [
-			{
-				"internalType": "int64[]",
-				"name": "",
-				"type": "int64[]"
-			}
-		],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{

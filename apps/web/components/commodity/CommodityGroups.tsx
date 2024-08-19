@@ -1,4 +1,4 @@
-import { fetchCommoditiesGroupedByCountry } from "@/app/(main)/actions";
+import { fetchCommoditiesGroupedByCountry } from "@/app/actions";
 import { ItemForPurchase } from "@/components/commodity/ItemForPurchase";
 import React from "react";
 

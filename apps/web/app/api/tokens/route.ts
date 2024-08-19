@@ -5,13 +5,6 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getHederaAdminAccount, getHederaClient } from "@/utils/hedera.utils";
 import {
-	AccountId,
-	AccountInfoQuery,
-	Client,
-	ContractExecuteTransaction,
-	ContractFunctionParameters,
-	ContractId,
-	PrivateKey,
 	TokenCreateTransaction,
 	TokenId,
 	TokenSupplyType,

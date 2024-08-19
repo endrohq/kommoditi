@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
 import "./globals.scss";
+import { Container } from "@/components/container";
 import { Providers } from "@/providers";
+import React from "react";
 
 const ibmPlexSans = IBM_Plex_Sans({
 	weight: ["100", "200", "300", "400", "500", "600", "700"],
@@ -24,7 +26,9 @@ export default function RootLayout({
 	return (
 		<html lang="en">
 			<body className={ibmPlexSans.className}>
-				<Providers>{children}</Providers>
+				<Providers>
+					<Container>{children}</Container>
+				</Providers>
 			</body>
 		</html>
 	);

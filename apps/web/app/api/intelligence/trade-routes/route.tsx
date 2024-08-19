@@ -1,4 +1,4 @@
-import { fetchParticipantsWithLocations } from "@/app/(main)/actions";
+import { fetchParticipantsWithLocations } from "@/app/actions";
 import { networkId } from "@/lib/constants";
 import { ParticipantType, ParticipantUserView, Region } from "@/typings";
 import { getCountryNameFromAddress } from "@/utils/commodity.utils";

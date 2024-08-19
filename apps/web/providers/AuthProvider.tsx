@@ -95,7 +95,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
 	return (
 		<AuthContext.Provider value={values}>
 			{children}
-			{isOnboarded && authenticated && !isLoading && ready && (
+			{!isOnboarded && authenticated && !isLoading && ready && (
 				<OnboardingModal
 					refetch={() => fetchParticipant(user?.wallet?.address as EthAddress)}
 				/>

@@ -150,6 +150,37 @@ export async function getPoolTransactions(
 	}
 }
 
+export function extractParticipant(
+	name: string,
+	participant: string,
+	participantType: number,
+	locations: any[],
+	overheadPercentage: number,
+): Participant {
+	const type = smParticipantTypeToParticipantType(participantType);
+
+	return {
+		id: participant,
+		name,
+		overheadPercentage: Number(overheadPercentage),
+		type,
+		locations: locations?.map((l: Record<string, any>) => ({
+			id: l.id,
+			name: l.name,
+			centerLat: Number(l.centerLat),
+			centerLng: Number(l.centerLng),
+			locationType: l.locationType,
+		})),
+	} as Participant;
+}
+
+export function saveParticipants(participants: Participant[]) {
+	return fetchWrapper("/api/participants", {
+		method: "POST",
+		body: JSON.stringify(participants),
+	});
+}
+
 export async function getParticipants(fromBlock: bigint, toBlock: bigint) {
 	const client = getPublicClient(chainOptions);
 	const events = await client.getLogs({
@@ -162,7 +193,7 @@ export async function getParticipants(fromBlock: bigint, toBlock: bigint) {
 	});
 
 	const dataWithNull: (Participant | null)[] = await Promise.all(
-		events.map(async (log) => {
+		events.map((log) => {
 			const {
 				name,
 				participant,
@@ -170,32 +201,15 @@ export async function getParticipants(fromBlock: bigint, toBlock: bigint) {
 				locations,
 				overheadPercentage,
 			} = log.args as Record<string, any>;
-
-			console.log(log.args);
-
-			const type = smParticipantTypeToParticipantType(participantType);
-
-			return {
-				id: participant,
+			return extractParticipant(
 				name,
-				overheadPercentage: Number(overheadPercentage),
-				type,
-				locations: locations?.map((l: Record<string, any>) => ({
-					id: l.id,
-					name: l.name,
-					centerLat: Number(l.centerLat),
-					centerLng: Number(l.centerLng),
-					locationType: l.locationType,
-				})),
-			} as Participant;
+				participant,
+				participantType,
+				locations,
+				overheadPercentage,
+			);
 		}),
 	);
 	const participants = dataWithNull.filter((p) => p !== null) as Participant[];
-
-	if (participants.length > 0) {
-		await fetchWrapper("/api/participants", {
-			method: "POST",
-			body: JSON.stringify(participants),
-		});
-	}
+	await saveParticipants(participants);
 }

@@ -49,7 +49,8 @@ export function usePublishTx({
 	contractName,
 	confirmations = 5,
 }: useWriteTransactionArgs): useWriteTransactionReturnProps {
-	const { signalNewTx, signalNewToken } = useNetworkManager();
+	const { signalNewTx, signalNewToken, signalNewParticipant } =
+		useNetworkManager();
 	const [transactionState, setTransactionState] =
 		useState<TransactionState>("idle");
 	const { writeContract, data: hash, error } = useWriteContract();
@@ -92,6 +93,21 @@ export function usePublishTx({
 							poolAddress: string;
 						};
 						signalNewToken(args.tokenAddress, args.poolAddress);
+					} else if (contractName === "participantRegistry") {
+						const {
+							name,
+							participant,
+							participantType,
+							locations,
+							overheadPercentage,
+						} = (log as any).args as Record<string, any>;
+						signalNewParticipant(
+							name,
+							participant,
+							participantType,
+							locations,
+							overheadPercentage,
+						);
 					} else {
 						signalNewTx(contractName);
 					}

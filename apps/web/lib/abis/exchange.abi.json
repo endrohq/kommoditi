@@ -287,6 +287,25 @@
 	{
 		"inputs": [
 			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "createdTokens",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
 				"internalType": "address",
 				"name": "tokenAddress",
 				"type": "address"
@@ -323,9 +342,9 @@
 				"type": "address"
 			},
 			{
-				"internalType": "int64",
-				"name": "quantity",
-				"type": "int64"
+				"internalType": "int64[]",
+				"name": "serialNumbers",
+				"type": "int64[]"
 			}
 		],
 		"name": "listCommodity",
@@ -354,32 +373,6 @@
 		"name": "provideLiquidity",
 		"outputs": [],
 		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_tokenAuthority",
-				"type": "address"
-			}
-		],
-		"name": "setTokenAuthority",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "tokenAuthority",
-		"outputs": [
-			{
-				"internalType": "contract TokenAuthority",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
 		"type": "function"
 	}
 ]
