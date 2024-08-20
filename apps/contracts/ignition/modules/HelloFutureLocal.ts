@@ -1,5 +1,4 @@
 import {buildModule} from "@nomicfoundation/hardhat-ignition/modules";
-import {participantsOnDevnet} from "../data";
 
 const HelloFutureModule = buildModule("HelloFutureModuleLocal", (m) => {
 
@@ -24,12 +23,12 @@ const HelloFutureModule = buildModule("HelloFutureModuleLocal", (m) => {
     tokenFutures.push(tokenDeployment);
   }*/
 
-  for (const producer of participantsOnDevnet) {
+  /*for (const producer of participantsOnDevnet) {
     m.call(ParticipantRegistry, 'registerParticipant', [producer.name, producer.overheadPercentage, producer.type, producer.locations], {
       from: producer.account,
       id: `registerParticipant_${producer.name?.replace(/\s/g, '')}`,
     })
-  }
+  }*/
 
   /*for (const listing of listings) {
     m.call(CommodityExchange, 'listCommodity', [listing.token, listing.quantity], {

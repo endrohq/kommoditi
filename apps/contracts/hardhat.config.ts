@@ -1,7 +1,6 @@
 import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import * as dotenv from "dotenv";
-import {adminAccount, localAccounts} from "./ignition/data";
 
 dotenv.config();
 

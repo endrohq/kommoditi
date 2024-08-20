@@ -20,11 +20,13 @@ Important notes:
 
 #### Run the web app with Hedera testnet
 
+Either you keep the current testnet addresses or you can deploy your own contracts. All configurations for this can be found in **./app/web/lib/constants.ts**
+
 When using the testnet, you'll have 2 options:
 1. Use metamask with an existing account that holds testnet HBARs
 2. Use email sign-in after installment, copy your EVM address found on your profile page, and paste it on the [Hedera faucet](https://portal.hedera.com/faucet) to get testnet HBARs
 
-3. Execute the following commands: 
+##### Execute the following commands: 
 ```bash
 cd hello-future-app/apps/web
 mv .env.example .env 
@@ -32,9 +34,9 @@ npm install
 npm run dev
 ```
 
-Compile the contracts:
-
+##### Compile the contracts:
 ```bash
-cd hello-future-app/apps/web
+cd hello-future-app/apps/contracts
 npm install
+npm run deploy:testnet
 ```
