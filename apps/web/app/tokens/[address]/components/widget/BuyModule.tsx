@@ -69,20 +69,22 @@ export function BuyModule() {
 	const countryOfUser =
 		getCountryNameFromAddress(account?.locations?.[0]?.name || "") || "";
 
-	function getButtonLabel(totalPrice: undefined | number) {
+	function getButtonLabel(totalPrice?: number) {
 		if (!isAuthenticated) {
 			return "Connect Wallet";
 		} else if (!form?.country) {
 			return "Select Origin";
 		} else if (isConsumer && hasNoAmount) {
 			return "Enter an amount";
+		} else if (!totalPrice || totalPrice === 0) {
+			return `No utility found`;
 		} else {
 			return `Purchase for ~${nFormatter(totalPrice || 0)} HBAR`;
 		}
 	}
 
-	function isButtonDisabled() {
-		if (!isAuthenticated) return false;
+	function isButtonDisabled(totalPrice?: number) {
+		if (!isAuthenticated || !totalPrice) return false;
 
 		return (
 			!form?.country ||
@@ -193,7 +195,7 @@ export function BuyModule() {
 				)}
 				<div>
 					<ButtonWithAuthentication
-						disabled={isButtonDisabled()}
+						disabled={isButtonDisabled(commodityPriceDetails?.totalPrice)}
 						fullWidth
 						loading={intentionToBuy}
 						variant="black"

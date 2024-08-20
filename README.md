@@ -1,11 +1,10 @@
-# Turborepo starter
+# Kommoditi
 
-This is an official starter Turborepo.
+This is an official repository for the Kommoditi project. A supply chain protocol where adaptive pricing engines, seamless commodity sourcing and automatic client acquisition reduce costs and increase efficiency through the power of Hedera.
 
 ### Requirements
 
 - Node.js 20+
-- Privy.io Auth Key 
 
 ### Apps and Packages
 
@@ -14,9 +13,10 @@ This is an official starter Turborepo.
 
 ### Build & Run
 
-Important note: You need to a privy.io auth key to run the web app. Please refer to the [Privy.io documentation](https://docs.privy.io/) to get your auth key.
+Important notes: 
 
-There are 2 paths to build and run the apps:
+1. You need to a privy.io auth key to run the web app. Please refer to the [Privy.io documentation](https://docs.privy.io/) to get your auth key.
+2. You need to a Mapbox API key to run the web app. Please refer to the [Mapbox documentation](https://docs.mapbox.com/help/getting-started/access-tokens/) to get your API key.
 
 #### Run the web app with Hedera testnet
 
@@ -27,30 +27,7 @@ When using the testnet, you'll have 2 options:
 3. Execute the following commands: 
 ```bash
 cd hello-future-app/apps/web
-mv .env.example .env (& remove NEXT_PUBLIC_IS_LOCAL=true)
-npm install
-npm run dev
-```
-
-
-#### Run the web app with local contracts
-
-1. Setup local network 
-In order to run the contracts locally, you need to have a local hardhat network running. The following set of commands will start a local network and deploy the contracts. If there are any issues, please refer to the [Hardhat documentation](https://hardhat.org/getting-started/).
-
-```bash
-cd hello-future-app/apps/contracts
-npm install
-npm run node
-npm run deploy:local
-```
-
-2. With a local network running, you can now run the web app:
-Execute the following commands in the root folder
-
-```bash
-cd hello-future-app/apps/web
-mv .env.example .env
+mv .env.example .env 
 npm install
 npm run dev
 ```

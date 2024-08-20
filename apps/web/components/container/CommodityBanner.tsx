@@ -28,7 +28,7 @@ export function CommodityBanner() {
 
 	if (isLoading || !data) return null;
 
-	const scrollDuration = contentWidth / 25; // Adjust 50 to change scroll speed
+	const scrollDuration = contentWidth / 10; // Adjust 50 to change scroll speed
 
 	return (
 		<div className="bg-orange-500 overflow-hidden whitespace-nowrap w-full">

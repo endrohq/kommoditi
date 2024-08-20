@@ -48,7 +48,7 @@ export async function POST(req: NextRequest, res: NextResponse) {
 						ignoreDuplicates: false, // Set to true if you want to ignore duplicates
 					});
 
-				if (error || errorCreation) {
+				if (errorCreation) {
 					console.error("Error storing commodities:", error);
 					return new NextResponse("Error storing commodities", { status: 500 });
 				}

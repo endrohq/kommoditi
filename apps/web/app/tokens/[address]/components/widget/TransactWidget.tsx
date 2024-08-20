@@ -91,13 +91,6 @@ export function TransactWidget({ address }: TransactWidgetProps) {
 							setActiveTab={setActiveTab}
 							activeTab={activeTab}
 						/>
-
-						<Link href={`${getTokenPage(address)}/liquidity`}>
-							<TransactWidgetMenuItem
-								activeTab={activeTab}
-								label="add liquidity"
-							/>
-						</Link>
 					</>
 				)}
 			</div>

@@ -3,6 +3,7 @@ import {
 	AccountId,
 	AccountInfoQuery,
 	Client,
+	EthereumTransactionData,
 	Hbar,
 	NftId,
 	PrivateKey,

@@ -20,7 +20,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 	const { account, tokens } = profile;
 
 	return (
-		<div className="relative">
+		<div className="relative tokenPage">
 			<MapToDisplay
 				customZoom={6}
 				regions={account?.locations || []}

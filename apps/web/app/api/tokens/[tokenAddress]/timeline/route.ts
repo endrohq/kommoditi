@@ -4,20 +4,6 @@ import supabase from "@/utils/supabase.utils";
 import { TransactionRecordQuery } from "@hashgraph/sdk";
 import { NextRequest, NextResponse } from "next/server";
 
-async function getHederaTransactionRecord(ethTxHash: string) {
-	const client = await getHederaClient();
-
-	try {
-		const txRecord = await new TransactionRecordQuery()
-			.setTransactionId(ethTxHash)
-			.execute(client);
-
-		return txRecord.transactionId.toString() || "";
-	} catch (error) {
-		console.error("Error fetching transaction record:", error);
-	}
-}
-
 export async function GET(
 	req: NextRequest,
 	{ params }: { params: { tokenAddress: string } },
@@ -88,13 +74,6 @@ export async function GET(
 	].sort(
 		(a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 	);
-
-	for (const event of events) {
-		if (event.transaction?.hash)
-			event.transactionHash = await getHederaTransactionRecord(
-				event.transaction?.hash,
-			);
-	}
 
 	return NextResponse.json(events || []);
 }

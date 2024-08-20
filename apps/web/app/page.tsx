@@ -16,18 +16,10 @@ export default async function Home() {
 		<div className="">
 			<div className="bg-black homepage-banner pb-24 pt-24">
 				<div className="layout">
-					<h1 className="text-2xl font-black text-gray-50">
-						The Most Efficient{" "}
-						<span className="text-gray-100">Supply Chain</span>
-					</h1>
-					<p className="text-base text-gray-100 w-6/12">
-						Automate your supply chain with automated contracts,
-						instant-payments and sub-second shipment accuracy to reduce costs
-						and increase efficiency through the power of{" "}
-						<Link className="font-semibold" href="https://hedera.com">
-							Hedera Hashgraph
-						</Link>
-						.
+					<p className="text-2xl text-gray-100 leading-relaxed w-6/12">
+						Kommodoti is a supply chain protocol where adaptive pricing engines,
+						seamless commodity sourcing and automatic client acquisition reduce
+						costs and increase efficiency through the power of Hedera.
 					</p>
 				</div>
 			</div>

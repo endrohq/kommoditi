@@ -114,15 +114,18 @@ export function ConfirmOrderForConsumer({
 		}
 		setIsTransferring(true);
 		try {
-			const result = await fetchWrapper<ApiResponse>("/api/tokens/transfer", {
-				method: "POST",
-				body: JSON.stringify({
-					tokenAddress: commodity?.tokenAddress,
-					fromAddress: activeTradeRoutePartner?.partner?.id, // Producer's address
-					toAddress: account?.address, // Distributor's address
-					serialNumbers: listingIds,
-				}),
-			});
+			const result = await fetchWrapper<ApiResponse>(
+				`/api/tokens/${commodity?.tokenAddress}/transfer`,
+				{
+					method: "POST",
+					body: JSON.stringify({
+						tokenAddress: commodity?.tokenAddress,
+						fromAddress: activeTradeRoutePartner?.partner?.id, // Producer's address
+						toAddress: account?.address, // Distributor's address
+						serialNumbers: listingIds,
+					}),
+				},
+			);
 
 			if (result?.success) {
 				setIsTransferSuccess(true);

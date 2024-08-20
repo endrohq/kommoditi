@@ -93,11 +93,6 @@ export function ContainerHeader() {
 									Users
 								</Link>
 							</HeaderMenuItem>
-							<HeaderMenuItem onMouseDown={(e: any) => e.preventDefault()}>
-								<Link className="h-full" href={ROUTE_ADMIN_PAGE}>
-									Admin
-								</Link>
-							</HeaderMenuItem>
 						</HeaderNavigation>
 						<SideNav
 							isPersistent={false}

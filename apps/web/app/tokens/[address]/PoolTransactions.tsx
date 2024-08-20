@@ -39,12 +39,7 @@ export function TimelineItem({
 						>
 							{listingEvent?.producer?.name}
 						</Link>{" "}
-						Listed{" "}
-						<span className="font-semibold">
-							{listingEvent.quantity || "-"}
-							{baseCommodityUnit}
-						</span>{" "}
-						{listingEvent.commodityToken?.name} for sale
+						Listed {listingEvent.commodityToken?.name} for sale
 					</>
 				);
 			case "distributorPurchase":
@@ -114,10 +109,10 @@ export function TimelineItem({
 			<div className="w-4/12">
 				<Link
 					target="_blank"
-					href={getTransactionRoute(event.transactionHash)}
-					className="text-xs underline"
+					href={getTransactionRoute(event.transaction.id)}
+					className="text-[11px] underline"
 				>
-					{event.transactionHash}
+					{event.transaction.id}
 				</Link>
 			</div>
 			<div className="ml-auto">
