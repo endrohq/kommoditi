@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./TokenAuthority.sol";
 import "../HederaResponseCodes.sol";
 import "../ParticipantRegistry.sol";
 
@@ -20,7 +19,6 @@ contract CommodityPool {
     }
 
     address public tokenAddress;
-    TokenAuthority public tokenAuthority;
     ParticipantRegistry public participantRegistry;
     address public commodityExchange;
 
@@ -39,7 +37,7 @@ contract CommodityPool {
     mapping(address => int64[]) public distributorOwnedSerialNumbers;
 
     // Price adjustment factors
-    uint256 constant private PRICE_ADJUSTMENT_FACTOR = 1000; // 0.1% adjustment
+    uint256 constant private PRICE_ADJUSTMENT_FACTOR = 16520; // 1.652% adjustment
     uint256 constant private PRICE_ADJUSTMENT_PRECISION = 1000000;
 
     // Fee percentage for facilitating trades
@@ -55,9 +53,8 @@ contract CommodityPool {
     event ConsumerPurchased(address indexed from, address indexed to, int64[] serialNumbers, uint256 price, uint256 totalPrice);
     event PriceUpdated(uint256 newPrice);
 
-    constructor(address _tokenAddress, address _tokenAuthority, address _commodityExchange, address _participantRegistry, bool isHedera) {
+    constructor(address _tokenAddress, address _commodityExchange, address _participantRegistry, bool isHedera) {
         tokenAddress = _tokenAddress;
-        tokenAuthority = TokenAuthority(_tokenAuthority);
         commodityExchange = _commodityExchange;
         participantRegistry = ParticipantRegistry(_participantRegistry);
         currentPrice = isHedera ? HEDERA_BASE_PRICE : ETHEREUM_BASE_PRICE;
@@ -74,12 +71,12 @@ contract CommodityPool {
         uint256 listingId = listingCount++;
         listings[listingId] = Listing(producer, serialNumbers, block.timestamp, true);
         emit ListingAdded(listingId, producer, serialNumbers, block.timestamp);
-        _tryDistributorAutoBuy(listingId);
+        // _tryDistributorAutoBuy(listingId);
 
         adjustPrice(false);
     }
 
-    function provideLiquidity(address distributor, uint256 minPrice, uint256 maxPrice) external payable onlyCommodityExchange {
+    /*function provideLiquidity(address distributor, uint256 minPrice, uint256 maxPrice) external payable onlyCommodityExchange {
         require(msg.value > 0, "Must provide liquidity");
         require(minPrice < maxPrice, "Invalid price range");
 
@@ -96,7 +93,7 @@ contract CommodityPool {
         emit LiquidityChanged(distributor, msg.value, minPrice, maxPrice, true);
 
         _tryDistributorAutoBuyAll(distributor);
-    }
+    }*/
 
     function distributorManualBuy(address distributor, uint256 listingId) external payable onlyCommodityExchange {
         require(listings[listingId].active, "Listing is not active");
@@ -113,10 +110,10 @@ contract CommodityPool {
         }
     }
 
-    function consumerProvideFunds(address consumer) external payable onlyCommodityExchange {
+    /*function consumerProvideFunds(address consumer) external payable onlyCommodityExchange {
         consumerFunds[consumer] += msg.value;
         _tryConsumerAutoBuyAll(consumer);
-    }
+    }*/
 
     function consumerBuyFromDistributor(address consumer, address distributor, uint256 quantity) external payable onlyCommodityExchange {
         require(distributorOwnedSerialNumbers[distributor].length >= quantity, "Not enough commodities in Distributor inventory");
@@ -148,7 +145,6 @@ contract CommodityPool {
         for (uint256 i = 0; i < quantity; i++) {
             serialNumbers[i] = distributorOwnedSerialNumbers[distributor][distributorOwnedSerialNumbers[distributor].length - 1];
             distributorOwnedSerialNumbers[distributor].pop();
-            tokenAuthority.transferNFT(tokenAddress, distributor, consumer, serialNumbers[i]);
         }
 
         if (isManualBuy) {
@@ -161,7 +157,7 @@ contract CommodityPool {
         emit ConsumerPurchased(distributor, consumer, serialNumbers, currentPrice, totalPrice);
     }
 
-    function _tryDistributorAutoBuy(uint256 listingId) internal {
+    /*function _tryDistributorAutoBuy(uint256 listingId) internal {
         Listing storage listing = listings[listingId];
         uint256 totalPrice = currentPrice * listing.serialNumbers.length;
 
@@ -172,9 +168,9 @@ contract CommodityPool {
                 break;
             }
         }
-    }
+    }*/
 
-    function _tryDistributorAutoBuyAll(address distributor) internal {
+    /*function _tryDistributorAutoBuyAll(address distributor) internal {
         for (uint256 i = 0; i < listingCount; i++) {
             if (listings[i].active) {
                 uint256 totalPrice = currentPrice * listings[i].serialNumbers.length;
@@ -183,16 +179,16 @@ contract CommodityPool {
                 }
             }
         }
-    }
+    }*/
 
-    function _isEligibleForAutoBuy(address distributor, address producer, uint256 totalPrice) internal view returns (bool) {
+    /*function _isEligibleForAutoBuy(address distributor, address producer, uint256 totalPrice) internal view returns (bool) {
         return distributorLiquidity[distributor].amount >= totalPrice &&
         currentPrice >= distributorLiquidity[distributor].minPrice &&
         currentPrice <= distributorLiquidity[distributor].maxPrice &&
             participantRegistry.isInAddressBook(distributor, producer);
-    }
+    }*/
 
-    function _tryConsumerAutoBuyAll(address consumer) internal {
+    /*function _tryConsumerAutoBuyAll(address consumer) internal {
         address[] memory approvedDistributors = participantRegistry.getAddressBook(consumer);
         for (uint256 i = 0; i < approvedDistributors.length; i++) {
             address distributor = approvedDistributors[i];
@@ -214,7 +210,7 @@ contract CommodityPool {
                 _executeConsumerPurchase(consumer, distributor, quantityToBuy, false);
             }
         }
-    }
+    }*/
 
     function _executeDistributorPurchase(address distributor, uint256 listingId, bool isManualBuy) internal {
         Listing storage listing = listings[listingId];
@@ -235,7 +231,6 @@ contract CommodityPool {
             int64 serialNumber = listing.serialNumbers[listing.serialNumbers.length - 1];
             listing.serialNumbers.pop();
             distributorOwnedSerialNumbers[distributor].push(serialNumber);
-            tokenAuthority.transferNFT(tokenAddress, listing.producer, distributor, serialNumber);
         }
 
         listing.active = false;

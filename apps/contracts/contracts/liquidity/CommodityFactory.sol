@@ -2,12 +2,10 @@
 pragma solidity ^0.8.24;
 
 import "./CommodityPool.sol";
-import "./TokenAuthority.sol";
 
 contract CommodityFactory {
     address public admin;
     address public commodityExchange;
-    TokenAuthority public tokenAuthority;
     mapping(address => address) public commodityPoolsByToken; // token address => pool address
     address[] public allPools;
     address public participantRegistry;
@@ -40,21 +38,31 @@ contract CommodityFactory {
         commodityExchange = _commodityExchange;
     }
 
-    function setTokenAuthority(address _tokenAuthority) external onlyAdmin {
-        require(address(tokenAuthority) == address(0), "TokenAuthority already set");
-        tokenAuthority = TokenAuthority(_tokenAuthority);
-    }
 
-    function createPool(address tokenAddress) external {
-        require(address(tokenAuthority) != address(0), "TokenAuthority not set");
-        // require(tokenAuthority.isApprovedToken(tokenAddress), "Token not approved for trading");
-        require(commodityPoolsByToken[tokenAddress] == address(0), "Pool already exists");
+    function createPool(address tokenAddress) external returns (address) {
 
-        CommodityPool newPool = new CommodityPool(tokenAddress, address(tokenAuthority), commodityExchange, address(participantRegistry), isHedera);
+        CommodityPool newPool = new CommodityPool(tokenAddress, commodityExchange, address(participantRegistry), isHedera);
         commodityPoolsByToken[tokenAddress] = address(newPool);
         allPools.push(address(newPool));
 
         emit PoolCreated(tokenAddress, address(newPool));
+
+        return address(newPool);
+    }
+
+    function getAllPools() external view returns (Pool[] memory) {
+        Pool[] memory pools = new Pool[](allPools.length);
+        for (uint i = 0; i < allPools.length; i++) {
+            pools[i] = Pool({
+                tokenAddress: CommodityPool(allPools[i]).tokenAddress(),
+                poolAddress: allPools[i]
+            });
+        }
+        return pools;
+    }
+
+    function getPoolByToken(address tokenAddress) external view returns (address) {
+        return commodityPoolsByToken[tokenAddress];
     }
 
 
