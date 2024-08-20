@@ -43,8 +43,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
 						status: 500,
 					});
 				}
-			} else {
-				console.log("Participant already exists");
 			}
 		}
 		return NextResponse.json({ message: "Data inserted successfully" });

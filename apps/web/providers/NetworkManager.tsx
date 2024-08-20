@@ -8,6 +8,7 @@ import {
 	getCommoditiesFromClient,
 	getParticipants,
 	getPoolTransactions,
+	getPoolTransactionsForAllCommodities,
 	saveParticipants,
 	syncCommodity,
 } from "@/utils/sync.utils";
@@ -18,7 +19,7 @@ import { useAccount, useBlockNumber, useSwitchChain } from "wagmi";
 interface UseNetworkManagerProps {
 	blockNumber?: bigint;
 	signalNewTx(contractName: ContractName): Promise<void>;
-	signalNewToken(tokenAddress: string, poolAddress: string): Promise<void>;
+	signalTokenActivity(tokenAddress: string, poolAddress: string): Promise<void>;
 	signalNewParticipant(
 		name: string,
 		participant: string,
@@ -30,13 +31,13 @@ interface UseNetworkManagerProps {
 
 const BLOCKCHAIN_API_ENDPOINT = "/api/blockchain";
 
-const SYNC_INTERVAL = 3000000; // 3000 seconds
+const SYNC_INTERVAL = 60000; // 30 seconds
 
 export const NetworkManagerContext = createContext<UseNetworkManagerProps>({
 	blockNumber: undefined,
 	signalNewTx: async () => {},
-	signalNewToken: async () => {},
 	signalNewParticipant: async () => {},
+	signalTokenActivity: async () => {},
 });
 
 export const useNetworkManager = () => useContext(NetworkManagerContext);
@@ -64,7 +65,6 @@ export default function NetworkManager({ children }: AuthProviderProps) {
 
 	async function checkAndSync(contractNames?: ContractName[]) {
 		let blockNumberOnApi = await fetchWrapper<number>(BLOCKCHAIN_API_ENDPOINT);
-		console.log("blockNumberOnApi", blockNumberOnApi?.toString());
 
 		if (
 			(blockNumberOnApi === undefined ||
@@ -76,24 +76,17 @@ export default function NetworkManager({ children }: AuthProviderProps) {
 		}
 
 		if (blockNumberOnApi < Number(currentBlockNumber)) {
-			if (!currentBlockNumber) return;
-			let commodities: CommodityToken[] = [];
-			if (contractNames?.includes("tokenAuthority")) {
-				commodities = await getCommoditiesFromClient(
-					BigInt(blockNumberOnApi),
-					currentBlockNumber,
-				);
-			}
-
 			if (contractNames?.includes("participantRegistry")) {
-				await getParticipants(BigInt(blockNumberOnApi), currentBlockNumber);
+				await getParticipants(BigInt(blockNumberOnApi - 5000));
 			}
 
-			if (commodities?.length > 0 && contractNames?.includes("commodityPool")) {
-				await getPoolTransactions(
-					BigInt(blockNumberOnApi),
-					currentBlockNumber,
-					commodities,
+			if (contractNames?.includes("commodityExchange")) {
+				await getCommoditiesFromClient(BigInt(blockNumberOnApi - 50));
+			}
+
+			if (contractNames?.includes("commodityPool")) {
+				await getPoolTransactionsForAllCommodities(
+					BigInt(blockNumberOnApi - 500),
 				);
 			}
 
@@ -105,8 +98,15 @@ export default function NetworkManager({ children }: AuthProviderProps) {
 		}
 	}
 
-	async function signalNewToken(tokenAddress: string, poolAddress: string) {
+	async function signalTokenActivity(
+		tokenAddress: string,
+		poolAddress: string,
+	) {
+		if (!currentBlockNumber) return;
 		await syncCommodity([{ tokenAddress, poolAddress }]);
+
+		let blockNumberOnApi = await fetchWrapper<number>(BLOCKCHAIN_API_ENDPOINT);
+		await getPoolTransactionsForAllCommodities(BigInt(blockNumberOnApi - 50));
 	}
 
 	async function signalNewParticipant(
@@ -131,7 +131,6 @@ export default function NetworkManager({ children }: AuthProviderProps) {
 			checkAndSync([
 				"participantRegistry",
 				"commodityPool",
-				"tokenAuthority",
 				"commodityExchange",
 			]);
 		}
@@ -145,8 +144,8 @@ export default function NetworkManager({ children }: AuthProviderProps) {
 				blockNumber: currentBlockNumber,
 				signalNewTx: (contractName: ContractName) =>
 					checkAndSync([contractName]),
-				signalNewToken,
 				signalNewParticipant,
+				signalTokenActivity,
 			}}
 		>
 			{isNaN(Number(currentBlockNumber)) && ready && (

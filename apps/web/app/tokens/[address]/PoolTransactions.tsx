@@ -1,4 +1,5 @@
-import { fetchTokenTimeline } from "@/app/actions/timeline";
+"use client";
+
 import { CommodityAvatar } from "@/components/commodity/CommodityAvatar";
 import { ListingOutlined } from "@/components/icons/ListingOutlined";
 import { baseCommodityUnit } from "@/lib/constants";
@@ -8,10 +9,12 @@ import {
 	ListingAddedEvent,
 	TimelineEvent,
 } from "@/typings";
-import { getShortenedFormat } from "@/utils/address.utils";
 import { getDistanceForDate } from "@/utils/date.utils";
+import { fetchWrapper } from "@/utils/fetch.utils";
+import { parseEthAddressToHederaAccountId } from "@/utils/hedera.utils";
 import { formatNumber } from "@/utils/number.utils";
 import { getProfileRoute, getTransactionRoute } from "@/utils/route.utils";
+import { useQuery } from "@tanstack/react-query";
 import clsx from "clsx";
 import Link from "next/link";
 import React from "react";
@@ -38,7 +41,7 @@ export function TimelineItem({
 						</Link>{" "}
 						Listed{" "}
 						<span className="font-semibold">
-							{listingEvent.quantity}
+							{listingEvent.quantity || "-"}
 							{baseCommodityUnit}
 						</span>{" "}
 						{listingEvent.commodityToken?.name} for sale
@@ -110,10 +113,11 @@ export function TimelineItem({
 			</div>
 			<div className="w-4/12">
 				<Link
-					href={getTransactionRoute(event?.transaction?.id)}
+					target="_blank"
+					href={getTransactionRoute(event.transactionHash)}
 					className="text-xs underline"
 				>
-					{getShortenedFormat(event?.transaction?.id)}
+					{event.transactionHash}
 				</Link>
 			</div>
 			<div className="ml-auto">
@@ -123,10 +127,12 @@ export function TimelineItem({
 	);
 }
 
-export async function PoolTransactions({
-	tokenAddress,
-}: TokenSalesOverviewProps) {
-	const timeline = await fetchTokenTimeline(tokenAddress);
+export function PoolTransactions({ tokenAddress }: TokenSalesOverviewProps) {
+	const { data, isLoading } = useQuery({
+		queryKey: [`tokenTimeline/${tokenAddress}`],
+		queryFn: () =>
+			fetchWrapper<TimelineEvent[]>(`/api/tokens/${tokenAddress}/timeline`),
+	});
 
 	return (
 		<div className="my-6 !mt-12">
@@ -142,8 +148,8 @@ export async function PoolTransactions({
 					<div className="ml-auto">Balance</div>
 				</div>
 			</div>
-			{timeline?.length > 0 ? (
-				timeline.map((event, idx) => (
+			{data && data?.length > 0 ? (
+				data.map((event, idx) => (
 					<TimelineItem key={event.id} event={event} idx={idx} />
 				))
 			) : (

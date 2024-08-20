@@ -1,4 +1,5 @@
 import { isLocalNetwork } from "@/lib/constants";
+import { AccountId } from "@hashgraph/sdk";
 
 export const PROFILE_ROUTE_ITEM = "/profile/:address";
 export const ROUTE_HOME = "/";
@@ -13,7 +14,7 @@ export function getProfileRoute(address: string = "") {
 export function getTransactionRoute(hash: string = "") {
 	return isLocalNetwork
 		? `http://localhost:3000/tx/tash`
-		: `https://explorer.kabuto.sh/testnet/transactions/${hash}`;
+		: `https://hashscan.io/testnet/transaction/${hash}`;
 }
 
 export function getTokenPage(address: string = "") {

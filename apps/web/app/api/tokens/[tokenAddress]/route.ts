@@ -16,6 +16,7 @@ export async function GET(
 	const response = {
 		name: tokenInfo.name,
 		symbol: tokenInfo.symbol,
+		hederaTokenId: tokenInfo.tokenId.toString(),
 	};
 
 	return NextResponse.json(response);

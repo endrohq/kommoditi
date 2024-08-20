@@ -1,26 +1,17 @@
-import { chainOptions } from "@/lib/constants";
+import { chainOptions, contracts } from "@/lib/constants";
 import { useNetworkManager } from "@/providers/NetworkManager";
 import { ContractName, EthAddress } from "@/typings";
 import { getPublicClient } from "@wagmi/core";
 import { useEffect, useState } from "react";
-import { Abi, formatEther, parseEther, parseGwei } from "viem";
-import {
-	useEstimateGas,
-	usePublicClient,
-	useWaitForTransactionReceipt,
-	useWatchContractEvent,
-	useWriteContract,
-} from "wagmi";
-
-const MIN_TX_FEE_HBAR = "1"; // 1 HBAR in string format
-const GAS_BUFFER_FACTOR = 1.3; // Increase buffer to 30%
+import { Abi, parseEther } from "viem";
+import { useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 
 interface useWriteTransactionArgs {
 	address: EthAddress;
 	abi: Abi;
 	functionName: string;
-	eventName: string;
-	contractName: ContractName;
+	contractName?: ContractName;
+	eventName?: string;
 	confirmations?: number;
 }
 
@@ -45,21 +36,24 @@ export function usePublishTx({
 	address,
 	abi,
 	functionName,
-	eventName,
 	contractName,
+	eventName,
 	confirmations = 5,
 }: useWriteTransactionArgs): useWriteTransactionReturnProps {
-	const { signalNewTx, signalNewToken, signalNewParticipant } =
+	const { signalNewTx, signalNewParticipant, signalTokenActivity } =
 		useNetworkManager();
 	const [transactionState, setTransactionState] =
 		useState<TransactionState>("idle");
 	const { writeContract, data: hash, error } = useWriteContract();
 
-	const { isLoading: isWaitingForReceipt, isSuccess: isConfirmed } =
-		useWaitForTransactionReceipt({
-			hash,
-			confirmations,
-		});
+	const {
+		isLoading: isWaitingForReceipt,
+		isSuccess: isConfirmed,
+		data: receipt,
+	} = useWaitForTransactionReceipt({
+		hash,
+		confirmations,
+	});
 
 	useEffect(() => {
 		if (error) {
@@ -75,50 +69,78 @@ export function usePublishTx({
 	}, [isWaitingForReceipt]);
 
 	useEffect(() => {
-		if (isConfirmed) {
-			handleSuccess();
+		if (isConfirmed && receipt) {
+			handleConfirmedTransaction(receipt);
 		}
-	}, [isConfirmed]);
+	}, [isConfirmed, receipt]);
 
-	useWatchContractEvent({
-		address,
-		abi,
-		eventName,
-		onLogs(logs) {
-			logs.forEach((log) => {
-				if (log.transactionHash === hash) {
-					if (contractName === "tokenAuthority") {
-						const args = (log as any)?.args as {
-							tokenAddress: string;
-							poolAddress: string;
-						};
-						signalNewToken(args.tokenAddress, args.poolAddress);
-					} else if (contractName === "participantRegistry") {
-						const {
-							name,
-							participant,
-							participantType,
-							locations,
-							overheadPercentage,
-						} = (log as any).args as Record<string, any>;
-						signalNewParticipant(
-							name,
-							participant,
-							participantType,
-							locations,
-							overheadPercentage,
-						);
-					} else {
-						signalNewTx(contractName);
-					}
-					setTransactionState("confirming");
-				}
+	async function handleConfirmedTransaction(receipt: any) {
+		try {
+			const client = getPublicClient(chainOptions);
+
+			if (!contractName || !eventName) {
+				setTransactionState("success");
+				return;
+			}
+
+			const abiEvents = contracts?.[contractName].abi.filter(
+				(event) =>
+					// @ts-ignore
+					event.name === eventName,
+			);
+
+			const logs = await client.getLogs({
+				address,
+				events: abiEvents,
+				fromBlock: receipt.blockNumber,
+				toBlock: receipt.blockNumber,
 			});
-		},
-	});
 
-	async function handleSuccess() {
-		setTransactionState("success");
+			const relevantLog = logs.find(
+				(log) => log.transactionHash === receipt.transactionHash,
+			);
+
+			if (relevantLog) {
+				console.log(relevantLog);
+				processLog(relevantLog);
+			}
+
+			setTransactionState("success");
+		} catch (e) {
+			console.error("Error processing transaction logs:", e);
+			setTransactionState("error");
+		}
+	}
+
+	async function processLog(log: any) {
+		if (contractName === "commodityExchange") {
+			const input = log?.args;
+			const newTokenArgs = input as {
+				tokenAddress: string;
+				poolAddress: string;
+			};
+			await signalTokenActivity(
+				newTokenArgs.tokenAddress,
+				newTokenArgs.poolAddress || log.address,
+			);
+		} else if (contractName === "participantRegistry") {
+			const {
+				name,
+				participant,
+				participantType,
+				locations,
+				overheadPercentage,
+			} = log.args as Record<string, any>;
+			await signalNewParticipant(
+				name,
+				participant,
+				participantType,
+				locations,
+				overheadPercentage,
+			);
+		} else if (contractName) {
+			await signalNewTx(contractName);
+		}
 	}
 
 	async function writeToContract(args: unknown[], value?: string) {
@@ -137,7 +159,7 @@ export function usePublishTx({
 				abi,
 				functionName,
 				args,
-				value: valueToUse, // Always add 1 HBAR to cover the minimum fee
+				value: valueToUse,
 			});
 		} catch (e) {
 			console.error(e);

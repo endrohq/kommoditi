@@ -223,19 +223,6 @@
 		"type": "event"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			}
-		],
-		"name": "addConsumerFunds",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "admin",
 		"outputs": [
@@ -350,29 +337,6 @@
 		"name": "listCommodity",
 		"outputs": [],
 		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "tokenAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "minPrice",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "maxPrice",
-				"type": "uint256"
-			}
-		],
-		"name": "provideLiquidity",
-		"outputs": [],
-		"stateMutability": "payable",
 		"type": "function"
 	}
 ]

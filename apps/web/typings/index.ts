@@ -3,7 +3,6 @@ import { Point } from "geojson";
 export type ContractName =
 	| "participantRegistry"
 	| "commodityExchange"
-	| "tokenAuthority"
 	| "commodityFactory"
 	| "commodityPool";
 
@@ -69,6 +68,7 @@ export type GetAllPoolsResponse = {
 export type CommodityToken = {
 	name: string;
 	symbol: string;
+	hederaTokenId: string;
 	treasury: EthAddress;
 	maxSupply: number;
 	tokenAddress: EthAddress;
@@ -226,6 +226,7 @@ export type ConsumerPurchaseEvent = {
 
 export type TimelineEvent = {
 	id?: number;
+	transactionHash?: string;
 	type:
 		| "listing"
 		| "liquidity"
@@ -359,3 +360,8 @@ export interface ParticipantProfile {
 	account: Participant;
 	tokens: ParticipantProfileToken[];
 }
+
+export type ApiResponse = Record<string, any> & {
+	success: boolean;
+	message: string;
+};

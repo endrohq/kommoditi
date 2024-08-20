@@ -16,7 +16,7 @@ export async function GET() {
 			return new NextResponse("Error fetching commodities", { status: 500 });
 		}
 
-		return NextResponse.json(commodities);
+		return NextResponse.json(commodities || []);
 	} catch (error) {
 		console.error("Error fetching commodities:", error);
 		return new NextResponse("Error fetching commodities", { status: 500 });
@@ -32,21 +32,32 @@ export async function POST(req: NextRequest, res: NextResponse) {
 			chainId: networkId,
 		}));
 
-		const { data, error } = await supabase
-			.from("commodityToken")
-			.upsert(commodities, {
-				onConflict: "tokenAddress", // Assuming 'id' is the unique identifier for commodities
-				ignoreDuplicates: false, // Set to true if you want to ignore duplicates
-			});
+		for (const commodity of commodities) {
+			const { data, error } = await supabase
+				.from("commodityToken")
+				.select("*")
+				.eq("chainId", networkId)
+				.eq("tokenAddress", commodity.tokenAddress)
+				.single();
 
-		if (error) {
-			console.error("Error storing commodities:", error);
-			return new NextResponse("Error storing commodities", { status: 500 });
+			if (!data) {
+				const { error: errorCreation } = await supabase
+					.from("commodityToken")
+					.upsert(commodity, {
+						onConflict: "tokenAddress", // Assuming 'id' is the unique identifier for commodities
+						ignoreDuplicates: false, // Set to true if you want to ignore duplicates
+					});
+
+				if (error || errorCreation) {
+					console.error("Error storing commodities:", error);
+					return new NextResponse("Error storing commodities", { status: 500 });
+				}
+			}
 		}
-
-		return NextResponse.json(data);
 	} catch (error) {
 		console.error("Error storing transactions:", error);
 		return new NextResponse("Error storing transactions", { status: 500 });
 	}
+
+	return NextResponse.json({ success: true });
 }

@@ -67,3 +67,7 @@ export function normalizeCoordinate(coordinate: number) {
 	// Multiply by 1e9 to preserve 9 decimal places
 	return BigInt(Math.round(coordinate * 1e9));
 }
+
+export function denormalizeCoordinate(coordinate: bigint) {
+	return Number(coordinate) / 1e3;
+}

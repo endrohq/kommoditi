@@ -47,6 +47,7 @@ export function SelectType({ setType }: SelectTypeProps) {
 					// This is a list of participants
 					participants.map((participant) => (
 						<div
+							key={participant.type}
 							onClick={() => setType(participant.type)}
 							className="w-full py-8 px-4 rounded flex flex-col justify-between bg-indigo-50 cursor-pointer hover:bg-indigo-100 transition-all group"
 						>

@@ -20,10 +20,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	};
 }
 
-export default async function Page({ params }: Props) {
+export default function Page({ params }: Props) {
 	return (
 		<div className="relative tokenPage">
-			<TokenPageMap />
+			<TokenPageMap tokenAddress={params.address} />
 			<TokenPageHeader />
 			<div className="layout my-10 space-x-10 flex items-start px-10">
 				<div className="w-8/12">

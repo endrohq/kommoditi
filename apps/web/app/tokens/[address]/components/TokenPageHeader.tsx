@@ -12,7 +12,7 @@ export function TokenPageHeader() {
 	}
 
 	return (
-		<div className="!z-[999] layout flex flex-col -pt-2">
+		<div className="!z-[99] layout flex flex-col -pt-2">
 			<div
 				style={{ marginTop: "-60px" }}
 				className="bg-white w-full rounded px-10 pt-10"

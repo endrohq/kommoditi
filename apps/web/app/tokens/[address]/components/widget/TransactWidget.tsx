@@ -53,6 +53,8 @@ export function TransactWidget({ address }: TransactWidgetProps) {
 	useEffect(() => {
 		if (account?.type === "PRODUCER") {
 			setActiveTab("list commodity");
+		} else {
+			setActiveTab("buy");
 		}
 	}, [account?.type]);
 

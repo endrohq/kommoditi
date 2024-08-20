@@ -30,7 +30,7 @@ interface RegisterParticipantProfileProps {
 }
 
 export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
-	const { logout } = useAuth();
+	const { logout, account } = useAuth();
 	const [type, setType] = useState<ParticipantType>();
 	const [participant, setParticipant] = useState<Partial<ParticipantArgs>>({});
 
@@ -38,7 +38,7 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 		writeToContract: register,
 		isSubmitting,
 		isSuccess,
-		status,
+		isConfirming,
 		error,
 	} = usePublishTx({
 		address: contracts.participantRegistry.address,
@@ -55,10 +55,10 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 	}, [participant]);
 
 	useEffect(() => {
-		if (status === "success") {
+		if (isSuccess) {
 			refetch();
 		}
-	}, [status]);
+	}, [isSuccess]);
 
 	useEffect(() => {
 		if (error) {
@@ -95,7 +95,7 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 			withPadding={false}
 			showClose={false}
 		>
-			{!isSubmitting && !isSuccess && (
+			{!isSubmitting && !isConfirming && !isSuccess && (
 				<div className="flex justify-end px-4 mt-4">
 					<div
 						className="text-sm cursor-pointer text-blue-700"
@@ -125,12 +125,12 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 						className={clsx(
 							"w-32 aspect-square  mb-10 rounded-full flex flex-col items-center justify-center",
 							{
-								"animate-pulse bg-gray-50": isSubmitting,
+								"animate-pulse bg-gray-50": isSubmitting || isConfirming,
 								"bg-green-50": isSuccess,
 							},
 						)}
 					>
-						{isSubmitting ? (
+						{isSubmitting || isConfirming ? (
 							<LoadingOutlined className="text-gray-400" />
 						) : (
 							<CheckOutlined className="text-green-500" />

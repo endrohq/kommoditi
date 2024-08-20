@@ -14,18 +14,13 @@ interface LayoutProps {
 }
 
 export default async function Layout({ params, children }: LayoutProps) {
-	const [token, countries, currentPrice] = await Promise.all([
+	const [token, currentPrice] = await Promise.all([
 		fetchCommodity(params.address),
-		getCountriesWhereCommodityTokenIsActiveIn(params.address),
 		fetchLatestPrice(params.address),
 	]);
 
 	return (
-		<TokenPageProvider
-			countries={countries}
-			token={token}
-			currentPrice={currentPrice}
-		>
+		<TokenPageProvider token={token} currentPrice={currentPrice}>
 			{children}
 		</TokenPageProvider>
 	);

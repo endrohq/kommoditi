@@ -49,6 +49,11 @@ export function SelectLocations({
 
 	const hasSelectedRegions = locations && locations?.length > 0;
 
+	const canContinue =
+		hasSelectedRegions && type === ParticipantType.DISTRIBUTOR
+			? locations.length >= 2
+			: hasSelectedRegions;
+
 	return (
 		<>
 			<MapToDisplay mapHeight={200} regions={locations || []} />
@@ -59,11 +64,16 @@ export function SelectLocations({
 					description={
 						type === ParticipantType.DISTRIBUTOR ? (
 							<>
-								As a <span className="font-semibold text-black">{type}</span>{" "}
+								As a{" "}
+								<span className="font-semibold capitalize text-black">
+									{type?.toLowerCase()}
+								</span>{" "}
 								you will define the{" "}
-								<span className="font-semibold text-black">countries</span> that
-								your operating in. This will help us to match you with the right
-								partners`
+								<span className="font-semibold text-black">
+									2 or more countries
+								</span>{" "}
+								that your operating in. This will help us to match you with the
+								right partners`
 							</>
 						) : (
 							`As a ${type} you will define the address of your operations. This will help us to match you with the right partners`
@@ -72,6 +82,9 @@ export function SelectLocations({
 				/>
 				<div className="">
 					<SearchAddress
+						disabled={
+							type !== ParticipantType.DISTRIBUTOR && locations?.length === 1
+						}
 						onRegionSelect={handleRegionSelect}
 						allowTypes={
 							type === ParticipantType.DISTRIBUTOR
@@ -123,14 +136,14 @@ export function SelectLocations({
 						</div>
 					</div>
 					<Button
-						disabled={!locations || locations?.length === 0}
+						disabled={!locations || locations?.length === 0 || !canContinue}
 						type="submit"
 						variant="black"
 						fullWidth
 						onClick={() => persistLocations(locations || [])}
 						className="mt-6"
 					>
-						Finish
+						Register
 					</Button>
 				</div>
 			</div>

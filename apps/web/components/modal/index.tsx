@@ -36,7 +36,7 @@ export function Modal({
 	return (
 		<div
 			onClick={() => onClose?.()}
-			className="fixed bg-black/25 inset-0 z-[9999] m-0 h-full p-0"
+			className="fixed bg-black/25 inset-0 !z-[9999] m-0 h-full p-0"
 		>
 			<AnimatePresence>
 				<motion.div

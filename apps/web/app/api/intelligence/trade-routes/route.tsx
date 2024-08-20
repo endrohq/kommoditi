@@ -80,12 +80,12 @@ export async function GET(req: NextRequest) {
 				: ParticipantType.PRODUCER,
 		);
 		const eligibleDistributors = findTradingPartners(participants, participant);
+
 		const partners = participants.filter(
 			(participant) =>
 				eligibleDistributors.includes(participant.id) &&
 				isParticipantInCountry(participant, country),
 		);
-
 		const filteredPartnerIds = partners.map((p) => p.id);
 		const allCommodities = await getCommoditiesForParticipants(
 			filteredPartnerIds,

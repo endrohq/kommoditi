@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { IBM_Plex_Sans } from "next/font/google";
 import "./globals.scss";
 import { Container } from "@/components/container";
+import { appTitle } from "@/lib/constants";
 import { Providers } from "@/providers";
 import React from "react";
 
@@ -13,7 +14,7 @@ const ibmPlexSans = IBM_Plex_Sans({
 
 export const metadata: Metadata = {
 	title: {
-		template: "%s | Hello Future",
+		template: `%s | ${appTitle}`,
 		default: "Home",
 	},
 };

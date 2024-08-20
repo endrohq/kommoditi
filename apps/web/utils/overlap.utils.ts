@@ -1,21 +1,31 @@
 import { ParticipantType, ParticipantUserView, Region } from "@/typings";
-import booleanIntersects from "@turf/boolean-intersects";
+import { getCountryNameFromAddress } from "./commodity.utils";
 
-import { getGeometryForRegion } from "./location.utils";
-
-function doRegionsOverlap(region1: Region, region2: Region): boolean {
-	const geometry1 = getGeometryForRegion(region1);
-	const geometry2 = getGeometryForRegion(region2);
-
-	return booleanIntersects(geometry1, geometry2);
+function getCountriesForRegions(regions: Region[]): Set<string> {
+	const countries = new Set<string>();
+	for (const region of regions) {
+		if (region.locationType === "country") {
+			countries.add(region.name);
+		} else {
+			const country = getCountryNameFromAddress(region.name);
+			if (country) {
+				countries.add(country);
+			}
+		}
+	}
+	return countries;
 }
 
-function hasAnyOverlap(regions1: Region[], regions2: Region[]): boolean {
-	for (const region1 of regions1) {
-		for (const region2 of regions2) {
-			if (doRegionsOverlap(region1, region2)) {
-				return true;
-			}
+function hasOverlappingCountries(
+	regions1: Region[],
+	regions2: Region[],
+): boolean {
+	const countries1 = getCountriesForRegions(regions1);
+	const countries2 = getCountriesForRegions(regions2);
+
+	for (const country of Array.from(countries1)) {
+		if (countries2.has(country)) {
+			return true;
 		}
 	}
 	return false;
@@ -40,7 +50,7 @@ export function findTradingPartners(
 				// Consumers can only find DISTRIBUTORs operating in their location
 				if (
 					participant.type === ParticipantType.DISTRIBUTOR &&
-					hasAnyOverlap(activeParticipantRegions, participantRegions)
+					hasOverlappingCountries(activeParticipantRegions, participantRegions)
 				) {
 					tradingPartners.push(participant.id);
 				}
@@ -51,7 +61,7 @@ export function findTradingPartners(
 				if (
 					(participant.type === ParticipantType.PRODUCER ||
 						participant.type === ParticipantType.CONSUMER) &&
-					hasAnyOverlap(activeParticipantRegions, participantRegions)
+					hasOverlappingCountries(activeParticipantRegions, participantRegions)
 				) {
 					tradingPartners.push(participant.id);
 				}
@@ -61,7 +71,7 @@ export function findTradingPartners(
 				// Producers can find DISTRIBUTORs they can sell to
 				if (
 					participant.type === ParticipantType.DISTRIBUTOR &&
-					hasAnyOverlap(activeParticipantRegions, participantRegions)
+					hasOverlappingCountries(activeParticipantRegions, participantRegions)
 				) {
 					tradingPartners.push(participant.id);
 				}

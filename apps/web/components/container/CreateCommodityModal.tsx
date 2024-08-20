@@ -6,7 +6,6 @@ import { Modal } from "@/components/modal";
 import { usePublishTx } from "@/hooks/usePublishTx";
 import { contracts } from "@/lib/constants";
 import { fetchWrapper } from "@/utils/fetch.utils";
-import { parseNumberToSmFormat } from "@/utils/number.utils";
 import { getTokenPage } from "@/utils/route.utils";
 import { Form } from "@carbon/react";
 import { useRouter } from "next/navigation";
@@ -37,8 +36,7 @@ export function CreateCommodityModal({ onClose }: CreateCommodityModalProps) {
 		abi: contracts?.commodityExchange.abi,
 		functionName: "createCommodityToken",
 		eventName: "CommodityTokenCreated",
-		contractName: "tokenAuthority",
-		confirmations: 5,
+		contractName: "commodityExchange",
 	});
 
 	useEffect(() => {
@@ -120,7 +118,11 @@ export function CreateCommodityModal({ onClose }: CreateCommodityModalProps) {
 						type="submit"
 						size="sm"
 					>
-						Create
+						{isLoading
+							? "Creating Token .."
+							: isSubmitting || isConfirming
+								? "Creating trading environment .."
+								: "Create"}
 					</Button>
 				</div>
 			</Form>

@@ -7,7 +7,7 @@ import {
 	poolTransactionTypes,
 } from "@/typings";
 import { fetchWrapper } from "@/utils/fetch.utils";
-import { formatNumber } from "@/utils/number.utils";
+import { denormalizeCoordinate, formatNumber } from "@/utils/number.utils";
 import {
 	parseSmCommodityPoolEvent,
 	smParticipantTypeToParticipantType,
@@ -21,14 +21,17 @@ export async function syncCommodity(
 ) {
 	let tokens: CommodityToken[] = [];
 	for (const { tokenAddress, poolAddress } of events) {
-		const token = await fetchWrapper<{ name: string; symbol: string }>(
-			`/api/tokens/${tokenAddress}`,
-		);
+		const token = await fetchWrapper<{
+			name: string;
+			symbol: string;
+			hederaTokenId: string;
+		}>(`/api/tokens/${tokenAddress}`);
 		tokens.push({
 			tokenAddress,
 			poolAddress,
 			name: token.name,
 			symbol: token.symbol,
+			hederaTokenId: token.hederaTokenId,
 		} as CommodityToken);
 	}
 
@@ -42,10 +45,7 @@ export async function syncCommodity(
 	return tokens;
 }
 
-export async function getCommoditiesFromClient(
-	fromBlock: bigint,
-	toBlock: bigint,
-) {
+export async function getCommoditiesFromClient(fromBlock: bigint) {
 	try {
 		const client = getPublicClient(chainOptions);
 		const events = await client.getLogs({
@@ -55,7 +55,6 @@ export async function getCommoditiesFromClient(
 				(event) => event.name === "CommodityTokenCreated",
 			),
 			fromBlock: fromBlock - BigInt(500),
-			toBlock,
 		});
 
 		const input = events.map(({ args }) => ({
@@ -70,15 +69,23 @@ export async function getCommoditiesFromClient(
 	return [];
 }
 
+export async function getPoolTransactionsForAllCommodities(fromBlock: bigint) {
+	const commodities = await fetchWrapper<CommodityToken[]>("/api/commodities");
+	return getPoolTransactions(fromBlock, commodities);
+}
+
 export async function getPoolTransactions(
 	fromBlock: bigint,
-	toBlock: bigint,
 	commodities: CommodityToken[],
 ) {
 	try {
 		const poolAddresses = commodities
 			.map((c) => c.poolAddress)
 			.filter((a) => !!a);
+
+		if (poolAddresses?.length === 0) {
+			return;
+		}
 
 		const client = getPublicClient(chainOptions);
 		const events = await client.getLogs({
@@ -88,8 +95,10 @@ export async function getPoolTransactions(
 				poolTransactionTypes.includes(event.name ?? ""),
 			),
 			fromBlock,
-			toBlock,
+			toBlock: "latest",
 		});
+
+		console.log(events);
 
 		// Group events by transaction hash
 		const eventsByTx = events.reduce(
@@ -102,6 +111,8 @@ export async function getPoolTransactions(
 			},
 			{} as Record<EthAddress, typeof events>,
 		);
+
+		console.log(eventsByTx);
 
 		const transactions = await Promise.all(
 			Object.entries(eventsByTx).map(async ([hash, txEvents]) => {
@@ -139,6 +150,8 @@ export async function getPoolTransactions(
 			}),
 		);
 
+		console.log(transactions);
+
 		if (transactions.length > 0) {
 			await fetchWrapper("/api/transactions", {
 				method: "POST",
@@ -167,8 +180,8 @@ export function extractParticipant(
 		locations: locations?.map((l: Record<string, any>) => ({
 			id: l.id,
 			name: l.name,
-			centerLat: Number(l.centerLat),
-			centerLng: Number(l.centerLng),
+			centerLat: denormalizeCoordinate(l.centerLat),
+			centerLng: denormalizeCoordinate(l.centerLng),
 			locationType: l.locationType,
 		})),
 	} as Participant;
@@ -181,7 +194,7 @@ export function saveParticipants(participants: Participant[]) {
 	});
 }
 
-export async function getParticipants(fromBlock: bigint, toBlock: bigint) {
+export async function getParticipants(fromBlock: bigint) {
 	const client = getPublicClient(chainOptions);
 	const events = await client.getLogs({
 		address: contracts.participantRegistry.address,
@@ -189,27 +202,24 @@ export async function getParticipants(fromBlock: bigint, toBlock: bigint) {
 			// @ts-ignore
 			(event) => event.name === "ParticipantRegistered",
 		),
-		fromBlock,
 	});
 
-	const dataWithNull: (Participant | null)[] = await Promise.all(
-		events.map((log) => {
-			const {
-				name,
-				participant,
-				participantType,
-				locations,
-				overheadPercentage,
-			} = log.args as Record<string, any>;
-			return extractParticipant(
-				name,
-				participant,
-				participantType,
-				locations,
-				overheadPercentage,
-			);
-		}),
-	);
+	const dataWithNull: (Participant | null)[] = events.map((log) => {
+		const {
+			name,
+			participant,
+			participantType,
+			locations,
+			overheadPercentage,
+		} = log.args as Record<string, any>;
+		return extractParticipant(
+			name,
+			participant,
+			participantType,
+			locations,
+			overheadPercentage,
+		);
+	});
 	const participants = dataWithNull.filter((p) => p !== null) as Participant[];
 	await saveParticipants(participants);
 }

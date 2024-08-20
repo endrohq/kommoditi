@@ -7,9 +7,8 @@ import commodityPoolAbi from "./abis/commodity-pool.abi.json";
 import exchangeAbi from "./abis/exchange.abi.json";
 import commodityFactoryAbi from "./abis/factory.abi.json";
 import participantsAbi from "./abis/participants.abi.json";
-import tokenAuthorityAbi from "./abis/token-authority.abi.json";
 
-export const appTitle = "Commodity Exchange";
+export const appTitle = "Kommoditi";
 export const baseCommodityUnit = "KG";
 
 export const isLocalNetwork = process.env.NEXT_PUBLIC_IS_LOCAL === "true";
@@ -45,19 +44,15 @@ type ContractInfo = {
 
 const localContracts: Record<ContractName, ContractInfo> = {
 	participantRegistry: {
-		address: "0xc5BE7797465EEe63523c4674F347730A9D0472A4",
+		address: "0x1a34E19cF6373A64dfcFc8e558148054894bC86B",
 		abi: participantsAbi as Abi,
 	},
 	commodityExchange: {
-		address: "0xa72429A4e6b56E7ec0BD505de6635e54011Bc98d",
+		address: "0xf7182c117c9D43397921D22F9B2D75D73E359391",
 		abi: exchangeAbi as Abi,
 	},
-	tokenAuthority: {
-		address: "0x8F9A6c5F2f41F0f71E28B21ae32C26C6B0330702",
-		abi: tokenAuthorityAbi as Abi,
-	},
 	commodityFactory: {
-		address: "0x5e06fC9925536348d0c2184Da3e628A079409Cc3",
+		address: "0x08c35ae9BD5ED9D6967183D712ec1C0D0dDdc23B",
 		abi: commodityFactoryAbi as Abi,
 	},
 	commodityPool: {
@@ -68,19 +63,15 @@ const localContracts: Record<ContractName, ContractInfo> = {
 
 const testnetContracts: Record<ContractName, ContractInfo> = {
 	participantRegistry: {
-		address: "0x423b1D1Ba103A2347c4C6A79579402b3c10CA5fF",
+		address: "0x6b1Da1005Cf9f0AACEF042c7b399A816BB031ca7",
 		abi: participantsAbi as Abi,
 	},
 	commodityExchange: {
-		address: "0x3B7d8C3798Ad094BEbCaA231d4d17222Dd961849",
+		address: "0x8f2af35E4Fec8b5D59a77Bab9c5C76A1c15FAC00",
 		abi: exchangeAbi as Abi,
 	},
-	tokenAuthority: {
-		address: "0x934bECBC1B7d54ef2A54605092398aFb744B430D",
-		abi: tokenAuthorityAbi as Abi,
-	},
 	commodityFactory: {
-		address: "0xc9AaAfB2c77D25EF281918E24B2CfbB22FDA3a7E",
+		address: "0x0817ef44e6733D92934eA7c0095C130EA92F33E0",
 		abi: commodityFactoryAbi as Abi,
 	},
 	commodityPool: {

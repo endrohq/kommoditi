@@ -85,7 +85,7 @@ export async function fetchTokenTimeline(
 	const { data: token, error: tokenError } = await supabase
 		.from("commodityToken")
 		.select("*")
-		.eq("tokenAddress", tokenAddress)
+		.eq("tokenAddress", tokenAddress?.toLowerCase())
 		.eq("chainId", networkId)
 		.single();
 
@@ -96,8 +96,8 @@ export async function fetchTokenTimeline(
 
 	const { data: listings, error: listingError } = await supabase
 		.from("listing")
-		.select("*, producer:producerId(*), transaction:transactionHash(*)")
-		.eq("tokenAddress", tokenAddress)
+		.select("*,producer:producerId(*), transaction:transactionHash(*)")
+		.eq("tokenAddress", tokenAddress?.toLowerCase())
 		.eq("chainId", networkId);
 
 	if (listingError) {

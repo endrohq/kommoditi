@@ -51,8 +51,6 @@ export async function POST(req: NextRequest, res: NextResponse) {
 						status: 500,
 					});
 				}
-			} else {
-				console.log("transaction already exists");
 			}
 		}
 		return NextResponse.json({ message: "Data inserted successfully" });
@@ -66,7 +64,7 @@ async function handleListingAdded(event: ListingAdded) {
 	const { error: listingError } = await supabase
 		.from("listing")
 		.insert({
-			id: event.listingId,
+			listingId: event.listingId,
 			producerId: event.producerId,
 			createdAt: event.createdAt,
 			transactionHash: event.transactionHash,
@@ -190,8 +188,6 @@ async function upsertTransaction(item: PoolTransaction) {
 	}
 
 	for (const event of item.events) {
-		console.log(event);
-
 		switch (event.type) {
 			case "ListingAdded":
 				await handleListingAdded(event as ListingAdded);

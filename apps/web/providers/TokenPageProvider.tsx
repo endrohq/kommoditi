@@ -7,12 +7,14 @@ interface TokenContextProps {
 	commodity: CommodityToken;
 	countries: Region[];
 	currentPrice?: number;
+	setCountries: (countries: Region[]) => void;
 }
 
 export const TokenContext = createContext<TokenContextProps>({
 	currentPrice: 0,
 	countries: [],
 	commodity: {} as CommodityToken,
+	setCountries: () => {},
 });
 
 export function useTokenPage() {
@@ -22,20 +24,21 @@ export function useTokenPage() {
 export function TokenPageProvider({
 	children,
 	token,
-	countries,
 	currentPrice,
 }: {
 	children: React.ReactNode;
 	token: CommodityToken | null;
-	countries: Region[];
+
 	currentPrice: number;
 }) {
+	const [countries, setCountries] = useState<Region[]>([]);
 	return (
 		<TokenContext.Provider
 			value={{
 				currentPrice,
 				commodity: token as CommodityToken,
 				countries,
+				setCountries,
 			}}
 		>
 			{children}

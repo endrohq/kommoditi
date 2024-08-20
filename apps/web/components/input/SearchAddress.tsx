@@ -5,7 +5,7 @@ import {
 	Region,
 } from "@/typings";
 import debounce from "lodash.debounce";
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 
 import Select, { SingleValue } from "react-select";
 
@@ -13,6 +13,7 @@ interface SearchAddressProps {
 	onRegionSelect: (region: Region) => void;
 	placeholder?: string;
 	allowTypes?: PlaceType[];
+	disabled?: boolean;
 }
 
 const mapboxAccessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
@@ -21,9 +22,16 @@ export function SearchAddress({
 	onRegionSelect,
 	placeholder = "Search for an address",
 	allowTypes = Object.values(PlaceType),
+	disabled,
 }: SearchAddressProps) {
 	const [query, setQuery] = useState("");
 	const [searchResults, setSearchResults] = useState<IGeocoderFeature[]>([]);
+	const debouncedSetQuery = debounce(setQuery, 300);
+	useEffect(() => {
+		if (query?.length > 1) {
+			handleAddressSearch(query);
+		}
+	}, [query]);
 
 	const handleAddressSearch = useCallback(async (query: string) => {
 		if (!query || query?.length < 2) {
@@ -65,26 +73,25 @@ export function SearchAddress({
 		[onRegionSelect],
 	);
 
-	const debouncedHandleAddressSearch = debounce(handleAddressSearch, 300);
-
-	const options = searchResults.map((result) => ({
-		label: result.place_name,
-		value: result.id,
-	}));
+	const options =
+		searchResults?.length > 0
+			? searchResults?.map((result) => ({
+					label: result.place_name,
+					value: result.id,
+				}))
+			: [];
 
 	return (
 		<>
 			<Select
 				options={options}
-				value={query as any}
 				placeholder={placeholder}
 				isSearchable
+				isDisabled={disabled}
 				onChange={(
 					selectedOption: SingleValue<{ value: string; label: string }>,
 				) => {
-					if (!selectedOption?.value) return;
-
-					const result = searchResults.find(
+					const result = searchResults?.find(
 						(result) => result.id === selectedOption?.value,
 					);
 					if (result) {
@@ -93,7 +100,7 @@ export function SearchAddress({
 					}
 				}}
 				isMulti={false}
-				onInputChange={(inputValue) => debouncedHandleAddressSearch(inputValue)}
+				onInputChange={debouncedSetQuery}
 				noOptionsMessage={() => "No results found"}
 				className="!text-sm"
 			/>
