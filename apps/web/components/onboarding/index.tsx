@@ -96,7 +96,11 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 			showClose={false}
 		>
 			{!isSubmitting && !isConfirming && !isSuccess && (
-				<div className="flex justify-end px-4 mt-4">
+				<div className="flex justify-between px-4 mt-4">
+					<div className="text-xs">
+						* This app relies on having HBAR in your wallet to pay for
+						transactions.
+					</div>
 					<div
 						className="text-sm cursor-pointer text-blue-700"
 						onClick={logout}
