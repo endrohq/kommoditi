@@ -4,6 +4,8 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
+const adminAccount = process.env.ADMIN_ONE_PK!, localAccounts: any[] = [];
+
 const config: HardhatUserConfig = {
   solidity: "0.8.24",
   networks: {

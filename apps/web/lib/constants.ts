@@ -63,15 +63,15 @@ const localContracts: Record<ContractName, ContractInfo> = {
 
 const testnetContracts: Record<ContractName, ContractInfo> = {
 	participantRegistry: {
-		address: "0x6b1Da1005Cf9f0AACEF042c7b399A816BB031ca7",
+		address: "0x4be714E4FE4ae6DfFd169C51aF243faC89d26856",
 		abi: participantsAbi as Abi,
 	},
 	commodityExchange: {
-		address: "0x8f2af35E4Fec8b5D59a77Bab9c5C76A1c15FAC00",
+		address: "0xDdC57688f00D4372cdA1898C540caa8F0890080c",
 		abi: exchangeAbi as Abi,
 	},
 	commodityFactory: {
-		address: "0x0817ef44e6733D92934eA7c0095C130EA92F33E0",
+		address: "0x4AFF78290E840D621688b549b17E47fc800fFEf8",
 		abi: commodityFactoryAbi as Abi,
 	},
 	commodityPool: {

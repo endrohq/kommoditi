@@ -97,7 +97,7 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 		>
 			{!isSubmitting && !isConfirming && !isSuccess && (
 				<div className="flex justify-between px-4 mt-4">
-					<div className="text-xs">
+					<div className="text-xs text-red-700">
 						* This app relies on having HBAR in your wallet to pay for
 						transactions.
 					</div>
@@ -143,7 +143,8 @@ export function OnboardingModal({ refetch }: RegisterParticipantProfileProps) {
 					<div className="font-bold text-xl text-center">Almost there</div>
 					<p className="text-sm text-gray-600 text-center w-10/12 mx-auto">
 						We're registering your profile. This may take a few seconds. Please
-						do not close this window.
+						do not close this window. Go ahead and refresh if you see the
+						completed screen for more than 1min.
 					</p>
 				</div>
 			)}

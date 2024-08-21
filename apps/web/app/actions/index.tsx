@@ -1,33 +1,20 @@
 "use server";
 
-import { format, isToday, isYesterday } from "date-fns";
-import { networkId } from "../../lib/constants";
+import { networkId } from "@/lib/constants";
 import {
 	CommodityGroup,
 	CommodityToken,
-	GroupedByDateTimeline,
 	OwnerQuantity,
 	ParticipantType,
 	ParticipantUserView,
 	PlaceType,
 	Region,
-	TimelineEvent,
-} from "../../typings";
+} from "@/typings";
 import {
 	getCountryNameFromAddress,
 	labelCommodity,
-} from "../../utils/commodity.utils";
+} from "@/utils/commodity.utils";
 import supabase from "../../utils/supabase.utils";
-
-export async function loadCommodities() {
-	const { data: commodities, error } = await supabase
-		.from("commodityToken")
-		.select("*")
-		.eq("chainId", networkId)
-		.returns<CommodityToken[]>();
-
-	return commodities;
-}
 
 export async function fetchCommodity(tokenAddress: string) {
 	const { data: commodity, error } = await supabase
@@ -119,6 +106,7 @@ export async function fetchCommoditiesGroupedByCountry({
 
 	const { data: commodities, error } = await query;
 
+	console.log(commodities);
 	if (error) {
 		console.error("Error fetching commodities:", error);
 		throw new Error("Failed to fetch commodities");

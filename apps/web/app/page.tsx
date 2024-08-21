@@ -2,12 +2,13 @@ import { fetchCommoditiesGroupedByCountry } from "@/app/actions";
 
 import { ItemForPurchase } from "@/components/commodity/ItemForPurchase";
 import { Metadata } from "next";
-import Link from "next/link";
 import React from "react";
 
 export const metadata: Metadata = {
 	title: "Home",
 };
+
+export const revalidate = 0;
 
 export default async function Home() {
 	const commodities = await fetchCommoditiesGroupedByCountry({});

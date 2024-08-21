@@ -76,13 +76,13 @@ async function handleListingAdded(event: ListingAdded) {
 	if (listingError) throw listingError;
 
 	const commodities = event.serialNumbers.map((serialNumber) => ({
-		id: serialNumber,
 		producerId: event.producerId,
 		listingId: event.listingId,
 		status: CommodityStatus.LISTED,
 		currentOwnerId: event.producerId,
 		tokenAddress: event.tokenAddress,
 		chainId: networkId,
+		serialNumber,
 	}));
 
 	const { error: commoditiesError } = await supabase
